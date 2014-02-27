@@ -1,4 +1,4 @@
-package io.pyd.sdk.client;
+package io.pyd.sdk.client.utils;
 
 import io.pyd.sdk.client.model.ServerNode;
 

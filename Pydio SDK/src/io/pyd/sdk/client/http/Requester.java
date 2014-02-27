@@ -4,8 +4,8 @@ package io.pyd.sdk.client.http;
 
 
 
-import io.pyd.sdk.client.ServerResolver;
 import io.pyd.sdk.client.model.*;
+import io.pyd.sdk.client.utils.ServerResolver;
 
 import java.io.BufferedReader;
 import java.io.File;
