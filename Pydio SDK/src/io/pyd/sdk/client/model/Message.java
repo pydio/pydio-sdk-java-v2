@@ -39,4 +39,13 @@ public class Message extends Exception{
 		this.code = code;
 	}
 	
+	
+	public static Message create(int code, int type, String message){
+		Message m = new Message();
+		m.code = code;
+		m.type = type;
+		m.message = message;
+		return m;
+	}
+	
 }

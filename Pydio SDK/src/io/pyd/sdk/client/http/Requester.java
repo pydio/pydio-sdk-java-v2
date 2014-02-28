@@ -4,7 +4,7 @@ package io.pyd.sdk.client.http;
 
 
 
-import io.pyd.sdk.client.model.*;
+import io.pyd.sdk.client.model.Message;
 import io.pyd.sdk.client.utils.ServerResolver;
 
 import java.io.BufferedReader;
@@ -17,7 +17,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -34,25 +33,36 @@ import org.apache.http.util.EncodingUtils;
 @SuppressWarnings("deprecation")
 public class Requester {
 	
+		
 	private AjxpFileBody fileBody;
 	private File file;
 	private String fileName;
-	private String httpUser;
-	private String httpPassword;
+	private String httpUser= "";
+	private String httpPassword = "";
 	private AjxpHttpClient httpClient;
-	private boolean trustSSL = false;	
+	private boolean trustSSL = false;
 	private CountingMultipartRequestEntity.ProgressListener progressListener;
 	
+	String authStep;
 
+	public Requester(String user, String password){
+		httpUser = user;
+		httpPassword = password;
+	}
 	
-	//MAX_UPLOAD to be checked	
+	public Requester(){
+		
+	}
+	//MAX_UPLOAD to be checked
 	
-	HttpEntity issueRequest(URI uri, Map<String, String> postParameters) throws Message{
+	public HttpResponse issueRequest(URI uri, Map<String, String> postParameters) throws Message{
+		
+		
+		
+		httpClient = new AjxpHttpClient(false);
 		
      	if(uri.toString().contains(ServerResolver.SERVER_URL_RESOLUTION)){
-     		Message m = new Message();
-     		m.setMessage("Must resolve server");
-     		throw m;
+     		throw Message.create(1, 1, "resolution needed");
      	}
 		
 		try{
@@ -124,32 +134,21 @@ public class Requester {
 				request.addHeader("Ajxp-Force-Login", "true");
 			}
 			
-			HttpResponse response = httpClient.executeInContext(request);
-			
-			if(isAuthenticationRequested(response)){
-				Message authMessage = new Message();
-				//add auth message
-				authMessage.setMessage("");				
-				throw authMessage;
-			}
+			HttpResponse response = httpClient.executeInContext(request);			
+		
 			
 			if(fileBody != null && fileBody.isChunked() && !fileBody.allChunksUploaded()){
 				this.discardResponse(response);
 				this.issueRequest(uri, postParameters);
 			}
 			
-			return response.getEntity();
+			return response;
 			
 		}catch(IOException e){
 			Message m = new Message();
 			m.setMessage(e.getMessage());
 			throw m;
 		}
-	}
-
-	// TO-DO
-	private boolean isAuthenticationRequested(HttpResponse response){
-		return true;
 	}
 	
 	private void discardResponse(HttpResponse response) {
@@ -190,4 +189,8 @@ public class Requester {
 	public void setUploadProgressListener(CountingMultipartRequestEntity.ProgressListener uploadList){
 		this.progressListener = uploadList;
 	}
+	
+	
+	
+	
 }
