@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -37,29 +38,25 @@ public class Requester {
 	private AjxpFileBody fileBody;
 	private File file;
 	private String fileName;
-	private String httpUser= "";
-	private String httpPassword = "";
 	private AjxpHttpClient httpClient;
 	private boolean trustSSL = false;
-	private CountingMultipartRequestEntity.ProgressListener progressListener;
-	
+	private CountingMultipartRequestEntity.ProgressListener progressListener;	
 	String authStep;
-
-	public Requester(String user, String password){
-		httpUser = user;
-		httpPassword = password;
-	}
 	
-	public Requester(){
-		
-	}
+	UsernamePasswordCredentials credentials = null;
+	
+	
 	//MAX_UPLOAD to be checked
 	
 	public HttpResponse issueRequest(URI uri, Map<String, String> postParameters) throws Message{
 		
 		
 		
-		httpClient = new AjxpHttpClient(false);
+		httpClient = new AjxpHttpClient(trustSSL);
+		
+		if(credentials != null){
+			httpClient.refreshCredentials(credentials);
+		}
 		
      	if(uri.toString().contains(ServerResolver.SERVER_URL_RESOLUTION)){
      		throw Message.create(1, 1, "resolution needed");
@@ -105,7 +102,7 @@ public class Requester {
 						while(it.hasNext()){
 							Map.Entry<String, String> entry = it.next();
 							reqEntity.addPart(entry.getKey(), new StringBody(entry.getValue()));
-						}					
+						}				
 					}
 					
 					if(progressListener != null){
@@ -129,10 +126,6 @@ public class Requester {
 			}
 			
 			request.setURI(uri);
-			
-			if(this.httpUser.length()> 0 && this.httpPassword.length()> 0 ){
-				request.addHeader("Ajxp-Force-Login", "true");
-			}
 			
 			HttpResponse response = httpClient.executeInContext(request);			
 		
@@ -170,13 +163,7 @@ public class Requester {
 		}
 	}
 	
-	public void setHttpUser(String user){
-		httpUser = user;
-	}
 	
-	public void setHttpPassword(String password){
-		httpPassword = password;
-	}
 	
 	public void setFile(File file){
 		this.file = file;
@@ -191,6 +178,7 @@ public class Requester {
 	}
 	
 	
-	
-	
+	public void setCredentials(String user, String password){
+		this.credentials = new UsernamePasswordCredentials(user, password);
+	}
 }

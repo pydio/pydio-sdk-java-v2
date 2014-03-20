@@ -1,5 +1,7 @@
 package io.pyd.sdk.client.model;
 
+import java.util.Properties;
+
 import org.json.JSONObject;
 
 public class NodeFactory {
@@ -19,19 +21,27 @@ public class NodeFactory {
 		node.setNodeSpec(spec);
 		return node;
 	}
+
+	public static Node createNode(int type, Properties prop, String specName) throws Message{
+		NodeSpec spec = NodeSpecContainer.getSpecInstance(specName);
+		Node node = instantiateNode(type);
+		node.initFromProperties(prop);
+		node.setNodeSpec(spec);
+		return node;
+	}
 	
 	private static Node instantiateNode(int type) throws Message{
 		switch (type) {		
-		case Node.NODE_TYPE_FILE:
+		case Node.TYPE_FILE:
 			return new FileNode();
 			
-		case Node.NODE_TYPE_REPOSITORY:
+		case Node.TYPE_REPOSITORY:
 			return new RepositoryNode();
 			
-		case Node.NODE_TYPE_SERVER:			
+		case Node.TYPE_SERVER:			
 			return new ServerNode();
 			
-		case Node.NODE_TYPE_VIRTUAL:
+		case Node.TYPE_VIRTUAL:
 			return new VirtualNode();
 		default:
 			throw new Message();	

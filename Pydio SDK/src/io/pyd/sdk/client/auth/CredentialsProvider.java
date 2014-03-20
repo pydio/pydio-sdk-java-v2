@@ -3,19 +3,14 @@
  */
 package io.pyd.sdk.client.auth;
 
+import java.security.cert.X509Certificate;
+import java.util.Map.Entry;
+
 public interface CredentialsProvider {
 	
-	//public void requestForCertificate(onCertificateProvidedListener listener);
-
-	public void requestCredentials(onCredentialsProvidedListener listener);
+	public Entry<String, String> requestForLoginPassword();
+	public X509Certificate requestForCertificate();
+	public String requestForSharedSecret();
 	
-	
-	interface onCredentialsProvidedListener{
-		public void onCredentialProvided(String user, String password);
-	}
-	
-	//interface onCertificateProvidedListener{
-		//public vois onCertificateProvided(Certificate cert);
-	//}
 }
 

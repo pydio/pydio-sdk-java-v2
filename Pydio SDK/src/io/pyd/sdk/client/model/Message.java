@@ -6,11 +6,17 @@ public class Message extends Exception{
 	 * 
 	 */
 	
+	public final static int TYPE_LOCAL = 1;
+	public final static int TYPE_REMOTE = 2;
+	
+	
+	
+	
 	private static final long serialVersionUID = 1L;
-
+	
 	
 	private String message;
-	private int code = -1;
+	private int code = -1;	
 	private int type = -1;
 	
 	

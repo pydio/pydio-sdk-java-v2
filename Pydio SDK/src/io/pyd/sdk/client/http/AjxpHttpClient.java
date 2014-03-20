@@ -57,7 +57,7 @@ public class AjxpHttpClient extends DefaultHttpClient {
 		super();
 		this.trustSelfSignedSSL = trustSSL;
 		localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
-		this.getParams().setParameter(ClientPNames.ALLOW_CIRCULAR_REDIRECTS,true);        
+		this.getParams().setParameter(ClientPNames.ALLOW_CIRCULAR_REDIRECTS,true);      
 	}
 	
 	public void refreshCredentials(String user, String pass){
@@ -67,6 +67,13 @@ public class AjxpHttpClient extends DefaultHttpClient {
         );		
 	}
 	
+	
+	public void refreshCredentials(UsernamePasswordCredentials credentials){
+		this.getCredentialsProvider().setCredentials(
+                new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM),
+                credentials
+        );
+	}
 	@Override
 	protected ClientConnectionManager createClientConnectionManager() {
 		

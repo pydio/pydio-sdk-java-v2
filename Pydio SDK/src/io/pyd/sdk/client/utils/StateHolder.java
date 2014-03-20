@@ -1,41 +1,45 @@
 package io.pyd.sdk.client.utils;
 
-import io.pyd.sdk.client.model.Node;
+import io.pyd.sdk.client.model.FileNode;
+import io.pyd.sdk.client.model.RepositoryNode;
+import io.pyd.sdk.client.model.ServerNode;
 
 public class StateHolder {
 	
+	ServerNode currentServer;
+	RepositoryNode currentRepository;
+	FileNode currentDirectory;
 	
-	
-	public Node getRepository(){
-		return null;
+	public RepositoryNode getRepository(){
+		return currentRepository;
 	}
 	
-	public Node getDirectory(){
-		return null;
+	public FileNode getDirectory(){
+		return currentDirectory;
 	}
 	
-	public Node getServer(){
-		return null;
+	public ServerNode getServer(){
+		return currentServer;
 	}
 	
-	public void setServer(Node server){
-		
+	public void setServer(ServerNode server){
+		currentServer = server;
 	}
 	
-	public void setDirectory(Node directory){
-		
+	public void setDirectory(FileNode directory){
+		currentDirectory = directory;
 	}
 	
-	public void setRepository(Node repository){
-		
+	public void setRepository(RepositoryNode repository){
+		currentRepository = repository;
 	}
 	
 	boolean isServerSet(){
-		return false;
+		return currentServer != null;
 	}
 	
 	boolean isRepositorySet(){
-		return false;
+		return currentRepository != null;
 	}
 	
 }
