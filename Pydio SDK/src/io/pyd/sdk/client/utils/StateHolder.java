@@ -9,6 +9,14 @@ public class StateHolder {
 	ServerNode currentServer;
 	RepositoryNode currentRepository;
 	FileNode currentDirectory;
+	private static StateHolder holder = null;
+	
+	public static StateHolder getInstance(){
+		if(holder == null){
+			holder = new StateHolder();
+		}
+		return holder;
+	}
 	
 	public RepositoryNode getRepository(){
 		return currentRepository;
