@@ -1,4 +1,8 @@
 package io.pyd.sdk.client.transport;
+import io.pyd.sdk.client.http.CountingMultipartRequestEntity;
+import io.pyd.sdk.client.model.Message;
+
+import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -16,6 +20,7 @@ public interface Transport{
 	public String getStringContent(String action, Map<String, String> params);
 	public Document getXmlContent(String action, Map<String, String> params);
 	public JSONObject getJsonContent(String action, Map<String, String> params);
-	public InputStream getResponseStream(String action, Map<String, String> params);
+	public Document putContent(String action, Map<String, String> params, File file, String filename, CountingMultipartRequestEntity.ProgressListener handler);
+	public Document putContent(String action, Map<String, String> params, byte[] data, String filename, CountingMultipartRequestEntity.ProgressListener handler);
 	
 }
