@@ -41,6 +41,16 @@ public class VirtualNode implements Node{
 		
 	}
 
+	public int type() {
+		// TODO Auto-generated method stub
+		return Node.TYPE_VIRTUAL;
+	}
+
+	public String path() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	
 
 }
