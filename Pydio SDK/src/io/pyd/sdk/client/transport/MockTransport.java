@@ -1,5 +1,9 @@
 package io.pyd.sdk.client.transport;
 
+import io.pyd.sdk.client.http.CountingMultipartRequestEntity.ProgressListener;
+import io.pyd.sdk.client.model.Message;
+
+import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -34,5 +38,19 @@ public class MockTransport implements Transport{
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	public Document putContent(String action, Map<String, String> params,
+			File file, String filename, ProgressListener handler) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Document putContent(String action, Map<String, String> params,
+			byte[] data, String filename, ProgressListener handler) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
 
 }
