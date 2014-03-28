@@ -1,11 +1,8 @@
 package io.pyd.sdk.client.http;
 
-
-
-
-
 import io.pyd.sdk.client.model.Message;
 import io.pyd.sdk.client.utils.ServerResolver;
+import io.pyd.sdk.client.utils.StateHolder;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,8 +29,7 @@ import org.apache.http.util.EncodingUtils;
 
 
 @SuppressWarnings("deprecation")
-public class Requester {
-	
+public class Requester {	
 		
 	private AjxpFileBody fileBody;
 	private File file;
@@ -43,23 +39,18 @@ public class Requester {
 	private CountingMultipartRequestEntity.ProgressListener progressListener;	
 	String authStep;
 	
-	UsernamePasswordCredentials credentials = null;
-	
-	
+	UsernamePasswordCredentials credentials = null;		
 	//MAX_UPLOAD to be checked
 	
-	public HttpResponse issueRequest(URI uri, Map<String, String> postParameters) throws Message{
+	public HttpResponse issueRequest(URI uri, Map<String, String> postParameters){	
 		
-		
-		
-		httpClient = new AjxpHttpClient(trustSSL);
-		
+		httpClient = new AjxpHttpClient(trustSSL);		
 		if(credentials != null){
 			httpClient.refreshCredentials(credentials);
 		}
 		
      	if(uri.toString().contains(ServerResolver.SERVER_URL_RESOLUTION)){
-     		throw Message.create(1, 1, "resolution needed");
+     		//throw Message.create(1, 1, "resolution needed");
      	}
 		
 		try{
@@ -73,7 +64,7 @@ public class Requester {
 					if(fileBody == null){
 						if(fileName == null) fileName = file.getName();
 						fileBody = new AjxpFileBody(file, fileName);
-						long maxUpload = /*getMaxUploadSize();*/ 60*1024*1024;
+						long maxUpload = StateHolder.getInstance().getServer().getUploadLimit();
 						if(maxUpload > 0 && maxUpload < file.length()){
 							fileBody.chunkIntoPieces((int)maxUpload);
 							if(progressListener != null){
@@ -97,12 +88,12 @@ public class Requester {
 						reqEntity.addPart("appendto_urlencoded_part", new StringBody(java.net.URLEncoder.encode(fileBody.getRootFilename(), "UTF-8")));
 					}
 					
-					if(postParameters != null){						
+					if(postParameters != null){					
 						Iterator<Map.Entry<String, String>> it = postParameters.entrySet().iterator();
 						while(it.hasNext()){
 							Map.Entry<String, String> entry = it.next();
 							reqEntity.addPart(entry.getKey(), new StringBody(entry.getValue()));
-						}				
+						}
 					}
 					
 					if(progressListener != null){
@@ -111,6 +102,7 @@ public class Requester {
 					}else{
 						((HttpPost)request).setEntity(reqEntity);
 					}
+					
 				}else{
 					List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(postParameters.size());
 					Iterator<Map.Entry<String, String>> it = postParameters.entrySet().iterator();
@@ -127,8 +119,7 @@ public class Requester {
 			
 			request.setURI(uri);
 			
-			HttpResponse response = httpClient.executeInContext(request);			
-		
+			HttpResponse response = httpClient.executeInContext(request);		
 			
 			if(fileBody != null && fileBody.isChunked() && !fileBody.allChunksUploaded()){
 				this.discardResponse(response);
@@ -138,11 +129,12 @@ public class Requester {
 			return response;
 			
 		}catch(IOException e){
-			Message m = new Message();
-			m.setMessage(e.getMessage());
-			throw m;
 		}
+		return null;
 	}
+	
+	
+	
 	
 	private void discardResponse(HttpResponse response) {
 		try {
@@ -162,9 +154,7 @@ public class Requester {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
+			
 	public void setFile(File file){
 		this.file = file;
 	}
@@ -176,9 +166,18 @@ public class Requester {
 	public void setUploadProgressListener(CountingMultipartRequestEntity.ProgressListener uploadList){
 		this.progressListener = uploadList;
 	}
-	
-	
+		
 	public void setCredentials(String user, String password){
 		this.credentials = new UsernamePasswordCredentials(user, password);
 	}
+	
+	
+	public void setProgressListener(CountingMultipartRequestEntity.ProgressListener listener){
+		this.progressListener = listener;
+	}
+	
+	public void setFilename(String fname){
+		fileName = fname;
+	}
+	
 }
