@@ -22,34 +22,27 @@ public class HttpResponseParser {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();		
 		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
-			HttpEntity entity = response.getEntity();
-			
+			HttpEntity entity = response.getEntity();			
 			if(entity instanceof XMLDocEntity){
 				return ((XMLDocEntity) entity).getDoc();
 			}
-			InputStream input = entity.getContent();
-			return db.parse(input);
+			return db.parse(entity.getContent());
 			
 		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SAXException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;		
+		return null;	
 	}
 	
 	
 	public static String getString(HttpResponse response){
 		if(response == null) return null;		
-		
 		HttpEntity entity = response.getEntity();			
 		InputStream in;
 		try {
@@ -69,7 +62,7 @@ public class HttpResponseParser {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
-		}		
+		}
 	}
 
 }
