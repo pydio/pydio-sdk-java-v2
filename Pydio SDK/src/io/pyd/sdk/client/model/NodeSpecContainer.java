@@ -10,7 +10,7 @@ public class NodeSpecContainer {
 	
 	private static Map<String, NodeSpec> specs = new HashMap<String, NodeSpec>();
 	
-	public static NodeSpec getSpecInstance(String name) throws Message{
+	public static NodeSpec getSpecInstance(String name){
 	
 		NodeSpec spec = null;	
 		if(name.equals(NODE_SPEC_DEFAULT)){
@@ -18,14 +18,15 @@ public class NodeSpecContainer {
 		}else if(name.equals(NODE_SPEC_SYNC)){
 			// return the instance of synch
 		}else{
-			if(!specs.containsKey(name)) throw new Message();
+			if(!specs.containsKey(name)) return null;
 			return specs.get(name);
 		}
 		return spec;
 	}
 	
-	public static void loadSpec(String name, NodeSpec spec) throws Message{
-		if(specs.containsKey(name)) throw new Message();
+	public static boolean loadSpec(String name, NodeSpec spec){
+		if(specs.containsKey(name)) return false;
 		specs.put(name, spec);
+		return true;
 	}
 }
