@@ -1,10 +1,10 @@
 package io.pyd.sdk.client.transport;
 
+import io.pyd.sdk.client.http.CountingMultipartRequestEntity.ProgressListener;
 import io.pyd.sdk.client.http.HttpResponseParser;
 import io.pyd.sdk.client.http.Requester;
-import io.pyd.sdk.client.model.Message;
-import io.pyd.sdk.client.transport.Transport;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -39,7 +39,7 @@ public class RestTransport implements Transport{
 	}
 	
 	
-	private HttpResponse request(URI uri, Map<String, String> params) throws Message{
+	private HttpResponse request(URI uri, Map<String, String> params){
 		
 		Requester req = new Requester();
 		HttpResponse response = null;
@@ -53,66 +53,62 @@ public class RestTransport implements Transport{
 
 
 	public HttpResponse getResponse(String action, Map<String, String> params) {
-		try {
 			return request(getActionURI(action), params);
-		} catch (Message e) {
-			e.printStackTrace();
-		}
-		return null;
 	}
 
 
 
 	
 	public String getStringContent(String action, Map<String, String> params) {
-		try {			
 			HttpResponse response = request(getActionURI(action), params);
-			return HttpResponseParser.getString(response);			
-		} catch (Message e) {
-			e.printStackTrace();
-		}
-		
-		return null;
+			return HttpResponseParser.getString(response);
 	}
 
 	
 	public Document getXmlContent(String action, Map<String, String> params) {
-		try {
 			HttpResponse response = request(getActionURI(action), params);
 			return HttpResponseParser.getXML(response);
-		} catch (Message e) {
-			e.printStackTrace();
-		}
-		return null;
 	}
 
 
 	public JSONObject getJsonContent(String action, Map<String, String> params) {
-		try {
+		
 			HttpResponse response = request(getActionURI(action), params);
-			return new JSONObject(HttpResponseParser.getString(response));
-		} catch (Message e) {
-			e.printStackTrace();
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		return null;
+			try {
+				return new JSONObject(HttpResponseParser.getString(response));
+			} catch (JSONException e) {
+			}
+			return null;
 	}
 
 	
 	public InputStream getResponseStream(String action,	Map<String, String> params) {
-		try {
 			HttpResponse response = request(getActionURI(action), params);
-			return response.getEntity().getContent();
-		} catch (Message e) {
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+			try {
+				return response.getEntity().getContent();
+			} catch (IllegalStateException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+	}
+
+
+	public Document putContent(String action, Map<String, String> params, File file, String filename, ProgressListener handler) {
 		return null;
 	}
+
+
+	public Document putContent(String action, Map<String, String> params, byte[] data, String filename, ProgressListener handler) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
 	
 	
 	
