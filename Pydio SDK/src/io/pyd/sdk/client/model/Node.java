@@ -17,7 +17,10 @@ public interface Node{
 	public NodeSpec getNodeSpec();
 	public void setNodeSpec(NodeSpec spec);
 	
+	public int type();
+	public String path();
 	public void initFromXml(org.w3c.dom.Node xml);
 	public void initFromJson(JSONObject json);
 	public void initFromProperties(Properties prop);
+	
 }
