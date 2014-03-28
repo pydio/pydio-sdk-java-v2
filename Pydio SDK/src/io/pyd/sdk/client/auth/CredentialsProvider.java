@@ -4,13 +4,12 @@
 package io.pyd.sdk.client.auth;
 
 import java.security.cert.X509Certificate;
-import java.util.Map.Entry;
+
+import org.apache.http.auth.UsernamePasswordCredentials;
 
 public interface CredentialsProvider {
 	
-	public Entry<String, String> requestForLoginPassword();
-	public X509Certificate requestForCertificate();
-	public String requestForSharedSecret();
-	
+	public UsernamePasswordCredentials requestForLoginPassword();
+	public X509Certificate requestForCertificate();	
 }
 
