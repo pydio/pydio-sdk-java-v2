@@ -31,7 +31,7 @@ public class Test {
         //Configuring a pydio server by creating a serverNode.
         ServerNode server = (ServerNode) NodeFactory.createNode(Node.TYPE_SERVER);
         server.setProtocol("http");
-        server.setHost("54.154.218.27");
+        server.setHost("testhost");
         server.setPath("/");
         server.setLegacy(false);
 
@@ -39,7 +39,7 @@ public class Test {
         PydioClient client = PydioClient.configure(server, Transport.MODE_SESSION, new CredentialsProvider() {
             @Override
             public UsernamePasswordCredentials requestForLoginPassword() {
-                return new UsernamePasswordCredentials("jabar", "rabaj@2015");
+                return new UsernamePasswordCredentials("testlogin", "testpassword");
             }
             @Override
             public X509Certificate requestForCertificate() {
