@@ -37,6 +37,7 @@ import pydio.sdk.java.model.NodeHandler;
 import pydio.sdk.java.model.PydioMessage;
 import pydio.sdk.java.model.ServerNode;
 import pydio.sdk.java.model.WorkspaceNode;
+import pydio.sdk.java.transport.SessionTransport;
 import pydio.sdk.java.transport.Transport;
 import pydio.sdk.java.transport.TransportFactory;
 import pydio.sdk.java.utils.FileNodeSaxHandler;
@@ -71,6 +72,7 @@ public class PydioClient {
         client.transport.setCredentialsProvider(cp);
         return client;
     }
+
     public PydioClient(ServerNode server, int mode){
         transport = TransportFactory.getInstance(mode, server);
         this.server = server;
@@ -87,8 +89,6 @@ public class PydioClient {
         transport = TransportFactory.getInstance(transportMode);
         transport.setServer(server);
     }
-
-
 
 
 
@@ -112,7 +112,6 @@ public class PydioClient {
         }, 0, 1000);
         workspace = wn[0];
         return wn[0] != null;
-
     }
 
     public void listChildren(Node node, final NodeHandler handler, int offset, int max) {
@@ -380,8 +379,18 @@ public class PydioClient {
 			server.addConfig(Pydio.REMOTE_CONFIG_UPLOAD_SIZE, result.getFirstChild().getNodeValue().replace("\"", ""));
 		} catch (XPathExpressionException e1) {
 			//publish error message
-		}		
-	}
+		}
+    }
+
+    public InputStream getCaptcha(){
+        return transport.getCaptcha();
+    }
+
+    public void setCaptchaCode(String code){
+         if(transport.type() == Transport.MODE_SESSION){
+             ((SessionTransport)transport).setCaptchaCode(code);
+         }
+    }
 
     /*
         public void changes(Node node, ChangeProcessor processor){}
@@ -392,7 +401,6 @@ public class PydioClient {
         Message prepareChunkDownload( node, chunkCount)
         Message downloadChunk(fileID,chunkIndex)
 	*/
-
 
     //*********************************************
     //            OTHERS
@@ -421,7 +429,20 @@ public class PydioClient {
         this.workspace = w;
     }
 
+    public void setServer(ServerNode server){
+        this.server = server;
+    }
+
     public void setLocalConfig(String key, String value){
         localConfigs.setProperty(key, value);
     }
+
+    public int authenticationStatus(){
+        return transport.authenticationStatus();
+    }
+
+    public void setCredentialsProvider(CredentialsProvider cp){
+        transport.setCredentialsProvider(cp);
+    }
+
 }
