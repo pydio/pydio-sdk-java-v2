@@ -11,8 +11,11 @@ import java.security.cert.X509Certificate;
  * @author pydio
  *
  */
+
 public interface CredentialsProvider {
+    public void setAuthenticationChallengeResponse(String key, String response);
+    public String getAuthenticationChallengeResponse(String key);
 	public UsernamePasswordCredentials requestForLoginPassword();
-	public X509Certificate requestForCertificate();	
+	public X509Certificate requestForCertificate();
 }
 
