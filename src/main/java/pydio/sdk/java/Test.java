@@ -26,7 +26,7 @@ public class Test {
         //Configuring a pydio server by creating a serverNode.
         ServerNode server = (ServerNode) NodeFactory.createNode(Node.TYPE_SERVER);
         server.setProtocol("http");
-        server.setHost("54.154.218.27");
+        server.setHost("testhost");
         server.setPath("/");
         server.setLegacy(false);
 
