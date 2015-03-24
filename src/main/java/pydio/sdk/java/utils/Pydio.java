@@ -10,6 +10,7 @@ public class Pydio {
 	
 	public final static String PARAM_GET_ACTION					= "get_action";
 	public final static String PARAM_ACTION					    = "action";
+	public final static String PARAM_CAPTCHA_CODE				= "captcha_code";
 	public final static String PARAM_NODE 						= "node";
 	public final static String PARAM_NODES 						= "nodes";
 	public final static String PARAM_DIRNAME 					= "dirname";
@@ -44,12 +45,13 @@ public class Pydio {
 	public final static String PARAM_XHR_UPLOADER				= "xhr_uploader";
     public final static String PARAM_XPATH                      = "xPath";
     public static final String PARAM_WORKSPACE                  = "tmp_repository_id";
-
-	
+    public static final String PARAM_SECURE_TOKEN               = "secure_token";
+    public static final String PARAM_REMEMBER_ME                = "remember_me";
 
 	public final static String ACTION_LIST 						= "ls";
 	public final static String ACTION_UPLOAD 					= "upload";
 	public final static String ACTION_DOWNLOAD 					= "download";
+	public final static String ACTION_CAPTACHA 					= "get_captcha";
 	public final static String ACTION_COMPRESS 					= "compress";
 	public final static String ACTION_LSYNC 					= "lsync";
 	public final static String ACTION_APPLY_CHECK_HOOK 			= "apply_check_hook";
@@ -68,17 +70,11 @@ public class Pydio {
 	public final static String ACTION_PURGE 					= "purge";
     public final static String ACTION_GET_REGISTRY              = "get_xml_registry";
 
-
-
     public final static String XPATH_VALUE_USER_REPO			= "user/repositories";
     public final static String XPATH_VALUE_PLUGINS				= "plugins";
-
-
-
 	
 	public final static String AUTH_GET_TOKEN					= "get_boot_conf";
-	public final static String AUTH_GET_SEED					= "get_seed";	
-	
+	public final static String AUTH_GET_SEED					= "get_seed";
 	
 	public final static String XML_TREE 						= "tree";
 	public final static String XML_MESSAGE 						= "message";
@@ -132,8 +128,17 @@ public class Pydio {
 
 	public final static String REMOTE_CONFIG_UPLOAD_SIZE        = "//property[@name='UPLOAD_MAX_SIZE']";
 	
-	
-	public final static String LOCAL_CONFIG_BUFFER_SIZE = "buffer_size";
+	public final static String LOCAL_CONFIG_BUFFER_SIZE         = "buffer_size";
 	public final static int LCONFIG_BUFFER_SIZE_DVALUE  		= 16384;
+
+    public final static int SESSION_STATE_NONE                  = 0;
+    public final static int SESSION_STATE_AUTH_REQUIRED         = 1;
+    public final static int SESSION_STATE_AUTH_REQUIRED_WITH_CAPTCHA = 2;
+    public final static int SESSION_STATE_OK                    = 3;
+
+
+    public final static String AUTH_CHALLENGE_TYPE_CAPTCHA      = "CHALLENGE_CAPTCHA";
+
+    public static String[] no_auth_required_actions = {Pydio.ACTION_CAPTACHA};
 
 }
