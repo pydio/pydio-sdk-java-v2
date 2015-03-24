@@ -2,6 +2,7 @@
 package pydio.sdk.java;
 
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EncodingUtils;
@@ -37,7 +38,6 @@ import pydio.sdk.java.model.NodeHandler;
 import pydio.sdk.java.model.PydioMessage;
 import pydio.sdk.java.model.ServerNode;
 import pydio.sdk.java.model.WorkspaceNode;
-import pydio.sdk.java.transport.SessionTransport;
 import pydio.sdk.java.transport.Transport;
 import pydio.sdk.java.transport.TransportFactory;
 import pydio.sdk.java.utils.FileNodeSaxHandler;
@@ -382,14 +382,29 @@ public class PydioClient {
 		}
     }
 
-    public InputStream getCaptcha(){
-        return transport.getCaptcha();
-    }
-
-    public void setCaptchaCode(String code){
-         if(transport.type() == Transport.MODE_SESSION){
-             ((SessionTransport)transport).setCaptchaCode(code);
-         }
+    public InputStream getAuthenticationChallenge(String type){
+        //return transport.getAuthenticationChallenge();
+        if(Pydio.AUTH_CHALLENGE_TYPE_CAPTCHA.equals(type)) {
+            boolean image = false;
+            HttpResponse resp = transport.getResponse(Pydio.ACTION_CAPTACHA, null);
+            Header[] heads = resp.getHeaders("Content-type");
+            for (int i = 0; i < heads.length; i++) {
+                if (heads[i].getValue().contains("image/png")) {
+                    image = true;
+                    break;
+                }
+            }
+            if (!image) return null;
+            HttpEntity entity = resp.getEntity();
+            try {
+                return entity.getContent();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }else{
+            return null;
+        }
     }
 
     /*
