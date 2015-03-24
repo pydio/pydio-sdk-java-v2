@@ -1,15 +1,10 @@
 package pydio.sdk.java;
 
 
-import org.apache.http.auth.UsernamePasswordCredentials;
-
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 
-import pydio.sdk.java.auth.CredentialsProvider;
+import pydio.sdk.java.auth.CommandlineCredentialsProvider;
 import pydio.sdk.java.model.FileNode;
 import pydio.sdk.java.model.Node;
 import pydio.sdk.java.model.NodeFactory;
@@ -36,16 +31,7 @@ public class Test {
         server.setLegacy(false);
 
         //Instantiation of a Pydio Client for peforming operations
-        PydioClient client = PydioClient.configure(server, Transport.MODE_SESSION, new CredentialsProvider() {
-            @Override
-            public UsernamePasswordCredentials requestForLoginPassword() {
-                return new UsernamePasswordCredentials("jabar", "rabaj@2015");
-            }
-            @Override
-            public X509Certificate requestForCertificate() {
-                return null;
-            }
-        });
+        PydioClient client = PydioClient.configure(server, Transport.MODE_SESSION, new CommandlineCredentialsProvider());
         //Load server remote configs useful for uploads
         client.getRemoteConfigs();
         //selecting a workspace by id
@@ -64,7 +50,7 @@ public class Test {
                 }
             }, 0, 1000);
             //downloading the hole workspace into a zip file
-            try {
+            /*try {
                 client.read(nodes.toArray(new Node[nodes.size()]), new FileOutputStream("C:\\Users\\pydio\\Desktop\\download.zip"), new ProgressListener() {
                     @Override
                     public void onProgress(long progress) {
@@ -73,7 +59,7 @@ public class Test {
                 });
             } catch (IOException e) {
                 e.printStackTrace();
-            }
+            }*/
             //Uploading a file to a server
             client.write(ws, new File("C:\\Users\\pydio\\Downloads\\debian-7.6.0-i386-netinst.iso"), new ProgressListener() {
                 @Override

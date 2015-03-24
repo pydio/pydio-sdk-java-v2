@@ -50,7 +50,6 @@ public class Requester {
 	//MA_UPLOAD to be checked
 	public Requester(ServerNode server){
         this.server = server;
-
     }
 	/**
 	 * This method perform an Http POST request. If postparameters and file are null then a Http GET request is perform.
@@ -64,10 +63,6 @@ public class Requester {
 		if(credentials != null){
 			httpClient.refreshCredentials(credentials);
 		}
-
-     	/*if(uri.toString().contains(ServerResolver.SERVER_URL_RESOLUTION)){
-     		//throw Message.create(1, 1, "resolution needed");     		
-     	}*/
 
 		try{
 			HttpRequestBase request;	
@@ -213,5 +208,4 @@ public class Requester {
 	public void setFilename(String fname){
 		fileName = fname;
 	}
-
 }
