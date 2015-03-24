@@ -26,17 +26,15 @@ import pydio.sdk.java.utils.ProgressListener;
  */
 public class RestTransport implements Transport{
 	
-	public String server_url = "http://pydio/test/";
+	public String server_url = "";
 	public String auth_step = "";
 	public String repositoryAlias = "";	
 	String user = "root";
-	String password ="pydiotest";	
+	String password ="pydiotest";
 	boolean loginStateChanged = false;
 	boolean skipAuth = false;
-	
-	
+
 	//api/{repositoryAlias}/{actionName}/{parameters}
-	
 	private URI getActionURI(final String action){
 		String url = "api/"+repositoryAlias+"/"+action+"/";
 		URI uri = null;
@@ -56,8 +54,12 @@ public class RestTransport implements Transport{
 		response = req.issueRequest(uri, params);
 		return response;
 	}
+    @Override
+    public int authenticationStatus() {
+        return 0;
+    }
 
-	public HttpResponse getResponse(String action, Map<String, String> params) {
+    public HttpResponse getResponse(String action, Map<String, String> params) {
 			return request(getActionURI(action), params);
 	}
 	
@@ -106,7 +108,6 @@ public class RestTransport implements Transport{
 		// TODO Auto-generated method stub
 		return null;
 	}
-
     @Override
     public void setServer(ServerNode server) {
 
@@ -119,5 +120,4 @@ public class RestTransport implements Transport{
     public void setCredentialsProvider(CredentialsProvider cp) {
 
     }
-
 }

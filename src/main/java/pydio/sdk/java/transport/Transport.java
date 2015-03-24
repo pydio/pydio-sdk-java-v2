@@ -21,6 +21,8 @@ public interface Transport {
     public static int MODE_SESSION = 1;
     public static int MODE_RESTFUL = 2;
 
+    public int authenticationStatus();
+
     public HttpResponse getResponse(String action, Map<String, String> params);
 
     public String getStringContent(String action, Map<String, String> params);
