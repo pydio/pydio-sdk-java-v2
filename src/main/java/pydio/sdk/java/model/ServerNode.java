@@ -80,7 +80,12 @@ public class ServerNode implements Node{
 	}
 	
 	public String url(){
-		return protocol+"://"+host+path;
+        String url = protocol+"://"+host;
+        if(path.length() == 0){
+            return url + "/";
+        }
+
+		return url+path;
 	}
 	
 	public String path(){
