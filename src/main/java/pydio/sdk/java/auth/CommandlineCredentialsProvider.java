@@ -19,10 +19,12 @@ public class CommandlineCredentialsProvider implements CredentialsProvider {
         p.put(key, response);
         //challengeResponse = response;
     }
+
     @Override
     public String getAuthenticationChallengeResponse(String key) {
         return p.get(key);
     }
+
     public UsernamePasswordCredentials requestForLoginPassword() {
 		System.out.println("\n\nXXXXXXXXXXXXXXXXXXXXXX- Authentication -XXXXXXXXXXXXXXXXXXXXXXXXXXX");
 		String login , password;
@@ -33,6 +35,7 @@ public class CommandlineCredentialsProvider implements CredentialsProvider {
 		System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 		return new UsernamePasswordCredentials(login, password);
 	}
+
 	public X509Certificate requestForCertificate() {
 		// TODO Auto-generated method stub
 		return null;
