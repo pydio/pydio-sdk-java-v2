@@ -73,8 +73,8 @@ public class Pydio {
     public final static String XPATH_VALUE_USER_REPO			= "user/repositories";
     public final static String XPATH_VALUE_PLUGINS				= "plugins";
 	
-	public final static String AUTH_GET_TOKEN					= "get_boot_conf";
-	public final static String AUTH_GET_SEED					= "get_seed";
+	public final static String ACTION_GET_TOKEN                 = "get_boot_conf";
+	public final static String ACTION_GET_SEED                  = "get_seed";
 	
 	public final static String XML_TREE 						= "tree";
 	public final static String XML_MESSAGE 						= "message";
@@ -139,6 +139,19 @@ public class Pydio {
 
     public final static String AUTH_CHALLENGE_TYPE_CAPTCHA      = "CHALLENGE_CAPTCHA";
 
-    public static String[] no_auth_required_actions = {Pydio.ACTION_CAPTACHA};
+    public static String[] no_auth_required_actions = {Pydio.ACTION_CAPTACHA, Pydio.ACTION_GET_SEED};
 
+    public final static int
+            SERVER_CHECKED_OK                                   = 1,
+            ERROR_NOT_A_SERVER                                  = 2,
+            ERROR_WRONG_PATH                                    = 3,
+            ERROR_CON_FAILED                                    = 4,
+            ERROR_CON_FAILED_SSL                                = 5,
+            ERROR_IN_NAME_SYNTAX                                = 6,
+            ERROR_INTERNAL                                      = 7,
+            ERROR_SERVER_SLEEPING                               = 8,
+            ERROR_AUTHENTIFICATION                              = 9,
+            ERROR_BAD_METHOD                                    = 10,
+            ERROR_NOT_FOUND                                     = 11,
+            ERROR_USER_ALREADY_AUTH                             = 12;
 }
