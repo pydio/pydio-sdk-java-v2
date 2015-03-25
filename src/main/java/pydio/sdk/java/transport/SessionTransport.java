@@ -79,7 +79,7 @@ public class SessionTransport implements Transport{
 
     private String getSeed() {
         Requester req = new Requester(server);
-        HttpResponse resp = req.issueRequest(this.getActionURI(Pydio.AUTH_GET_SEED), null);
+        HttpResponse resp = req.issueRequest(this.getActionURI(Pydio.ACTION_GET_SEED), null);
         return HttpResponseParser.getString(resp);
     }
 
