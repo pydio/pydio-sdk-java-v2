@@ -6,6 +6,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EncodingUtils;
+import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -407,6 +408,31 @@ public class PydioClient {
         }
     }
 
+    public final int checkServer(){
+        Map<String, String> params = new HashMap<String , String>();
+        if(workspace != null) {
+            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        }
+        params.put(Pydio.PARAM_ACTION, Pydio.ACTION_GET_SEED);
+        HttpResponse response = transport.getResponse(Pydio.ACTION_MKDIR, null);
+        Header[] heads = response.getHeaders("Content-type");
+        for(int i=0;i<heads.length;i++){
+            if(!heads[i].getValue().contains("text/plain") && !heads[i].getValue().contains("application/json")) {
+                boolean containsHTML = false;
+                try {
+                    String content = EntityUtils.toString(response.getEntity());
+                    containsHTML = content.toLowerCase().contains("<html");
+                } catch (Exception e) {}
+
+                if(heads[i].getValue().contains("text/html") || containsHTML) {
+                    return Pydio.ERROR_WRONG_PATH;
+                }else {
+                    return Pydio.ERROR_NOT_A_SERVER;
+                }
+            }
+        }
+        return Pydio.SERVER_CHECKED_OK;
+    }
     /*
         public void changes(Node node, ChangeProcessor processor){}
         public void crossCopy(Node node, Workspace workspace, MessageHandler
