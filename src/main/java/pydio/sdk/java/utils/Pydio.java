@@ -68,14 +68,17 @@ public class Pydio {
 	public final static String ACTION_PREPARE_CHUNK_DL 			= "prepare_chunk_dl";
 	public final static String ACTION_DOWNLOAD_CHUNK 			= "download_chunk";
 	public final static String ACTION_PURGE 					= "purge";
-    public final static String ACTION_GET_REGISTRY              = "get_xml_registry";
+    public final static String ACTION_GET_TOKEN                 = "get_boot_conf";
+    public final static String ACTION_GET_SEED                  = "get_seed";
+    public final static String ACTION_LOGIN                     = "login";
+
 
     public final static String XPATH_VALUE_USER_REPO			= "user/repositories";
+
+    public final static String ACTION_GET_REGISTRY              = "get_xml_registry";
+
     public final static String XPATH_VALUE_PLUGINS				= "plugins";
-	
-	public final static String ACTION_GET_TOKEN                 = "get_boot_conf";
-	public final static String ACTION_GET_SEED                  = "get_seed";
-	
+
 	public final static String XML_TREE 						= "tree";
 	public final static String XML_MESSAGE 						= "message";
 	public final static String XML_NODES_DIFF 					= "nodes_diff";
@@ -109,12 +112,14 @@ public class Pydio {
 
 	public final static String MESSAGE_PROPERTY_TYPE 			= "type";
 	
-	public final static String REPO_PROPERTY_ID					= "id";
-	public final static String REPO_PROPERTY_ACCESS_TYPE		= "access_type";
-	public final static String REPO_PROPERTY_CROSS_COPY 		= "allowCrossRepositoryCopy";
-	public final static String REPO_PROPERTY_SLUG 				= "repositorySlug";
-	public final static String REPO_DESCRIPTION 				= "description";
-	public final static String REPO_LABEL 						= "label";	
+	public final static String WORKSPACE_PROPERTY_ID            = "id";
+	public final static String WORKSPACE_PROPERTY_ACCESS_TYPE   = "access_type";
+	public final static String WORKSPACE_PROPERTY_CROSS_COPY    = "allowCrossRepositoryCopy";
+    public final static String WORKSPACE_PROPERTY_META_SYNC  	= "meta_syncable_REPO_SYNCABLE";
+    public final static String WORKSPACE_PROPERTY_SLUG          = "repositorySlug";
+    public final static String WORKSPACE_DESCRIPTION            = "description";
+    public final static String WORKSPACE_LABEL                  = "label";
+
 	
 	public final static String NODE_DIFF_ADD 					= "add";
 	public final static String NODE_DIFF_UPDATE 				= "update";
@@ -131,27 +136,27 @@ public class Pydio {
 	public final static String LOCAL_CONFIG_BUFFER_SIZE         = "buffer_size";
 	public final static int LCONFIG_BUFFER_SIZE_DVALUE  		= 16384;
 
-    public final static int SESSION_STATE_NONE                  = 0;
-    public final static int SESSION_STATE_AUTH_REQUIRED         = 1;
-    public final static int SESSION_STATE_AUTH_REQUIRED_WITH_CAPTCHA = 2;
-    public final static int SESSION_STATE_OK                    = 3;
+
 
 
     public final static String AUTH_CHALLENGE_TYPE_CAPTCHA      = "CHALLENGE_CAPTCHA";
-
     public static String[] no_auth_required_actions = {Pydio.ACTION_CAPTACHA, Pydio.ACTION_GET_SEED};
 
     public final static int
-            SERVER_CHECKED_OK                                   = 1,
+            NO_ERROR                                            = 1,
             ERROR_NOT_A_SERVER                                  = 2,
             ERROR_WRONG_PATH                                    = 3,
             ERROR_CON_FAILED                                    = 4,
             ERROR_CON_FAILED_SSL                                = 5,
-            ERROR_IN_NAME_SYNTAX                                = 6,
-            ERROR_INTERNAL                                      = 7,
-            ERROR_SERVER_SLEEPING                               = 8,
-            ERROR_AUTHENTIFICATION                              = 9,
-            ERROR_BAD_METHOD                                    = 10,
-            ERROR_NOT_FOUND                                     = 11,
-            ERROR_USER_ALREADY_AUTH                             = 12;
+            ERROR_CON_SSL_SELF_SIGNED_CERT                      = 6,
+            ERROR_IN_NAME_SYNTAX                                = 7,
+            ERROR_INTERNAL                                      = 8,
+            ERROR_SERVER_SLEEPING                               = 9,
+            ERROR_AUTHENTIFICATION                              = 10,
+            ERROR_AUTHENTIFICATION_WITH_CAPTCHA                 = 11,
+            ERROR_BAD_METHOD                                    = 12,
+            ERROR_NOT_FOUND                                     = 13,
+            ERROR_USER_ALREADY_AUTH                             = 14,
+            ERROR_OLD_AUTHENTICATION_TOKEN                      = 15,
+            ERROR_UNREACHABLE_HOST                              = 16;
 }
