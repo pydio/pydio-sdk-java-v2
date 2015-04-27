@@ -2,6 +2,7 @@ package pydio.sdk.java.model;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Properties;
 
@@ -40,6 +41,8 @@ public interface Node extends Serializable {
 	 * @param prop Property object containing all Node properties
 	 */
 	public void initFromProperties(Properties prop);
+
+    public void initFromFile(File file);
 
     public Properties getProperties();
 }
