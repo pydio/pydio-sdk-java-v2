@@ -26,16 +26,20 @@ import java.security.cert.X509Certificate;
 
 import javax.net.ssl.X509TrustManager;
 
+import pydio.sdk.java.auth.AuthenticationHelper;
+
 
 public class AjxpSSLTrustManager implements X509TrustManager {
 	
 		private String certKey = null;
         private static final X509Certificate[] _AcceptedIssuers = new X509Certificate[] {};
 
+
         AjxpSSLTrustManager(String certKey){
         	super();
         	this.certKey = certKey;
         }
+
         AjxpSSLTrustManager(){
         	super();
         }
@@ -44,27 +48,10 @@ public class AjxpSSLTrustManager implements X509TrustManager {
         }
 
         public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-        	if( this.certKey == null ){
-        		// This is the Accept All certificates case.
-        		return;
-        	}
-
-        	// Otherwise, we have a certKey defined. We should now examine the one we got from the server.
-        	// They match? All is good. They don't, throw an exception.
-        	String our_key = this.certKey.replaceAll("\\s+", "");
-        	try {
-            	//Assume self-signed root is okay?
-            	X509Certificate ss_cert = chain[0];
-				String thumbprint = AjxpSSLTrustManager.getThumbPrint(ss_cert);
-				if( our_key.equalsIgnoreCase(thumbprint) ){
-					return;
-				}
-				else {
-					throw new CertificateException("Certificate key [" + thumbprint + "] doesn't match expected value.");
-				}
-			} catch (NoSuchAlgorithmException e) {
-				throw new CertificateException("Unable to check self-signed cert, unknown algorithm. " + e.toString());
-			}
+            X509Certificate cert = chain[0];
+            if(!AuthenticationHelper.instance.isTrusted(cert)){
+                throw new CertificateException("Certificate not trusted");
+            }
         }
 
         public boolean isClientTrusted(X509Certificate[] chain) {
@@ -80,7 +67,7 @@ public class AjxpSSLTrustManager implements X509TrustManager {
         }
 
         // Thank you: http://stackoverflow.com/questions/1270703/how-to-retrieve-compute-an-x509-certificates-thumbprint-in-java
-        private static String getThumbPrint(X509Certificate cert) throws NoSuchAlgorithmException, CertificateEncodingException {
+        public static String getThumbPrint(X509Certificate cert) throws NoSuchAlgorithmException, CertificateEncodingException {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             byte[] der = cert.getEncoded();
             md.update(der);

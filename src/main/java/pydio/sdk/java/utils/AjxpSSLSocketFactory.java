@@ -35,31 +35,38 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 
+import pydio.sdk.java.auth.AuthenticationHelper;
+
 public class AjxpSSLSocketFactory implements SocketFactory, LayeredSocketFactory {
 	private String certKey = null;
     private SSLContext sslcontext = null;
-
+    private AuthenticationHelper cp;
 
     public AjxpSSLSocketFactory(String certKey){
     	this.certKey = certKey;
     }
+
+    public AjxpSSLSocketFactory(AuthenticationHelper cp){
+        this.cp = cp;
+    }
+
     public AjxpSSLSocketFactory() { }
 
-    private static SSLContext createEasySSLContext(String certKey) throws IOException {
-            try {
-                SSLContext context = SSLContext.getInstance("TLS");
-                context.init(null, new TrustManager[] { new AjxpSSLTrustManager(certKey) }, null);
-                return context;
-            } catch (Exception e) {
-                throw new IOException(e.getMessage());
-            }
+    private static SSLContext createEasySSLContext() throws IOException {
+        try {
+            SSLContext context = SSLContext.getInstance("TLS");
+            context.init(null, new TrustManager[] { new AjxpSSLTrustManager() }, null);
+            return context;
+        } catch (Exception e) {
+            throw new IOException(e.getMessage());
+        }
     }
 
     private SSLContext getSSLContext() throws IOException {
-            if (this.sslcontext == null) {
-                    this.sslcontext = createEasySSLContext(this.certKey);
-            }
-            return this.sslcontext;
+        if (this.sslcontext == null) {
+                this.sslcontext = createEasySSLContext();
+        }
+        return this.sslcontext;
     }
 
 	public Socket connectSocket(Socket sock, String host, int port,
