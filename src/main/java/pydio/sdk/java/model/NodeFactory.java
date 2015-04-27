@@ -2,6 +2,7 @@ package pydio.sdk.java.model;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.Properties;
 
 public class NodeFactory {
@@ -62,4 +63,8 @@ public class NodeFactory {
 				return null;	
 		}
 	}
+
+    public static Node createNode(int type, File file){
+        return null;
+    }
 }
