@@ -2,6 +2,7 @@ package pydio.sdk.java.model;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -23,6 +24,11 @@ public class ServerNode implements Node{
 
 	public void initFromProperties(Properties spec) {
 	}
+
+    @Override
+    public void initFromFile(File file) {
+
+    }
 
     @Override
     public Properties getProperties() {

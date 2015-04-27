@@ -2,6 +2,7 @@ package pydio.sdk.java.model;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.Properties;
 
 public class VirtualNode implements Node{
@@ -29,7 +30,10 @@ public class VirtualNode implements Node{
 		// TODO Auto-generated method stub
 		
 	}
+    @Override
+    public void initFromFile(File file) {
 
+    }
     @Override
     public Properties getProperties() {
         return null;

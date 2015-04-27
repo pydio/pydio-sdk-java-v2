@@ -56,7 +56,11 @@ public class FileNode implements Node{
 	}
 
 	public long lastModified(){
-		return Long.parseLong(properties.getProperty(Pydio.NODE_PROPERTY_AJXP_MODIFTIME));
+        try {
+            return Long.parseLong(properties.getProperty(Pydio.NODE_PROPERTY_AJXP_MODIFTIME));
+        }catch (Exception e){
+            return 0;
+        }
 	}
 
 	public long size(){
