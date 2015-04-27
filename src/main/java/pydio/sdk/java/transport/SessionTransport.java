@@ -5,7 +5,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.json.JSONObject;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -17,20 +16,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import pydio.sdk.java.auth.AuthenticationHelper;
 import pydio.sdk.java.auth.AuthenticationUtils;
-import pydio.sdk.java.auth.CredentialsProvider;
 import pydio.sdk.java.http.CustomEntity;
 import pydio.sdk.java.http.HttpResponseParser;
 import pydio.sdk.java.http.Requester;
-import pydio.sdk.java.http.XMLDocEntity;
 import pydio.sdk.java.model.ServerNode;
 import pydio.sdk.java.model.WorkspaceNode;
 import pydio.sdk.java.utils.ProgressListener;
@@ -50,15 +52,9 @@ public class SessionTransport implements Transport{
     public String secure_token = "";
     private ServerNode server;
     private WorkspaceNode workspace;
-    private CredentialsProvider cp;
 
-    private String user = "";
-    private String password ="";
-    private String captcha = "";
     private String action;
-
-    int auth_status = Pydio.SESSION_STATE_OK;
-
+    int request_status = Pydio.NO_ERROR;
     boolean loginStateChanged = false;
     boolean skipAuth = false;
 
@@ -77,31 +73,35 @@ public class SessionTransport implements Transport{
         return null;
     }
 
-    private String getSeed() {
+    private String getSeed() throws IOException {
         Requester req = new Requester(server);
-        HttpResponse resp = req.issueRequest(this.getActionURI(Pydio.ACTION_GET_SEED), null);
+        HttpResponse resp = null;
+        resp = req.issueRequest(this.getActionURI(Pydio.ACTION_GET_SEED), null);
         return HttpResponseParser.getString(resp);
     }
 
-    private void authenticate() {
+    private void authenticate() throws IOException {
         Requester req;
         String seed = getSeed();
-        if(seed.indexOf("\"seed\":-1") != -1){
+        if(seed.indexOf("\"seed\":-1") != -1 || seed.contains("require_auth")){
             seed = "-1";
         }
         if(seed != null) seed = seed.trim();
 
-        UsernamePasswordCredentials credentials = cp.requestForLoginPassword();
-        user = credentials.getUserName();
-        password = credentials.getPassword();
+        if(AuthenticationHelper.instance == null){
+            return;
+        }
+        UsernamePasswordCredentials credentials = AuthenticationHelper.instance.requestForLoginPassword();
+        String user = credentials.getUserName();
+        String password = credentials.getPassword();
 
         if(!seed.trim().equals("-1")){
             password = AuthenticationUtils.processPydioPassword(password, seed);
         }
 
         Map<String, String> loginPass = new HashMap<>();
-        if(this.auth_status == Pydio.SESSION_STATE_AUTH_REQUIRED_WITH_CAPTCHA) {
-            String captcha_code = cp.getAuthenticationChallengeResponse(Pydio.AUTH_CHALLENGE_TYPE_CAPTCHA);
+        if(this.request_status == Pydio.ERROR_AUTHENTIFICATION_WITH_CAPTCHA) {
+            String captcha_code = AuthenticationHelper.instance.getChallengeResponse();
             if(captcha_code == null) {
                 return;
             }
@@ -114,23 +114,60 @@ public class SessionTransport implements Transport{
         loginPass.put("Ajxp-Force-Login", "true");
 
         req = new Requester(server);
-        Document doc = HttpResponseParser.getXML(req.issueRequest(this.getActionURI("login"), loginPass));
+        Document doc = null;
+        doc = HttpResponseParser.getXML(req.issueRequest(this.getActionURI("login"), loginPass));
         if(doc.getElementsByTagName("logging_result").getLength() > 0){
             String result = doc.getElementsByTagName("logging_result").item(0).getAttributes().getNamedItem("value").getNodeValue();
             if(result.equals("1")){
-                auth_status = Pydio.SESSION_STATE_OK;
+                request_status = Pydio.NO_ERROR;
                 String newToken = doc.getElementsByTagName("logging_result").item(0).getAttributes().getNamedItem("secure_token").getNodeValue();
                 loginStateChanged = true;
                 secure_token = newToken;
             }else{
-                auth_status = Pydio.SESSION_STATE_AUTH_REQUIRED;
+                request_status = Pydio.ERROR_AUTHENTIFICATION;
                 if (result.equals("-4")){
-                    auth_status = Pydio.SESSION_STATE_AUTH_REQUIRED_WITH_CAPTCHA;
+                    request_status = Pydio.ERROR_AUTHENTIFICATION_WITH_CAPTCHA;
                 }
             }
         }
     }
-    @SuppressWarnings("deprecation")
+
+    private void refreshToken() throws IOException {
+        if(AuthenticationHelper.instance == null){
+            return;
+        }
+        Requester req = new Requester(server);
+        Map<String, String> loginPass = new HashMap<String, String>();
+        String pass = AuthenticationHelper.instance.requestForLoginPassword().getPassword();
+        String login = AuthenticationHelper.instance.requestForLoginPassword().getUserName();
+
+        String seed = getSeed();
+        if(seed != null) seed = seed.trim();
+        if(!seed.trim().equals("-1")){
+            pass = AuthenticationUtils.processPydioPassword(AuthenticationHelper.instance.requestForLoginPassword().getPassword(), seed);
+        }
+
+        loginPass.put("login_seed", seed);
+        loginPass.put("Ajxp-Force-Login", "true");
+        loginPass.put("userid", login);
+        loginPass.put("password", pass);
+
+        HttpResponse resp = null;
+        resp = req.issueRequest(this.getActionURI(Pydio.ACTION_GET_TOKEN), loginPass);
+
+        JSONObject jObject;
+        try {
+            jObject = new JSONObject(HttpResponseParser.getString(resp));
+            loginStateChanged = true;
+            secure_token = jObject.getString("SECURE_TOKEN");
+        }  catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }catch (Exception e){
+
+        }
+    }
+
     private boolean isAuthenticationRequested(HttpResponse response) {
 
         Header[] heads = response.getHeaders("Content-type");
@@ -144,134 +181,152 @@ public class SessionTransport implements Transport{
         //if(!xml) return false;
 
         HttpEntity ent = response.getEntity();
-        if (ent.getClass() == XMLDocEntity.class) {
-            Document doc;
-            try {
-                doc = ((XMLDocEntity) ent).getDoc();
-                ((XMLDocEntity) ent).toLogger();
-                if (doc.getElementsByTagName("ajxp_registry_part").getLength() > 0
-                        && doc.getDocumentElement().getAttribute("xPath").equals("user/repositories")
-                        && doc.getElementsByTagName("repositories").getLength() == 0) {
-                    auth_status = Pydio.SESSION_STATE_AUTH_REQUIRED;
-                    return true;
-                }
 
-                if (doc.getElementsByTagName("message").getLength() > 0) {
-                    if (doc.getElementsByTagName("message").item(0).getFirstChild().getNodeValue().trim().contains("You are not allowed to access this resource.")) {
-                        auth_status = Pydio.SESSION_STATE_AUTH_REQUIRED;
-                        return true;
-                    }
-                }
+        final boolean[] is_required = {false};
+        try {
+            CustomEntity entity = new CustomEntity(ent);
+            response.setEntity(entity);
+            CustomEntity.ContentStream stream = (CustomEntity.ContentStream) entity.getContent();
+            byte[] buffer = new byte[200];
+            int read = stream.safeRead(buffer);
+            String xmlString = new String(Arrays.copyOfRange(buffer, 0, read), "UTF-8");
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser parser = factory.newSAXParser();
 
-                if (doc.getElementsByTagName("require_auth").getLength() > 0) {
-                    auth_status = Pydio.SESSION_STATE_AUTH_REQUIRED;
-                    return true;
-                }
-            } catch (SAXException sax) {
-            } catch (DOMException e) {
-                // TODO Auto-generated catch block
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-            }
-            auth_status = Pydio.SESSION_STATE_OK;
-            return false;
-        } else {
+            DefaultHandler dh = new DefaultHandler() {
+                public boolean tag_repo = false, tag_auth = false, tag_msg = false, tag_auth_message = false;
+                public String content;
 
-            final boolean[] is_required = {false};
-            try {
-                CustomEntity entity = new CustomEntity(ent);
-                response.setEntity(entity);
-                CustomEntity.ContentStream stream = (CustomEntity.ContentStream) entity.getContent();
-                byte[] buffer = new byte[200];
-                int read = stream.safeRead(buffer);
-                String xmlString = new String(Arrays.copyOfRange(buffer, 0, read), "UTF-8");
-                SAXParserFactory factory = SAXParserFactory.newInstance();
-                SAXParser parser = factory.newSAXParser();
-
-                DefaultHandler dh = new DefaultHandler() {
-                    public boolean tag_repo = false, tag_auth = false, tag_msg = false, tag_auth_message = false;
-                    public String content;
-
-                    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-                        if(tag_repo){
-                            if(qName.equals("repositories")){
-                                is_required[0] = false;
-                                throw new SAXException("AUTH");
-                            }
-                            return;
-                        }else if (tag_auth){
-                            if(qName.equals("message")){
-                                //SessionTransport.this.auth_step = "LOG-USER";
-                                is_required[0] = true;
-                                throw new SAXException("AUTH");
-                            }
-                            return;
-                        }else if (tag_msg){
-                            return;
-                        }
-                        tag_repo = qName.equals("ajxp_registry_part") && attributes.getValue("xPath") != null && attributes.getValue("xPath").equals("user/repositories");
-                        tag_auth = qName.equals("require_auth");
-                        tag_msg = qName.equals("message");
-                    }
-
-                    public void endElement(String uri, String localName, String qName) throws SAXException {
-                        if(tag_repo && qName.equals("ajxp_registry_part")){
-                            is_required[0] = true;//SessionTransport.this.auth_step = "LOG-USER";
+                public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+                    if(tag_repo){
+                        if(qName.equals("repositories")){
+                            is_required[0] = false;
                             throw new SAXException("AUTH");
                         }
+                        return;
+                    }else if (tag_auth){
+                        if(qName.equals("message")){
+                            //SessionTransport.this.auth_step = "LOG-USER";
+                            is_required[0] = true;
+                            throw new SAXException("AUTH");
+                        }
+                        return;
+                    }else if (tag_msg){
+                        return;
                     }
+                    tag_repo = qName.equals("ajxp_registry_part") && attributes.getValue("xPath") != null && attributes.getValue("xPath").equals("user/repositories");
+                    tag_auth = qName.equals("require_auth");
+                    tag_msg = qName.equals("message");
+                }
 
-                    public void characters(char ch[], int start, int length) throws SAXException {
-                        String str = new String(ch, start, length).trim();
-                        if (tag_auth && tag_auth_message){
-                            if("You are not allowed to access this resource.".equals(str)){
-                                is_required[0] = true; //SessionTransport.this.auth_step = "RENEW-TOKEN";
-                                throw new SAXException("AUTH");
-                            }
+                public void endElement(String uri, String localName, String qName) throws SAXException {
+                    if(tag_repo && qName.equals("ajxp_registry_part") || (tag_auth && qName.equals("require_auth"))){
+                        is_required[0] = true;//SessionTransport.this.auth_step = "LOG-USER";
+                        throw new SAXException("AUTH");
+                    }
+                }
+
+                public void characters(char ch[], int start, int length) throws SAXException {
+                    String str = new String(ch);
+                    if (tag_msg){
+                        if("You are not allowed to access this resource.".equals(str)){
+                            is_required[0] = true; //SessionTransport.this.auth_step = "RENEW-TOKEN";
+                            throw new SAXException("TOKEN");
                         }
                     }
+                }
 
-                    public void endDocument() throws SAXException {
-                    }
-                };
-                parser.parse(new InputSource(new StringReader(xmlString)), dh);
+                public void endDocument() throws SAXException {
+                }
+            };
+            parser.parse(new InputSource(new StringReader(xmlString)), dh);
 
-            } catch (IOException e) {
-            } catch (ParserConfigurationException e) {
-                e.printStackTrace();
-            } catch (SAXException e) {
-            }catch (Exception e){
-                e.printStackTrace();
+        } catch (IOException e) {
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            String m = e.getMessage();
+            if("AUTH".equals(m)){
+                request_status = Pydio.ERROR_AUTHENTIFICATION;
+            }else if ("TOKEN".equals(m)){
+                request_status = Pydio.ERROR_OLD_AUTHENTICATION_TOKEN;
             }
-            if(!is_required[0]){
-                auth_status = Pydio.SESSION_STATE_OK;
-            }
-            return is_required[0];
+        }catch (Exception e){
+            e.printStackTrace();
         }
+        if(!is_required[0]){
+            request_status = Pydio.NO_ERROR;
+        }
+        return is_required[0];
+
     }
 
     private HttpResponse request(Requester req, URI uri, Map<String, String> params){
-        if((auth_status == Pydio.SESSION_STATE_AUTH_REQUIRED || auth_status == Pydio.SESSION_STATE_AUTH_REQUIRED_WITH_CAPTCHA) && !Arrays.asList(Pydio.no_auth_required_actions).contains(this.action)){
-            authenticate();
+        if(!Arrays.asList(Pydio.no_auth_required_actions).contains(this.action)){
+            if((request_status == Pydio.ERROR_AUTHENTIFICATION || request_status == Pydio.ERROR_AUTHENTIFICATION_WITH_CAPTCHA)){
+                try {
+                    authenticate();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }else if(request_status == Pydio.ERROR_OLD_AUTHENTICATION_TOKEN){
+                try {
+                    refreshToken();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-
         if(req == null){
             req = new Requester(server);
         }
         HttpResponse response = null;
         for(;;){
-            if((auth_status == Pydio.SESSION_STATE_AUTH_REQUIRED || auth_status == Pydio.SESSION_STATE_AUTH_REQUIRED_WITH_CAPTCHA) && !Arrays.asList(Pydio.no_auth_required_actions).contains(this.action)){
+            if((request_status == Pydio.ERROR_OLD_AUTHENTICATION_TOKEN || request_status == Pydio.ERROR_AUTHENTIFICATION || request_status == Pydio.ERROR_AUTHENTIFICATION_WITH_CAPTCHA) && !Arrays.asList(Pydio.no_auth_required_actions).contains(this.action)){
                 break;
             }
             if(!"".equals(secure_token)){
                 if(params == null) params = new HashMap<String, String>();
                 params.put("secure_token", secure_token);
             }
-            response = req.issueRequest(uri, params);
-            if(isAuthenticationRequested(response)){
-                authenticate();
+            try {
+                response = req.issueRequest(uri, params);
+            }catch (IOException e){
+                if(e instanceof SSLPeerUnverifiedException){
+                    server.setSelSigned(true);
+                    req.setTrustSSL(true);
+                    continue;
+                }else if ( e instanceof  SSLHandshakeException){
+                    request_status = Pydio.ERROR_CON_SSL_SELF_SIGNED_CERT;
+                    return null;
+                }else if (e instanceof SSLException) {
+                    request_status = Pydio.ERROR_CON_FAILED_SSL;
+                    return null;
+                }else{
+                    request_status = Pydio.ERROR_CON_FAILED;
+                    return null;
+                }
+            }catch (Exception e){
+                if(e instanceof IllegalArgumentException && e.getMessage().toLowerCase().contains("")){
+                    request_status = Pydio.ERROR_UNREACHABLE_HOST;
+                }
+                return null;
+            }
+
+            if(!isAuthenticationRequested(response)){
+                request_status = Pydio.NO_ERROR;
+                return response;
             }else{
-                break;
+                try {
+                    if (request_status == Pydio.ERROR_OLD_AUTHENTICATION_TOKEN) {
+                        refreshToken();
+                    } else if (request_status == Pydio.ERROR_AUTHENTIFICATION) {
+                        authenticate();
+                    }
+                    continue;
+                }catch (Exception e){
+                    return null;
+                }
             }
         }
         return response;
@@ -317,7 +372,8 @@ public class SessionTransport implements Transport{
         if(!"".equals(secure_token)){
             params.put("secure_token", secure_token);
         }
-        HttpResponse response = req.issueRequest(getActionURI(action), params);
+        HttpResponse response = null;
+        response = request(null, getActionURI(action), params);
         return HttpResponseParser.getXML(response);
     }
 
@@ -333,12 +389,8 @@ public class SessionTransport implements Transport{
     public void setWorkspace(WorkspaceNode w){
         this.workspace = w;
     }
-    @Override
-    public void setCredentialsProvider(CredentialsProvider cp) {
-        this.cp = cp;
-    }
 
-    public int authenticationStatus(){
-        return auth_status;
+    public int requestStatus(){
+        return request_status;
     }
 }

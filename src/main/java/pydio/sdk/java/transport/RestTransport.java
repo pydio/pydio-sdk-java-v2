@@ -12,9 +12,7 @@ import java.net.URI;
 import java.text.ParseException;
 import java.util.Map;
 
-import pydio.sdk.java.auth.CredentialsProvider;
 import pydio.sdk.java.http.HttpResponseParser;
-import pydio.sdk.java.http.Requester;
 import pydio.sdk.java.model.ServerNode;
 import pydio.sdk.java.model.WorkspaceNode;
 import pydio.sdk.java.utils.ProgressListener;
@@ -45,17 +43,10 @@ public class RestTransport implements Transport{
 	}
 
 	private HttpResponse request(URI uri, Map<String, String> params){
-		
-		Requester req = new Requester(null);
-		HttpResponse response = null;
-		if(!"".equals(user) && !"".equals(password)){
-			req.setCredentials(user, password);
-		}
-		response = req.issueRequest(uri, params);
-		return response;
+        return null;
 	}
     @Override
-    public int authenticationStatus() {
+    public int requestStatus() {
         return 0;
     }
 
@@ -114,10 +105,6 @@ public class RestTransport implements Transport{
     }
     @Override
     public void setWorkspace(WorkspaceNode workspace) {
-
-    }
-    @Override
-    public void setCredentialsProvider(CredentialsProvider cp) {
 
     }
 }

@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 
-import pydio.sdk.java.auth.CredentialsProvider;
 import pydio.sdk.java.model.ServerNode;
 import pydio.sdk.java.model.WorkspaceNode;
 import pydio.sdk.java.utils.ProgressListener;
@@ -21,7 +20,7 @@ public interface Transport {
     public static int MODE_SESSION = 1;
     public static int MODE_RESTFUL = 2;
 
-    public int authenticationStatus();
+    public int requestStatus();
 
     public HttpResponse getResponse(String action, Map<String, String> params);
 
@@ -40,6 +39,4 @@ public interface Transport {
     public void setServer(ServerNode server);
 
     public void setWorkspace(WorkspaceNode workspace);
-
-    public void setCredentialsProvider(CredentialsProvider cp);
 }
