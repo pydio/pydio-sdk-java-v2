@@ -41,7 +41,7 @@ public class FileNode implements Node{
 
     @Override
     public void initFromFile(File file) {
-        
+
     }
 
     @Override
