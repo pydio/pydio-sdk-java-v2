@@ -31,7 +31,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import pydio.sdk.java.auth.CredentialsProvider;
 import pydio.sdk.java.model.FileNode;
 import pydio.sdk.java.model.Node;
 import pydio.sdk.java.model.NodeFactory;
@@ -63,14 +62,12 @@ public class PydioClient {
     //*****************************************
     //         INITIALIZATION METHODS
     //*****************************************
-    public static PydioClient configure(ServerNode node, int mode, CredentialsProvider cp){
+    public static PydioClient configure(ServerNode node, int mode){
         PydioClient client = new PydioClient(node, mode);
-        client.transport.setCredentialsProvider(cp);
         return client;
     }
-    public static PydioClient configure(ServerNode node, CredentialsProvider cp){
+    public static PydioClient configure(ServerNode node){
         PydioClient client = new PydioClient(node, Transport.MODE_SESSION);
-        client.transport.setCredentialsProvider(cp);
         return client;
     }
 
@@ -143,13 +140,13 @@ public class PydioClient {
             parser.parse(in, saxHandler);
             return;
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         } catch (ParserConfigurationException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         } catch (SAXException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         } catch(Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 	/**
@@ -431,7 +428,7 @@ public class PydioClient {
                 }
             }
         }
-        return Pydio.SERVER_CHECKED_OK;
+        return Pydio.NO_ERROR;
     }
     /*
         public void changes(Node node, ChangeProcessor processor){}
@@ -478,12 +475,9 @@ public class PydioClient {
         localConfigs.setProperty(key, value);
     }
 
-    public int authenticationStatus(){
-        return transport.authenticationStatus();
+    public int requestStatus(){
+        return transport.requestStatus();
     }
 
-    public void setCredentialsProvider(CredentialsProvider cp){
-        transport.setCredentialsProvider(cp);
-    }
 
 }
