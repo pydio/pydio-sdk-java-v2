@@ -57,7 +57,7 @@ public class Pydio {
 	public final static String ACTION_APPLY_CHECK_HOOK 			= "apply_check_hook";
 	public final static String ACTION_GET_CONTENT 				= "get_content";
 	public final static String ACTION_PUT_CONTENT 				= "put_content";
-	public final static String ACTION_RESTORE 					= "retore";
+	public final static String ACTION_RESTORE 					= "restore";
 	public final static String ACTION_MKDIR 					= "mkdir";
 	public final static String ACTION_MKFILE 					= "mkfile";
 	public final static String ACTION_RENAME 					= "rename";
