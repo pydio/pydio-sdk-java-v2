@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 
+import java.io.File;
 import java.util.Properties;
 
 import pydio.sdk.java.utils.Pydio;
@@ -37,6 +38,11 @@ public class FileNode implements Node{
 	public void initFromProperties(Properties p) {
 		properties = (Properties) p.clone();
 	}
+
+    @Override
+    public void initFromFile(File file) {
+        
+    }
 
     @Override
     public Properties getProperties() {
