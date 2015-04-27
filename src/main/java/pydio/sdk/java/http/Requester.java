@@ -35,8 +35,8 @@ import pydio.sdk.java.utils.Pydio;
  *
  */
 public class Requester {
-		
-	private AjxpFileBody fileBody;
+
+    private AjxpFileBody fileBody;
 	private File file;
 	private String fileName;
 	private AjxpHttpClient httpClient;
@@ -57,87 +57,78 @@ public class Requester {
 	 * @param postParameters post parameters of the request
 	 * @return returns an HTTPResponse.
 	 */
-	public HttpResponse issueRequest(URI uri, Map<String, String> postParameters){
+	public HttpResponse issueRequest(URI uri, Map<String, String> postParameters) throws IOException {
 		
 		httpClient = new AjxpHttpClient(server.isSSLselfSigned());
 		if(credentials != null){
 			httpClient.refreshCredentials(credentials);
 		}
 
-		try{
-			HttpRequestBase request;	
-			if(postParameters != null || file != null){
-				request = new HttpPost();				
-				if(file != null){
-					if(fileBody == null){
-						if(fileName == null) fileName = file.getName();
-						fileBody = new AjxpFileBody(file, fileName);
-						long maxUpload = Long.parseLong(server.getRemoteConfig(Pydio.REMOTE_CONFIG_UPLOAD_SIZE));
-						if(maxUpload > 0 && maxUpload < file.length()){
-							fileBody.chunkIntoPieces((int)maxUpload);
-							if(progressListener != null){
-								progressListener.partTransferred(fileBody.getCurrentIndex(), fileBody.getTotalChunks());
-							}
-						}
-					}else{
-						if(progressListener != null){
-							progressListener.partTransferred(fileBody.getCurrentIndex() , fileBody.getTotalChunks());
-						}
-					}
-					
-					MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-					reqEntity.addPart("userfile_0", fileBody);
-					
-					if(fileName != null && !EncodingUtils.getAsciiString(EncodingUtils.getBytes(fileName, "US-ASCII")).equals(fileName)){
-						reqEntity.addPart("urlencoded_filename", new StringBody(java.net.URLEncoder.encode(fileName, "UTF-8")));
-					}
-					
-					if(fileBody != null && !fileBody.getFilename().equals(fileBody.getRootFilename())){
-						reqEntity.addPart("appendto_urlencoded_part", new StringBody(java.net.URLEncoder.encode(fileBody.getRootFilename(), "UTF-8")));
-					}
-					
-					if(postParameters != null){					
-						Iterator<Map.Entry<String, String>> it = postParameters.entrySet().iterator();
-						while(it.hasNext()){
-							Map.Entry<String, String> entry = it.next();
-							reqEntity.addPart(entry.getKey(), new StringBody(entry.getValue()));
-						}
-					}
-					
-					if(progressListener != null){
-						CountingMultipartRequestEntity countingEntity = new CountingMultipartRequestEntity(reqEntity, progressListener);
-						((HttpPost)request).setEntity(countingEntity);
-					}else{
-						((HttpPost)request).setEntity(reqEntity);
-					}
-					
-				}else{
-					List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(postParameters.size());
-					Iterator<Map.Entry<String, String>> it = postParameters.entrySet().iterator();
-					
-					while(it.hasNext()){
-						Map.Entry<String, String> entry = it.next();
-						nameValuePairs.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
-					}
-					((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs));
-				}
-			}else{
-				request = new HttpGet();
-			}
-			
-			request.setURI(uri);
-			
-			HttpResponse response = httpClient.executeInContext(request);		
-			
-			if(fileBody != null && fileBody.isChunked() && !fileBody.allChunksUploaded()){
-				this.discardResponse(response);				
-				this.issueRequest(uri, postParameters);
-			}
+        HttpRequestBase request;
+        if(postParameters != null || file != null){
+            request = new HttpPost();
+            if(file != null){
+                if(fileBody == null){
+                    if(fileName == null) fileName = file.getName();
+                    fileBody = new AjxpFileBody(file, fileName);
+                    long maxUpload = Long.parseLong(server.getRemoteConfig(Pydio.REMOTE_CONFIG_UPLOAD_SIZE));
+                    if(maxUpload > 0 && maxUpload < file.length()){
+                        fileBody.chunkIntoPieces((int)maxUpload);
+                        if(progressListener != null){
+                            progressListener.partTransferred(fileBody.getCurrentIndex(), fileBody.getTotalChunks());
+                        }
+                    }
+                }else{
+                    if(progressListener != null){
+                        progressListener.partTransferred(fileBody.getCurrentIndex() , fileBody.getTotalChunks());
+                    }
+                }
 
-			return response;			
-		}catch(IOException e){
-		}
-		return null;
+                MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+                reqEntity.addPart("userfile_0", fileBody);
+
+                if(fileName != null && !EncodingUtils.getAsciiString(EncodingUtils.getBytes(fileName, "US-ASCII")).equals(fileName)){
+                    reqEntity.addPart("urlencoded_filename", new StringBody(java.net.URLEncoder.encode(fileName, "UTF-8")));
+                }
+
+                if(fileBody != null && !fileBody.getFilename().equals(fileBody.getRootFilename())){
+                    reqEntity.addPart("appendto_urlencoded_part", new StringBody(java.net.URLEncoder.encode(fileBody.getRootFilename(), "UTF-8")));
+                }
+
+                if(postParameters != null){
+                    Iterator<Map.Entry<String, String>> it = postParameters.entrySet().iterator();
+                    while(it.hasNext()){
+                        Map.Entry<String, String> entry = it.next();
+                        reqEntity.addPart(entry.getKey(), new StringBody(entry.getValue()));
+                    }
+                }
+
+                if(progressListener != null){
+                    CountingMultipartRequestEntity countingEntity = new CountingMultipartRequestEntity(reqEntity, progressListener);
+                    ((HttpPost)request).setEntity(countingEntity);
+                }else{
+                    ((HttpPost)request).setEntity(reqEntity);
+                }
+            }else{
+                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(postParameters.size());
+                Iterator<Map.Entry<String, String>> it = postParameters.entrySet().iterator();
+
+                while(it.hasNext()){
+                    Map.Entry<String, String> entry = it.next();
+                    nameValuePairs.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+                }
+                ((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            }
+        }else{
+            request = new HttpGet();
+        }
+        request.setURI(uri);
+        HttpResponse response = httpClient.executeInContext(request);
+        if(fileBody != null && fileBody.isChunked() && !fileBody.allChunksUploaded()){
+            this.discardResponse(response);
+            this.issueRequest(uri, postParameters);
+        }
+        return response;
 	}
 	/**
 	 * This method read the response data and consume it.
