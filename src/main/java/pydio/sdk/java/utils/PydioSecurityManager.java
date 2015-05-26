@@ -21,7 +21,6 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
-import java.util.Properties;
 import java.util.Random;
 
 import javax.crypto.BadPaddingException;
@@ -38,14 +37,15 @@ import javax.crypto.spec.SecretKeySpec;
  * Created by pydio on 01/04/2015.
  */
 public abstract class PydioSecurityManager {
-    public static String ENCRYPTED_PASSWORD_PREFIX = "enc:";
 
+    private static PydioSecurityManager sm;
+
+    public static String ENCRYPTED_PASSWORD_PREFIX = "enc:";
     private final int KEY_SIZE = 128;
     private final int PBKDF2_ITERATION_NUMBER = 20000;
 
     KeyStore ks = null;
     private String KEYSTORE_PASSWORD = "pydioks";
-    Properties p;
 
     public PydioSecurityManager(){
         FileInputStream in = null;
@@ -66,23 +66,18 @@ public abstract class PydioSecurityManager {
         }
     }
 
-    public void addCertificate(String alias, X509Certificate cert) throws KeyStoreException{
+    public void addCertificate(String alias, X509Certificate cert)
+    throws KeyStoreException, CertificateNotYetValidException, CertificateExpiredException {
         if(ks == null) return;
+        cert.checkValidity();
         ks.setCertificateEntry(alias, cert);
         this.store();
     }
 
-    public boolean checkCertificate(String alias, X509Certificate cert) throws KeyStoreException, CertificateEncodingException {
+    public boolean checkCertificate(String alias, X509Certificate cert)
+    throws KeyStoreException, CertificateEncodingException, CertificateNotYetValidException, CertificateExpiredException {
         if(ks == null) return false;
-        try {
-            cert.checkValidity();
-        } catch (CertificateExpiredException e) {
-            e.printStackTrace();
-            return false;
-        } catch (CertificateNotYetValidException e) {
-            e.printStackTrace();
-            return false;
-        }
+        cert.checkValidity();
 
         X509Certificate certificate = (X509Certificate) ks.getCertificate(alias);
         if(certificate == null) return false;
@@ -97,7 +92,7 @@ public abstract class PydioSecurityManager {
         }
     }
 
-    String getKeystorePassword(){
+    private String getKeystorePassword(){
         return KEYSTORE_PASSWORD;
     }
 
@@ -121,25 +116,11 @@ public abstract class PydioSecurityManager {
         }
     }
 
-    private Properties getProperties(){
-        if(p == null){
-            p = loadConfigs();
-            if(p == null){
-                p = new Properties();
-            }
-        }
-        return p;
-    }
-
-    public String loadPassword(String masterPassword, String alias){
-        String pass = getProperties().getProperty(alias, "");
-        if(masterPassword == null || masterPassword.length() == 0 || pass.startsWith(ENCRYPTED_PASSWORD_PREFIX)){
-            return pass;
-        }
+    public String decrypt(String masterPassword, String salt, String pass){
         byte[] encryptedPass = Base64.decodeBase64(pass.substring(pass.indexOf(ENCRYPTED_PASSWORD_PREFIX)));
         try {
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            KeySpec spec = new PBEKeySpec(masterPassword.toCharArray(), alias.getBytes(), PBKDF2_ITERATION_NUMBER, KEY_SIZE);
+            KeySpec spec = new PBEKeySpec(masterPassword.toCharArray(), salt.getBytes(), PBKDF2_ITERATION_NUMBER, KEY_SIZE);
             SecretKey key = factory.generateSecret(spec);
             SecretKeySpec secretKeySpec = new SecretKeySpec(key.getEncoded(), "AES");
 
@@ -165,15 +146,14 @@ public abstract class PydioSecurityManager {
         return null;
     }
 
-    public boolean storePassword(String masterPassword, String alias, String password){
-
+    public String encrypt(String masterPassword, String salt, String password){
         if(masterPassword == null || masterPassword.length() == 0 ){
-            getProperties().setProperty(alias, password);
+            return "";
         }else {
             byte[] bytes = password.getBytes();
             try {
                 SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-                KeySpec spec = new PBEKeySpec(masterPassword.toCharArray(), alias.getBytes(), PBKDF2_ITERATION_NUMBER, KEY_SIZE);
+                KeySpec spec = new PBEKeySpec(masterPassword.toCharArray(), salt.getBytes(), PBKDF2_ITERATION_NUMBER, KEY_SIZE);
                 SecretKey key = factory.generateSecret(spec);
                 SecretKeySpec secretKeySpec = new SecretKeySpec(key.getEncoded(), "AES");
 
@@ -181,23 +161,12 @@ public abstract class PydioSecurityManager {
                 IvParameterSpec ivParameterSpec = new IvParameterSpec(key.getEncoded());
                 cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
                 String enc_password = new String(Base64.encodeBase64(cipher.doFinal(bytes)));
-                getProperties().setProperty(alias, ENCRYPTED_PASSWORD_PREFIX+enc_password);
+                return  ENCRYPTED_PASSWORD_PREFIX+enc_password;
             } catch (Exception e) {
                 e.printStackTrace();
-                return false;
             }
         }
-        saveConfigs(p);
-        return true;
-    }
-
-    public Object[] getPasswordAliases(){
-        Object[] keys = getProperties().keySet().toArray();
-        String[] stringKeys = new String[keys.length];
-        for(int i = 0; i < keys.length; i++){
-            stringKeys[i] = (String) keys[i];
-        }
-        return stringKeys;
+        return null;
     }
 
     public String createMasterPasswordChecksum(String masterPassword){
@@ -219,7 +188,6 @@ public abstract class PydioSecurityManager {
             IvParameterSpec ivParameterSpec = new IvParameterSpec(key.getEncoded());
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
             String enc_checksum = new String(Base64.encodeBase64(cipher.doFinal(checksum.getBytes())));
-            getProperties().setProperty("MASTER_PASSWORD_CHECKSUM", enc_checksum);
             return enc_checksum;
         } catch (Exception e) {}
         return null;
@@ -267,8 +235,13 @@ public abstract class PydioSecurityManager {
         return false;
     }
 
-    protected abstract void saveConfigs(Properties p);
-    protected abstract Properties loadConfigs();
     public abstract InputStream getKeystoreFileInputStream();
     public abstract OutputStream getKeystoreFileOutputStream();
+
+    public static void setInstance(PydioSecurityManager sm){
+        PydioSecurityManager.sm = sm;
+    }
+    public static PydioSecurityManager securityManager(){
+        return sm;
+    }
 }

@@ -2,7 +2,6 @@
  * 
  */
 package pydio.sdk.java.auth;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import java.security.cert.X509Certificate;
 
 
@@ -16,20 +15,19 @@ public abstract class AuthenticationHelper {
     protected X509Certificate certificate;
     protected String challenge;
 
-    public abstract UsernamePasswordCredentials requestForLoginPassword();
-    public abstract boolean isTrusted(X509Certificate cert);
+    public abstract String[] requestForLoginPassword();
 
     public void setChallengeResponse(String response){
         challenge = response;
     }
     public String getChallengeResponse(){ return challenge; }
-    public X509Certificate lastCertificate(){
+
+    public X509Certificate getCertificate(){
         return certificate;
     }
     public void setCertificate(X509Certificate cert){
         certificate = cert;
     }
 
-    public static AuthenticationHelper instance = null;
 }
 

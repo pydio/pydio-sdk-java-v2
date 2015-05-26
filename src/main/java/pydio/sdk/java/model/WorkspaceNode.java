@@ -6,13 +6,14 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Properties;
 
 import pydio.sdk.java.utils.Pydio;
 
 public class WorkspaceNode implements Node{
     Properties properties;
-	
 	
 	public boolean isAllowedCrossRepositoryCopy(){
 		return properties.getProperty(Pydio.WORKSPACE_PROPERTY_CROSS_COPY) == "true";
@@ -26,7 +27,7 @@ public class WorkspaceNode implements Node{
 		return properties.getProperty(Pydio.NODE_PROPERTY_DESCRIPTION);
 	}
 	
-	public String  getAccesType(){
+	public String getAccessType(){
 		return properties.getProperty(Pydio.WORKSPACE_PROPERTY_ACCESS_TYPE);
 	}
 	
@@ -87,11 +88,35 @@ public class WorkspaceNode implements Node{
 	}
     @Override
     public void initFromFile(File file) {
-
+        properties = new Properties();
+        if(file.isDirectory()) {
+            properties.setProperty(Pydio.NODE_PROPERTY_LABEL, file.getName());
+            properties.setProperty(Pydio.NODE_PROPERTY_PATH, file.getAbsolutePath());
+            properties.setProperty(Pydio.WORKSPACE_PROPERTY_ACCESS_TYPE, Pydio.WORKSPACE_ACCESS_TYPE_FS);
+            properties.setProperty(Pydio.WORKSPACE_PROPERTY_ID, file.getAbsolutePath());
+            properties.setProperty(Pydio.WORKSPACE_PROPERTY_CROSS_COPY, "true");
+            properties.setProperty(Pydio.WORKSPACE_PROPERTY_META_SYNC, "true");
+            properties.setProperty(Pydio.WORKSPACE_PROPERTY_SLUG, "true");
+        }else{
+            try {
+                InputStream in = new FileInputStream(file);
+                if(file.getName().endsWith(".xml")){
+                    properties.loadFromXML(in);
+                }else{
+                    properties.load(in);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
     @Override
     public Properties getProperties() {
         return properties;
+    }
+    @Override
+    public String getProperty(String key) {
+        return properties.getProperty(key, "");
     }
 
     public int type() {

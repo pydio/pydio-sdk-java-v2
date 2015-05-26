@@ -64,7 +64,7 @@ public class HttpResponseParser {
 		HttpEntity entity = response.getEntity();			
 		InputStream in;
 		StringBuilder sb = new StringBuilder();
-		int bufsize = Pydio.LCONFIG_BUFFER_SIZE_DVALUE;
+		int bufsize = Pydio.LOCAL_CONFIG_BUFFER_SIZE_DVALUE;
 		try {
 			in = entity.getContent();
 			byte[] buffer = new byte[bufsize];

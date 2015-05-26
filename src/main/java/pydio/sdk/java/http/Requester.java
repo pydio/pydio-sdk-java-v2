@@ -4,10 +4,12 @@ package pydio.sdk.java.http;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.StringBody;
@@ -45,6 +47,7 @@ public class Requester {
     private ProgressListener listener;
 	private String authStep;
     ServerNode server;
+    boolean fresh = true;
 
 	UsernamePasswordCredentials credentials = null;
 	//MA_UPLOAD to be checked
@@ -60,6 +63,19 @@ public class Requester {
 	public HttpResponse issueRequest(URI uri, Map<String, String> postParameters) throws IOException {
 		
 		httpClient = new AjxpHttpClient(server.isSSLselfSigned());
+
+        try {
+            CookieStore cstore = httpClient.getCookieStore();
+            List<Cookie> cookies = cstore.getCookies();
+            for (int i = 0; i < cookies.size(); i++) {
+                Cookie c = cookies.get(i);
+                System.out.println(c.toString());
+            }
+
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+
 		if(credentials != null){
 			httpClient.refreshCredentials(credentials);
 		}

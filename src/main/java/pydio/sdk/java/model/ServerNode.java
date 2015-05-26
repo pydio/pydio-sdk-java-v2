@@ -35,6 +35,11 @@ public class ServerNode implements Node{
         return properties;
     }
 
+    @Override
+    public String getProperty(String key) {
+        return properties.getProperty(key, "");
+    }
+
     public void initFromXml(org.w3c.dom.Node xml) {
 	}
 
@@ -82,16 +87,15 @@ public class ServerNode implements Node{
 	}
 	
 	public void setPath(String p){
-		path = p;
+        if("".equals(p)){
+            path = "/";
+        }else{
+            path = p;
+        }
 	}
 	
 	public String url(){
-        String url = protocol+"://"+host;
-        if(path.length() == 0){
-            return url + "/";
-        }
-
-		return url+path;
+        return protocol+"://"+host+path;
 	}
 	
 	public String path(){

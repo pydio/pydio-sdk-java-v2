@@ -1,12 +1,11 @@
-
 package pydio.sdk.java;
-
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EncodingUtils;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -18,9 +17,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Scanner;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -31,12 +32,13 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import pydio.sdk.java.model.FileNode;
+import pydio.sdk.java.auth.AuthenticationHelper;
+import pydio.sdk.java.model.ChangeProcessor;
 import pydio.sdk.java.model.Node;
-import pydio.sdk.java.model.NodeFactory;
 import pydio.sdk.java.model.NodeHandler;
 import pydio.sdk.java.model.PydioMessage;
 import pydio.sdk.java.model.ServerNode;
+import pydio.sdk.java.model.TreeNode;
 import pydio.sdk.java.model.WorkspaceNode;
 import pydio.sdk.java.transport.Transport;
 import pydio.sdk.java.transport.TransportFactory;
@@ -58,6 +60,7 @@ public class PydioClient {
     public ServerNode server;
     Properties localConfigs = new Properties();
 
+    AuthenticationHelper helper;
 
     //*****************************************
     //         INITIALIZATION METHODS
@@ -70,26 +73,20 @@ public class PydioClient {
         PydioClient client = new PydioClient(node, Transport.MODE_SESSION);
         return client;
     }
-
     public PydioClient(ServerNode server, int mode){
         transport = TransportFactory.getInstance(mode, server);
         this.server = server;
         localConfigs = new Properties();
-        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, ""+Pydio.LCONFIG_BUFFER_SIZE_DVALUE);
-    }
-    public PydioClient(String scheme, String host, String path, int transportMode){
-        server = (ServerNode) NodeFactory.createNode(Node.TYPE_SERVER);
-        server.setPath(path);
-        server.setLegacy(false);
-        server.setProtocol(scheme);
-        server.setHost(host);
-        server.setSelSigned(true);
-        transport = TransportFactory.getInstance(transportMode);
-        transport.setServer(server);
+        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DVALUE);
     }
 
-
-
+    public void setAuthenticationHelper(AuthenticationHelper h){
+        helper = h;
+        transport.setAuthenticationHelper(helper);
+    }
+    public AuthenticationHelper authenticationHelper(){
+        return helper;
+    }
 
     //*****************************************
     //         REMOTE ACTION METHODS
@@ -158,7 +155,7 @@ public class PydioClient {
 	 * @param name the name on the remote server
 	 * @return a SUCCESS or ERROR Message
 	 */
-    public void write(Node node, File source, ProgressListener progressListener , boolean autoRename, String name, final MessageHandler handler) {
+    public void write(Node node, File source, String name, boolean autoRename, ProgressListener progressListener, final MessageHandler handler) {
         String action;
 		Map<String, String> params = new HashMap<String , String>();
         action =  Pydio.ACTION_UPLOAD;
@@ -179,7 +176,7 @@ public class PydioClient {
 
 		try {
 			if(name != null){
-				params.put(Pydio.PARAM_APPENDTO_URLENCODED_PART, name);
+				params.put(Pydio.PARAM_APPEND_TO_URLENCODED_PART, name);
 			}else{
 				params.put(Pydio.PARAM_URL_ENCODED, java.net.URLEncoder.encode(fname, "UTF-8"));
 			}
@@ -308,7 +305,7 @@ public class PydioClient {
             params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
         }
         fillParams(params, nodes);
-		params.put(Pydio.PARAM_DEST, ((FileNode)destinationParent).path());
+		params.put(Pydio.PARAM_DEST, ((TreeNode)destinationParent).path());
 		Document doc = transport.getXmlContent(Pydio.ACTION_COPY, params);
         handler.onMessage(PydioMessage.create(doc));
 	}
@@ -325,7 +322,7 @@ public class PydioClient {
         }
         params.put(Pydio.PARAM_ACTION, Pydio.ACTION_MOVE);
 		fillParams(params, nodes);
-		params.put(Pydio.PARAM_DEST, ((FileNode)destinationParent).path());
+		params.put(Pydio.PARAM_DEST, ((TreeNode)destinationParent).path());
 		if(force_del){
 			params.put(Pydio.PARAM_FORCE_COPY_DELETE, "true");
 		}
@@ -334,17 +331,16 @@ public class PydioClient {
 	}
 	/**
 	 * 
-	 * @param node
+	 * @param parent
 	 * @param dirname
 	 * @return
 	 */
-    public void createFolder(Node node, String dirname, MessageHandler handler) {
+    public void createFolder(Node parent, String dirname, MessageHandler handler) {
         Map<String, String> params = new HashMap<String , String>();
         if(workspace != null) {
             params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
         }
-        params.put(Pydio.PARAM_ACTION, Pydio.ACTION_MKDIR);
-        params.put(Pydio.PARAM_DIR, node.path());
+        params.put(Pydio.PARAM_DIR, parent.path());
 		params.put(Pydio.PARAM_DIRNAME, dirname);
 		Document doc = transport.getXmlContent(Pydio.ACTION_MKDIR, params);
         handler.onMessage(PydioMessage.create(doc));
@@ -362,29 +358,77 @@ public class PydioClient {
 		Document doc = transport.getXmlContent(Pydio.ACTION_MKFILE, params);
         handler.onMessage(PydioMessage.create(doc));
 	}
-	/**
-	 * Load the remote config registry of the current server.
-	 */
+
+    public void restore(Node node, MessageHandler handler){
+        Map<String, String> params = new HashMap<String , String>();
+        if(workspace != null) {
+            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        }
+        params.put(Pydio.PARAM_FILE, node.getProperties().getProperty(Pydio.NODE_PROPERTY_FILENAME));
+        params.put(Pydio.PARAM_DIR, "/recycle_bin");
+
+        Document doc = transport.getXmlContent(Pydio.ACTION_RESTORE, params);
+        handler.onMessage(PydioMessage.create(doc));
+    }
+
+    public void compress(Node[] nodes, String name, boolean compressFlat, MessageHandler handler){
+        Map<String, String> params = new HashMap<String , String>();
+        if(workspace != null) {
+            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        }
+        params.put(Pydio.PARAM_ARCHIVE_NAME, name);
+        params.put(Pydio.PARAM_COMPRESS_FLAT, Boolean.toString(compressFlat).toLowerCase());
+        fillParams(params, nodes);
+        handler.onMessage(PydioMessage.create(transport.getXmlContent(Pydio.ACTION_COMPRESS, params)));
+    }
+    /**
+     * Load the remote config registry of the current server.
+     */
     public void getRemoteConfigs(){
         Map<String, String> params = new HashMap<String , String>();
         params.put(Pydio.PARAM_XPATH, Pydio.XPATH_VALUE_PLUGINS);
         Document doc = transport.getXmlContent(Pydio.ACTION_GET_REGISTRY , params);
         XPathFactory factory = XPathFactory.newInstance();
-		XPath xpath = factory.newXPath();
-		try {
+        XPath xpath = factory.newXPath();
+        try {
             XPathExpression expr = xpath.compile(Pydio.REMOTE_CONFIG_UPLOAD_SIZE);
             org.w3c.dom.Node result = (org.w3c.dom.Node)expr.evaluate(doc, XPathConstants.NODE);
-			server.addConfig(Pydio.REMOTE_CONFIG_UPLOAD_SIZE, result.getFirstChild().getNodeValue().replace("\"", ""));
-		} catch (XPathExpressionException e1) {
-			//publish error message
-		}
+            server.addConfig(Pydio.REMOTE_CONFIG_UPLOAD_SIZE, result.getFirstChild().getNodeValue().replace("\"", ""));
+        } catch (XPathExpressionException e1) {
+            //publish error message
+        }
+    }
+
+    public InputStream previewData(Node node, boolean force_redim, int dim){
+        Map<String, String> params = new HashMap<String , String>();
+        if(workspace != null) {
+            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        }
+        params.put(Pydio.PARAM_FILE, node.path());
+        if(force_redim) {
+            params.put(Pydio.PARAM_GET_THUMB, "true");
+            params.put(Pydio.PARAM_DIMENSION, dim+"");
+        }
+        HttpResponse response = transport.getResponse(Pydio.ACTION_PREVIEW_DATA_PROXY, params);
+        try{
+            return response.getEntity().getContent();
+        }catch(Exception e){}
+        return null;
+    }
+
+    public String listUsers(){
+        return transport.getStringContent(Pydio.ACTION_LIST_USERS, null);
+    }
+
+    public String newUser(String login, String password){
+        return transport.getStringContent(Pydio.ACTION_CREATE_USER + login + "/" + password, null);
     }
 
     public InputStream getAuthenticationChallenge(String type){
         //return transport.getAuthenticationChallenge();
         if(Pydio.AUTH_CHALLENGE_TYPE_CAPTCHA.equals(type)) {
             boolean image = false;
-            HttpResponse resp = transport.getResponse(Pydio.ACTION_CAPTACHA, null);
+            HttpResponse resp = transport.getResponse(Pydio.ACTION_CAPTCHA, null);
             Header[] heads = resp.getHeaders("Content-type");
             for (int i = 0; i < heads.length; i++) {
                 if (heads[i].getValue().contains("image/png")) {
@@ -412,6 +456,7 @@ public class PydioClient {
         }
         params.put(Pydio.PARAM_ACTION, Pydio.ACTION_GET_SEED);
         HttpResponse response = transport.getResponse(Pydio.ACTION_MKDIR, null);
+
         Header[] heads = response.getHeaders("Content-type");
         for(int i=0;i<heads.length;i++){
             if(!heads[i].getValue().contains("text/plain") && !heads[i].getValue().contains("application/json")) {
@@ -430,15 +475,81 @@ public class PydioClient {
         }
         return Pydio.NO_ERROR;
     }
-    /*
-        public void changes(Node node, ChangeProcessor processor){}
-        public void crossCopy(Node node, Workspace workspace, MessageHandler
-        Message lsync( from,  to, copy)
-        Message applyCheck(node);
-        Message compress(nodes, archiveName, compressflat)
-        Message prepareChunkDownload( node, chunkCount)
-        Message downloadChunk(fileID,chunkIndex)
-	*/
+
+    public void changes(int seq, boolean flatten, String filter, ChangeProcessor p){
+        Map<String, String> params = new HashMap<String , String>();
+        if(workspace != null) {
+            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        }
+        params.put(Pydio.PARAM_CHANGE_SEQ_ID, seq+"");
+        if(filter != null) {
+            params.put(Pydio.PARAM_CHANGE_FILTER, filter);
+        }else{
+            params.put(Pydio.PARAM_CHANGE_FILTER, "/");
+        }
+        params.put(Pydio.PARAM_CHANGE_FLATTEN, String.valueOf(flatten));
+        params.put(Pydio.PARAM_CHANGE_STREAM, "true");
+        String action = Pydio.ACTION_CHANGES;
+        try {
+            HttpResponse r = transport.getResponse(action, params);
+            String charset = EntityUtils.getContentCharSet(r.getEntity());
+            InputStream is = r.getEntity().getContent();
+            Scanner sc = new Scanner(is, charset);
+            String line = sc.nextLine();
+            while(!line.toLowerCase().startsWith("last_seq") && line.length() != 0){
+                final String[] change = new String[10];
+                JSONObject json = new JSONObject(line);
+                change[Pydio.CHANGE_INDEX_SEQ] = json.getString(Pydio.CHANGE_SEQ);
+                change[Pydio.CHANGE_INDEX_NODE_ID] = json.getString(Pydio.CHANGE_NODE_ID);
+                change[Pydio.CHANGE_INDEX_TYPE] = json.getString(Pydio.CHANGE_TYPE);
+                change[Pydio.CHANGE_INDEX_SOURCE] = json.getString(Pydio.CHANGE_SOURCE);
+                change[Pydio.CHANGE_INDEX_TARGET] = json.getString(Pydio.CHANGE_TARGET);
+                change[Pydio.CHANGE_INDEX_NODE_BYTESIZE] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_BYTESIZE);
+                change[Pydio.CHANGE_INDEX_NODE_MD5] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_MD5);
+                change[Pydio.CHANGE_INDEX_NODE_MTIME] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_MTIME);
+                change[Pydio.CHANGE_INDEX_NODE_PATH] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_PATH);
+                change[Pydio.CHANGE_INDEX_NODE_WORKSPACE] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_WORKSPACE);
+                p.process(change);
+                line = sc.nextLine();
+            }
+            if(line.toLowerCase().startsWith("last_seq")) {
+                final String[] change = new String[10];
+                change[Pydio.CHANGE_INDEX_SEQ] = line.split(":")[1];
+                p.process(change);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public JSONObject stats(Node[] nodes, boolean with_hash, ChangeProcessor p){
+        Map<String, String> params = new HashMap<String , String>();
+        if(workspace != null) {
+            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        }
+        String action = Pydio.ACTION_STATS;
+        if(with_hash){
+            action += "_hash";
+        }
+        fillParams(params, nodes);
+        try {
+            HttpResponse r = transport.getResponse(action, params);
+            String charset = EntityUtils.getContentCharSet(r.getEntity());
+            if(charset == null){
+                charset = "UTF-8";
+            }
+            InputStream is = r.getEntity().getContent();
+            Scanner sc = new Scanner(is, charset);
+            return new JSONObject(sc.nextLine());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     //*********************************************
     //            OTHERS
@@ -450,11 +561,11 @@ public class PydioClient {
     private void fillParams(Map<String, String> params, Node[] nodes){
         if(nodes != null){
             if(nodes.length == 1){
-                params.put(Pydio.PARAM_FILE, ((FileNode)(nodes[0])).path());
+                params.put(Pydio.PARAM_FILE, nodes[0].path());
                 return;
             }
             for(int i = 0; i < nodes.length; i++){
-                String path = ((FileNode)nodes[i]).path();
+                String path = nodes[i].path();
                 params.put(Pydio.PARAM_FILE+"_"+i, path);
             }
         }
@@ -478,6 +589,4 @@ public class PydioClient {
     public int requestStatus(){
         return transport.requestStatus();
     }
-
-
 }

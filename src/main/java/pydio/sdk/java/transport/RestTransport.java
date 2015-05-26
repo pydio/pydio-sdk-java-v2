@@ -12,9 +12,9 @@ import java.net.URI;
 import java.text.ParseException;
 import java.util.Map;
 
+import pydio.sdk.java.auth.AuthenticationHelper;
 import pydio.sdk.java.http.HttpResponseParser;
 import pydio.sdk.java.model.ServerNode;
-import pydio.sdk.java.model.WorkspaceNode;
 import pydio.sdk.java.utils.ProgressListener;
 
 /**
@@ -104,7 +104,11 @@ public class RestTransport implements Transport{
 
     }
     @Override
-    public void setWorkspace(WorkspaceNode workspace) {
+    public String secureToken() {
+        return "";
+    }
+    @Override
+    public void setAuthenticationHelper(AuthenticationHelper helper) {
 
     }
 }

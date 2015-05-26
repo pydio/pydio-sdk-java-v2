@@ -43,7 +43,7 @@ public class FileNodeSaxHandler extends DefaultHandler {
             return;
         }
         if(inside_tree && "tree".equals(qName)){
-            handler.processNode(NodeFactory.createNode(Node.TYPE_FILE, p));
+            handler.processNode(NodeFactory.createNode(Node.TYPE_TREE, p));
             p = null;
             inside_tree = false;
             return;

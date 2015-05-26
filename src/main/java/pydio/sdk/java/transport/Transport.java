@@ -8,8 +8,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 
+import pydio.sdk.java.auth.AuthenticationHelper;
 import pydio.sdk.java.model.ServerNode;
-import pydio.sdk.java.model.WorkspaceNode;
 import pydio.sdk.java.utils.ProgressListener;
 
 /**
@@ -36,7 +36,9 @@ public interface Transport {
 
     public Document putContent(String action, Map<String, String> params, byte[] data, String filename, ProgressListener handler);
 
+    public void setAuthenticationHelper(AuthenticationHelper helper);
+
     public void setServer(ServerNode server);
 
-    public void setWorkspace(WorkspaceNode workspace);
+    public String secureToken();
 }

@@ -18,6 +18,7 @@
  */
 package pydio.sdk.java.utils;
 
+import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
@@ -26,14 +27,11 @@ import java.security.cert.X509Certificate;
 
 import javax.net.ssl.X509TrustManager;
 
-import pydio.sdk.java.auth.AuthenticationHelper;
-
 
 public class AjxpSSLTrustManager implements X509TrustManager {
 	
 		private String certKey = null;
         private static final X509Certificate[] _AcceptedIssuers = new X509Certificate[] {};
-
 
         AjxpSSLTrustManager(String certKey){
         	super();
@@ -49,8 +47,17 @@ public class AjxpSSLTrustManager implements X509TrustManager {
 
         public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
             X509Certificate cert = chain[0];
-            if(!AuthenticationHelper.instance.isTrusted(cert)){
-                throw new CertificateException("Certificate not trusted");
+            boolean result = false;
+            try {
+                result = PydioSecurityManager.securityManager().checkCertificate(cert.getSubjectDN().toString(), cert);
+            } catch (KeyStoreException e) {
+                e.printStackTrace();
+            }
+
+            if(!result){
+                CustomCertificateException e = new CustomCertificateException();
+                e.cert = cert;
+                throw e;
             }
         }
 

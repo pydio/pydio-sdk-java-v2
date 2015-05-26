@@ -7,15 +7,12 @@ import java.io.Serializable;
 import java.util.Properties;
 
 
-
-
 public interface Node extends Serializable {
 	
-	public final static int TYPE_FILE = 1;
+	public final static int TYPE_TREE = 1;
 	public final static int TYPE_WORKSPACE = 2;
 	public final static int TYPE_SERVER = 3;
 	public final static int TYPE_VIRTUAL = 4;
-
 
 	public int type();
 
@@ -45,4 +42,6 @@ public interface Node extends Serializable {
     public void initFromFile(File file);
 
     public Properties getProperties();
+
+    public String getProperty(String key);
 }

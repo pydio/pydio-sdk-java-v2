@@ -34,12 +34,11 @@ import pydio.sdk.java.http.CustomEntity;
 import pydio.sdk.java.http.HttpResponseParser;
 import pydio.sdk.java.http.Requester;
 import pydio.sdk.java.model.ServerNode;
-import pydio.sdk.java.model.WorkspaceNode;
+import pydio.sdk.java.utils.CustomCertificateException;
 import pydio.sdk.java.utils.ProgressListener;
 import pydio.sdk.java.utils.Pydio;
 import pydio.sdk.java.utils.ServerResolution;
 
-//import org.json.JSONException;
 
 /**
  * This class handle a session with a pydio server
@@ -51,12 +50,12 @@ public class SessionTransport implements Transport{
     public String index = "index.php?";
     public String secure_token = "";
     private ServerNode server;
-    private WorkspaceNode workspace;
 
     private String action;
     int request_status = Pydio.NO_ERROR;
     boolean loginStateChanged = false;
-    boolean skipAuth = false;
+
+    AuthenticationHelper helper;
 
     public SessionTransport(ServerNode server){
         this.server = server;
@@ -66,11 +65,20 @@ public class SessionTransport implements Transport{
 
     private URI getActionURI(String action){
         ServerResolution.resolve(server);
-        String url = server.url()+index+ Pydio.PARAM_GET_ACTION+"="+action;
+        String url = server.url();
+        if(action != null && action.startsWith(Pydio.ACTION_CONF_PREFIX)){
+            url += action;
+        }else{
+            url += index;
+            if(action != null && !"".equals(action)){
+                url += Pydio.PARAM_GET_ACTION+"="+action;
+            }
+        }
         try{
             return new URI(url);
-        }catch(Exception e){}
-        return null;
+        }catch(Exception e){
+            return null;
+        }
     }
 
     private String getSeed() throws IOException {
@@ -88,10 +96,11 @@ public class SessionTransport implements Transport{
         }
         if(seed != null) seed = seed.trim();
 
-        if(AuthenticationHelper.instance == null){
+        if(helper == null){
             return;
         }
-        UsernamePasswordCredentials credentials = AuthenticationHelper.instance.requestForLoginPassword();
+        String[] c = helper.requestForLoginPassword();
+        UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(c[0], c[1]);
         String user = credentials.getUserName();
         String password = credentials.getPassword();
 
@@ -100,8 +109,8 @@ public class SessionTransport implements Transport{
         }
 
         Map<String, String> loginPass = new HashMap<>();
-        if(this.request_status == Pydio.ERROR_AUTHENTIFICATION_WITH_CAPTCHA) {
-            String captcha_code = AuthenticationHelper.instance.getChallengeResponse();
+        if(this.request_status == Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA) {
+            String captcha_code = helper.getChallengeResponse();
             if(captcha_code == null) {
                 return;
             }
@@ -124,27 +133,30 @@ public class SessionTransport implements Transport{
                 loginStateChanged = true;
                 secure_token = newToken;
             }else{
-                request_status = Pydio.ERROR_AUTHENTIFICATION;
+                request_status = Pydio.ERROR_AUTHENTICATION;
                 if (result.equals("-4")){
-                    request_status = Pydio.ERROR_AUTHENTIFICATION_WITH_CAPTCHA;
+                    request_status = Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA;
                 }
             }
+        }else{
+            request_status = Pydio.ERROR_INTERNAL;
         }
     }
 
     private void refreshToken() throws IOException {
-        if(AuthenticationHelper.instance == null){
+        if(helper == null){
             return;
         }
         Requester req = new Requester(server);
         Map<String, String> loginPass = new HashMap<String, String>();
-        String pass = AuthenticationHelper.instance.requestForLoginPassword().getPassword();
-        String login = AuthenticationHelper.instance.requestForLoginPassword().getUserName();
+        String[] c = helper.requestForLoginPassword();
+        String login = c[0];
+        String pass = c[1];
 
         String seed = getSeed();
         if(seed != null) seed = seed.trim();
-        if(!seed.trim().equals("-1")){
-            pass = AuthenticationUtils.processPydioPassword(AuthenticationHelper.instance.requestForLoginPassword().getPassword(), seed);
+        if(!seed.trim().equals("-1") && !seed.contains("You are not allowed")){
+            pass = AuthenticationUtils.processPydioPassword(pass, seed);
         }
 
         loginPass.put("login_seed", seed);
@@ -247,7 +259,7 @@ public class SessionTransport implements Transport{
         } catch (SAXException e) {
             String m = e.getMessage();
             if("AUTH".equals(m)){
-                request_status = Pydio.ERROR_AUTHENTIFICATION;
+                request_status = Pydio.ERROR_AUTHENTICATION;
             }else if ("TOKEN".equals(m)){
                 request_status = Pydio.ERROR_OLD_AUTHENTICATION_TOKEN;
             }
@@ -263,7 +275,7 @@ public class SessionTransport implements Transport{
 
     private HttpResponse request(Requester req, URI uri, Map<String, String> params){
         if(!Arrays.asList(Pydio.no_auth_required_actions).contains(this.action)){
-            if((request_status == Pydio.ERROR_AUTHENTIFICATION || request_status == Pydio.ERROR_AUTHENTIFICATION_WITH_CAPTCHA)){
+            if((request_status == Pydio.ERROR_AUTHENTICATION || request_status == Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA)){
                 try {
                     authenticate();
                 } catch (IOException e) {
@@ -282,7 +294,7 @@ public class SessionTransport implements Transport{
         }
         HttpResponse response = null;
         for(;;){
-            if((request_status == Pydio.ERROR_OLD_AUTHENTICATION_TOKEN || request_status == Pydio.ERROR_AUTHENTIFICATION || request_status == Pydio.ERROR_AUTHENTIFICATION_WITH_CAPTCHA) && !Arrays.asList(Pydio.no_auth_required_actions).contains(this.action)){
+            if((request_status == Pydio.ERROR_OLD_AUTHENTICATION_TOKEN || request_status == Pydio.ERROR_AUTHENTICATION || request_status == Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA) && !Arrays.asList(Pydio.no_auth_required_actions).contains(this.action)){
                 break;
             }
             if(!"".equals(secure_token)){
@@ -298,6 +310,12 @@ public class SessionTransport implements Transport{
                     continue;
                 }else if ( e instanceof  SSLHandshakeException){
                     request_status = Pydio.ERROR_CON_SSL_SELF_SIGNED_CERT;
+                    try{
+                        helper.setCertificate(((CustomCertificateException)e.getCause()).cert);
+                    }catch(Exception ex){
+                        ex.printStackTrace();
+                    }
+
                     return null;
                 }else if (e instanceof SSLException) {
                     request_status = Pydio.ERROR_CON_FAILED_SSL;
@@ -307,7 +325,7 @@ public class SessionTransport implements Transport{
                     return null;
                 }
             }catch (Exception e){
-                if(e instanceof IllegalArgumentException && e.getMessage().toLowerCase().contains("")){
+                if(e instanceof IllegalArgumentException && e.getMessage().toLowerCase().contains("unreachable")){
                     request_status = Pydio.ERROR_UNREACHABLE_HOST;
                 }
                 return null;
@@ -320,7 +338,7 @@ public class SessionTransport implements Transport{
                 try {
                     if (request_status == Pydio.ERROR_OLD_AUTHENTICATION_TOKEN) {
                         refreshToken();
-                    } else if (request_status == Pydio.ERROR_AUTHENTIFICATION) {
+                    } else if (request_status == Pydio.ERROR_AUTHENTICATION) {
                         authenticate();
                     }
                     continue;
@@ -385,12 +403,16 @@ public class SessionTransport implements Transport{
     public void setServer(ServerNode server){
         this.server = server;
     }
-
-    public void setWorkspace(WorkspaceNode w){
-        this.workspace = w;
+    @Override
+    public String secureToken() {
+        return secure_token;
     }
-
+    @Override
     public int requestStatus(){
         return request_status;
+    }
+    @Override
+    public void setAuthenticationHelper(AuthenticationHelper helper) {
+        this.helper = helper;
     }
 }

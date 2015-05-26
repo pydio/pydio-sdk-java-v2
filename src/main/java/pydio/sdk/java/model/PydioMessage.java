@@ -53,7 +53,6 @@ public class PydioMessage implements Serializable{
 			msg.setMessage(xml_message.getTextContent());
 			msg.setType(xml_message.getAttributes().getNamedItem(Pydio.MESSAGE_PROPERTY_TYPE).getNodeValue());
 		}
-
         org.w3c.dom.Node diff = doc.getElementsByTagName(Pydio.XML_NODES_DIFF).item(0);
         if(diff != null) {
             for (int i = 0; i < diff.getChildNodes().getLength(); i++) {
