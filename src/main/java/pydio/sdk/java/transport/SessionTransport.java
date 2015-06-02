@@ -37,6 +37,7 @@ import pydio.sdk.java.model.ServerNode;
 import pydio.sdk.java.utils.CustomCertificateException;
 import pydio.sdk.java.utils.ProgressListener;
 import pydio.sdk.java.utils.Pydio;
+import pydio.sdk.java.utils.PydioSecureTokenStore;
 import pydio.sdk.java.utils.ServerResolution;
 
 
@@ -132,6 +133,8 @@ public class SessionTransport implements Transport{
                 String newToken = doc.getElementsByTagName("logging_result").item(0).getAttributes().getNamedItem("secure_token").getNodeValue();
                 loginStateChanged = true;
                 secure_token = newToken;
+                String key = helper.requestForLoginPassword()[0] + "@" + server.host() + server.path();
+                PydioSecureTokenStore.getInstance().add(key, secure_token);
             }else{
                 request_status = Pydio.ERROR_AUTHENTICATION;
                 if (result.equals("-4")){
@@ -337,7 +340,13 @@ public class SessionTransport implements Transport{
             }else{
                 try {
                     if (request_status == Pydio.ERROR_OLD_AUTHENTICATION_TOKEN) {
-                        refreshToken();
+                        String key = helper.requestForLoginPassword()[0] + "@" + server.host() + server.path();
+                        if("".equals(secure_token)){
+                            secure_token = PydioSecureTokenStore.getInstance().get(key);
+                            request_status = Pydio.NO_ERROR;
+                        }else if (!secure_token.equals(PydioSecureTokenStore.getInstance().get(key))){
+                            refreshToken();
+                        }
                     } else if (request_status == Pydio.ERROR_AUTHENTICATION) {
                         authenticate();
                     }
@@ -402,10 +411,6 @@ public class SessionTransport implements Transport{
 
     public void setServer(ServerNode server){
         this.server = server;
-    }
-    @Override
-    public String secureToken() {
-        return secure_token;
     }
     @Override
     public int requestStatus(){

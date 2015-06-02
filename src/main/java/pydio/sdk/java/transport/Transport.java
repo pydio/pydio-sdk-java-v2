@@ -39,6 +39,4 @@ public interface Transport {
     public void setAuthenticationHelper(AuthenticationHelper helper);
 
     public void setServer(ServerNode server);
-
-    public String secureToken();
 }

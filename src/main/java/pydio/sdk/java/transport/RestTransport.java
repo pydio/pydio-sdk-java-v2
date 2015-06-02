@@ -103,10 +103,7 @@ public class RestTransport implements Transport{
     public void setServer(ServerNode server) {
 
     }
-    @Override
-    public String secureToken() {
-        return "";
-    }
+
     @Override
     public void setAuthenticationHelper(AuthenticationHelper helper) {
 
