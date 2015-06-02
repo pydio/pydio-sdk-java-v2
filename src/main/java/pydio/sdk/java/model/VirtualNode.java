@@ -78,4 +78,11 @@ public class VirtualNode implements Node{
 		return label;
 	}
 
+    public boolean equals(Object o){
+        try{
+            return this == o || (o instanceof Node) && ((Node)o).type() == type() && label().equals(((Node)o).label()) && path().equals(((Node)o).path());
+        }catch(NullPointerException e){
+            return false;
+        }
+    }
 }

@@ -23,7 +23,7 @@ public class NodeFactory {
 	
 	public static Node createNode(int type, JSONObject json){
 		Node node = newNode(type);
-		
+
 		if(json != null){
 			node.initFromJson(json);
 		}

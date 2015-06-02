@@ -126,4 +126,12 @@ public class WorkspaceNode implements Node{
 	public String path() {
 		return "/";
 	}
+
+	public boolean equals(Object o){
+		try{
+			return this == o || (o instanceof Node) && ((Node)o).type() == type() && label().equals(((Node)o).label()) && path().equals(((Node)o).path());
+		}catch(NullPointerException e){
+			return false;
+		}
+	}
 }

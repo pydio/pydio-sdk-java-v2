@@ -118,5 +118,12 @@ public class TreeNode implements Node{
 	public int type() {
 		return Node.TYPE_TREE;
 	}
-	
+
+    public boolean equals(Object o){
+        try{
+            return this == o || (o instanceof Node) && ((Node)o).type() == type() && label().equals(((Node)o).label()) && path().equals(((Node)o).path());
+        }catch(NullPointerException e){
+            return false;
+        }
+    }
 }

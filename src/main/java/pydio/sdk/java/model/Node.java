@@ -44,4 +44,6 @@ public interface Node extends Serializable {
     public Properties getProperties();
 
     public String getProperty(String key);
+
+	public boolean equals(Object o);
 }

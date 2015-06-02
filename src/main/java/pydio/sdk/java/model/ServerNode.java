@@ -115,6 +115,13 @@ public class ServerNode implements Node{
 	public String label() {
 		return null;
 	}
-	
+
+    public boolean equals(Object o){
+        try{
+            return this == o || (o instanceof Node) && ((Node)o).type() == type() && label().equals(((Node)o).label()) && path().equals(((Node)o).path());
+        }catch(NullPointerException e){
+            return false;
+        }
+    }
 	
 }
