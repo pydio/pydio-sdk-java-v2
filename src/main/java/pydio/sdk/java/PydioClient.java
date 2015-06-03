@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -46,6 +47,7 @@ import pydio.sdk.java.utils.FileNodeSaxHandler;
 import pydio.sdk.java.utils.MessageHandler;
 import pydio.sdk.java.utils.ProgressListener;
 import pydio.sdk.java.utils.Pydio;
+import pydio.sdk.java.utils.RegistrySaxHandler;
 import pydio.sdk.java.utils.WorkspaceNodeSaxHandler;
 
 /**
@@ -107,6 +109,28 @@ public class PydioClient {
         }, 0, 1000);
         workspace = wn[0];
         return wn[0] != null;
+    }
+
+    public void loadRegistry(final ArrayList<String> actions){
+        InputStream in = transport.getResponseStream(Pydio.ACTION_GET_REGISTRY, null);
+        if (in == null) return;
+        try {
+            SAXParser parser = null;
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            parser = factory.newSAXParser();
+            parser.parse(in, new RegistrySaxHandler(){
+                @Override
+                public void onAction(String action) {
+                    actions.add(action);
+                }
+            });
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void listChildren(String path, final NodeHandler handler, int offset, int max) {
