@@ -18,7 +18,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -47,6 +46,7 @@ import pydio.sdk.java.utils.FileNodeSaxHandler;
 import pydio.sdk.java.utils.MessageHandler;
 import pydio.sdk.java.utils.ProgressListener;
 import pydio.sdk.java.utils.Pydio;
+import pydio.sdk.java.utils.RegistryItemHandler;
 import pydio.sdk.java.utils.RegistrySaxHandler;
 import pydio.sdk.java.utils.WorkspaceNodeSaxHandler;
 
@@ -93,6 +93,7 @@ public class PydioClient {
     //*****************************************
     //         REMOTE ACTION METHODS
     //*****************************************
+
     public boolean selectWorkspace(final String id){
         final WorkspaceNode[] wn = new WorkspaceNode[1];
         listChildren(null, new NodeHandler() {
@@ -111,19 +112,19 @@ public class PydioClient {
         return wn[0] != null;
     }
 
-    public void loadRegistry(final ArrayList<String> actions){
-        InputStream in = transport.getResponseStream(Pydio.ACTION_GET_REGISTRY, null);
+    public void loadRegistry(RegistryItemHandler handler){
+        Map<String, String> params = null;
+        if(workspace != null){
+            params = new HashMap<String , String>();
+            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        }
+        InputStream in = transport.getResponseStream(Pydio.ACTION_GET_REGISTRY, params);
         if (in == null) return;
         try {
             SAXParser parser = null;
             SAXParserFactory factory = SAXParserFactory.newInstance();
             parser = factory.newSAXParser();
-            parser.parse(in, new RegistrySaxHandler(){
-                @Override
-                public void onAction(String action) {
-                    actions.add(action);
-                }
-            });
+            parser.parse(in, new RegistrySaxHandler(handler));
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
         } catch (SAXException e) {
@@ -186,32 +187,29 @@ public class PydioClient {
         if(workspace != null) {
             params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
         }
-        params.put(Pydio.PARAM_NODE, path);
+        params.put(Pydio.PARAM_DIR, path);
 		params.put(Pydio.PARAM_XHR_UPLOADER, "true");
 
 		String tmp_name = null;
-		String fname = source.getName();
+        if(name == null){
+            name = source.getName();
+        }
 
 
-		if(!EncodingUtils.getAsciiString(EncodingUtils.getBytes(source.getName(), "US-ASCII")).equals(source.getName())){
-			tmp_name = fname;
-			fname = EncodingUtils.getAsciiString(EncodingUtils.getBytes(source.getName(), "US-ASCII")).replace("?", "") + ".tmp_upload";
+		if(!EncodingUtils.getAsciiString(EncodingUtils.getBytes(name, "US-ASCII")).equals(source.getName())){
+			tmp_name = name;
+			name = EncodingUtils.getAsciiString(EncodingUtils.getBytes(source.getName(), "US-ASCII")).replace("?", "") + ".tmp_upload";
 		}
-
-		try {
-			if(name != null){
-				params.put(Pydio.PARAM_APPEND_TO_URLENCODED_PART, name);
-			}else{
-				params.put(Pydio.PARAM_URL_ENCODED, java.net.URLEncoder.encode(fname, "UTF-8"));
-			}
-		} catch (UnsupportedEncodingException e) {
+        try {
+            params.put(Pydio.PARAM_URL_ENCODED, java.net.URLEncoder.encode(name, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 
 		if(autoRename){
 			params.put(Pydio.PARAM_AUTO_RENAME, "true");
 		}
-        final Document doc = transport.putContent(action, params, source, fname, progressListener);
+        final Document doc = transport.putContent(action, params, source, name, progressListener);
 		if(tmp_name != null){
 			rename(path, tmp_name, new MessageHandler() {
                 @Override
@@ -223,7 +221,9 @@ public class PydioClient {
                 }
             });
 		}else{
-            handler.onMessage(PydioMessage.create(doc));
+            if(handler != null) {
+                handler.onMessage(PydioMessage.create(doc));
+            }
         }
 		//return m;
 	}
@@ -502,6 +502,7 @@ public class PydioClient {
 
     public int changes(int seq, boolean flatten, String filter, ChangeProcessor p){
         Map<String, String> params = new HashMap<String , String>();
+        int result_seq = 0;
         if(workspace != null) {
             params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
         }
@@ -522,6 +523,7 @@ public class PydioClient {
             }
             InputStream is = r.getEntity().getContent();
             Scanner sc = new Scanner(is, charset);
+            sc.useDelimiter("\\n");
             String line = sc.nextLine();
             while(!line.toLowerCase().startsWith("last_seq") && line.length() != 0){
                 final String[] change = new String[10];
@@ -531,6 +533,7 @@ public class PydioClient {
                 JSONObject json =  new JSONObject(line);
 
                 change[Pydio.CHANGE_INDEX_SEQ] = json.getString(Pydio.CHANGE_SEQ);
+                result_seq = Math.max(result_seq, Integer.parseInt(change[Pydio.CHANGE_INDEX_SEQ]));
                 change[Pydio.CHANGE_INDEX_NODE_ID] = json.getString(Pydio.CHANGE_NODE_ID);
                 change[Pydio.CHANGE_INDEX_TYPE] = json.getString(Pydio.CHANGE_TYPE);
                 change[Pydio.CHANGE_INDEX_SOURCE] = json.getString(Pydio.CHANGE_SOURCE);
@@ -544,19 +547,15 @@ public class PydioClient {
                 line = sc.nextLine();
             }
             if(line.toLowerCase().startsWith("last_seq")) {
-                return Integer.parseInt(line.split(":")[1]);
+                result_seq = Integer.parseInt(line.split(":")[1]);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return seq;
+        return Math.max(seq, result_seq);
     }
 
-    public JSONObject stats(String[] paths, boolean with_hash, ChangeProcessor p){
+    public JSONObject stats(String[] paths, boolean with_hash){
         Map<String, String> params = new HashMap<String , String>();
         if(workspace != null) {
             params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
