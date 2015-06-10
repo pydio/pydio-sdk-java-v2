@@ -183,6 +183,17 @@ public class Pydio {
     public final static int CHANGE_INDEX_NODE_PATH                      = 8;
     public final static int CHANGE_INDEX_NODE_WORKSPACE                 = 9;
 
+    public final static String CHANGE_EVENT_CREATE                      = "create";
+    public final static String CHANGE_EVENT_DELETE                      = "delete";
+    public final static String CHANGE_EVENT_PATH                        = "path";
+    public final static String CHANGE_EVENT_CONTENT                     = "content";
+
+
+
+    public final static int REGISTRY_ITEM_ACTION                        = 1;
+    public final static int REGISTRY_ITEM_PLUGIN                        = 2;
+    public final static int REGISTRY_ITEM_REPO                          = 3;
+
 
     public final static String AUTH_CHALLENGE_TYPE_CAPTCHA              = "CHALLENGE_CAPTCHA";
     public static String[] no_auth_required_actions                     = {Pydio.ACTION_CAPTCHA, Pydio.ACTION_GET_SEED, Pydio.ACTION_LOGIN};
