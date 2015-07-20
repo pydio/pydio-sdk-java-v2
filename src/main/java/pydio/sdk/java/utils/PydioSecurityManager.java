@@ -66,6 +66,10 @@ public abstract class PydioSecurityManager {
         }
     }
 
+    public boolean hasCertificate(String alias) throws KeyStoreException {
+        return (X509Certificate) ks.getCertificate(alias) != null;
+    }
+
     public void addCertificate(String alias, X509Certificate cert)
     throws KeyStoreException, CertificateNotYetValidException, CertificateExpiredException {
         if(ks == null) return;
