@@ -10,11 +10,13 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
@@ -84,7 +86,7 @@ public class PydioClient {
 
     public void setAuthenticationHelper(AuthenticationHelper h){
         helper = h;
-        transport.setAuthenticationHelper(helper);
+        transport.setAuthenticationHelper(h);
     }
     public AuthenticationHelper authenticationHelper(){
         return helper;
@@ -107,7 +109,7 @@ public class PydioClient {
                     wn[0] = n;
                 }
             }
-        }, 0, 1000);
+        }, 0, -1);
         workspace = wn[0];
         return wn[0] != null;
     }
@@ -162,13 +164,13 @@ public class PydioClient {
             parser.parse(in, saxHandler);
             return;
         } catch (IOException e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         } catch (ParserConfigurationException e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         } catch (SAXException e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         } catch(Exception e){
-            //e.printStackTrace();
+            e.printStackTrace();
         }
     }
 	/**
@@ -572,12 +574,20 @@ public class PydioClient {
                 charset = "UTF-8";
             }
             InputStream is = r.getEntity().getContent();
-            Scanner sc = new Scanner(is, charset);
-            return new JSONObject(sc.nextLine());
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, charset));
+            StringBuilder sb = new StringBuilder();
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+            return new JSONObject(sb.toString());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ParseException e) {
             e.printStackTrace();
+        } catch (Exception e){
+            return null;
         }
         return null;
     }
