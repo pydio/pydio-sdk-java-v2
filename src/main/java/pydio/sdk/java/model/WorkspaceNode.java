@@ -111,10 +111,6 @@ public class WorkspaceNode implements Node{
         }
     }
     @Override
-    public Properties getProperties() {
-        return properties;
-    }
-    @Override
     public String getProperty(String key) {
         return properties.getProperty(key, "");
     }

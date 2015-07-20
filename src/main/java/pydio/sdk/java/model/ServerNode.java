@@ -30,10 +30,6 @@ public class ServerNode implements Node{
 
     }
 
-    @Override
-    public Properties getProperties() {
-        return properties;
-    }
 
     @Override
     public String getProperty(String key) {
@@ -103,6 +99,7 @@ public class ServerNode implements Node{
 	}
 	
 	public String getRemoteConfig(String name){
+		if(remoteCapacities == null) return null;
 		return remoteCapacities.get(name);
 	}
 	

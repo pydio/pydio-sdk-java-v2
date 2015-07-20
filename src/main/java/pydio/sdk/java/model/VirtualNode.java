@@ -56,10 +56,7 @@ public class VirtualNode implements Node{
         properties.setProperty(Pydio.NODE_PROPERTY_FILE_SIZE, file.length()+"");
         properties.setProperty(Pydio.NODE_PROPERTY_IS_FILE, Boolean.toString(file.isFile()).toLowerCase());
     }
-    @Override
-    public Properties getProperties() {
-        return properties;
-    }
+
 
     @Override
     public String getProperty(String key) {
