@@ -23,7 +23,7 @@ public class WorkspaceNodeSaxHandler extends DefaultHandler {
 
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         count++;
-        if(count < offset || count > max){
+        if(max != -1 && (count < offset || count > max)){
             return;
         }
 
@@ -41,7 +41,7 @@ public class WorkspaceNodeSaxHandler extends DefaultHandler {
     }
 
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if(count < offset || count > max){
+        if(max != -1 &&(count < offset || count > max)){
             return;
         }
         if(inside_repo && "repo".equals(qName)){
@@ -53,7 +53,7 @@ public class WorkspaceNodeSaxHandler extends DefaultHandler {
     }
 
     public void characters(char ch[], int start, int length) throws SAXException {
-        if(count < offset || count > max){
+        if(max != -1 && (count < offset || count > max)){
             return;
         }
         if(inside_repo){

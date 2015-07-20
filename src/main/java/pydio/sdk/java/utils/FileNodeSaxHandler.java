@@ -23,7 +23,7 @@ public class FileNodeSaxHandler extends DefaultHandler {
     Properties p = null;
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         count++;
-        if(count < offset || count > max){
+        if(max != -1 && (count < offset || count > max)){
             return;
         }
         if("tree".equals(qName)){
@@ -39,9 +39,10 @@ public class FileNodeSaxHandler extends DefaultHandler {
         }
     }
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if(count < offset || count > max){
+        if(max != -1 && (count < offset || count > max)){
             return;
         }
+
         if(inside_tree && "tree".equals(qName)){
             handler.processNode(NodeFactory.createNode(Node.TYPE_TREE, p));
             p = null;
@@ -51,7 +52,7 @@ public class FileNodeSaxHandler extends DefaultHandler {
     }
 
     public void characters(char ch[], int start, int length) throws SAXException {
-        if(count < offset || count > max){
+        if(max != -1 && (count < offset || count > max)){
             return;
         }
         if(inside_tree){
@@ -60,7 +61,8 @@ public class FileNodeSaxHandler extends DefaultHandler {
     }
 
     public void endDocument() throws SAXException {
-        handler.processNode(null);
+        if(max != -1)
+            handler.processNode(null);
     }
 
     public FileNodeSaxHandler(NodeHandler nodeHandler, int offset, int max){
