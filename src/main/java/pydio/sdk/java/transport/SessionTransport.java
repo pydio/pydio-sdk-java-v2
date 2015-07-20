@@ -1,6 +1,5 @@
 package pydio.sdk.java.transport;
 
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -185,7 +184,7 @@ public class SessionTransport implements Transport{
 
     private boolean isAuthenticationRequested(HttpResponse response) {
 
-        Header[] heads = response.getHeaders("Content-type");
+        /*Header[] heads = response.getHeaders("Content-type");
         boolean xml = false;
 
         for (int i = 0; i < heads.length; i++) {
@@ -193,7 +192,7 @@ public class SessionTransport implements Transport{
         }
 
         if (!xml || loginStateChanged) return false;
-        //if(!xml) return false;
+        //if(!xml) return false;*/
 
         HttpEntity ent = response.getEntity();
 
@@ -335,7 +334,9 @@ public class SessionTransport implements Transport{
             }
 
             if(!isAuthenticationRequested(response)){
-                request_status = Pydio.NO_ERROR;
+                if(!Arrays.asList(Pydio.no_auth_required_actions).contains(this.action)) {
+                    request_status = Pydio.NO_ERROR;
+                }
                 return response;
             }else{
                 try {
@@ -387,6 +388,11 @@ public class SessionTransport implements Transport{
 
     public InputStream getResponseStream(String action, Map<String, String> params) {
         this.action = action;
+        try {
+            return request(null, getActionURI(action), params).getEntity().getContent();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
@@ -400,7 +406,7 @@ public class SessionTransport implements Transport{
             params.put("secure_token", secure_token);
         }
         HttpResponse response = null;
-        response = request(null, getActionURI(action), params);
+        response = request(req, getActionURI(action), params);
         return HttpResponseParser.getXML(response);
     }
 
