@@ -302,7 +302,13 @@ public class SessionTransport implements Transport{
             if(!"".equals(secure_token)){
                 if(params == null) params = new HashMap<String, String>();
                 params.put("secure_token", secure_token);
+            }else{
+                String key = helper.requestForLoginPassword()[0] + "@" + server.host() + server.path();
+                secure_token = PydioSecureTokenStore.getInstance().get(key);
+                if(!"".equals(secure_token))
+                    params.put("secure_token", secure_token);
             }
+
             try {
                 response = req.issueRequest(uri, params);
             }catch (IOException e){
@@ -334,7 +340,8 @@ public class SessionTransport implements Transport{
             }
 
             if(!isAuthenticationRequested(response)){
-                if(!Arrays.asList(Pydio.no_auth_required_actions).contains(this.action)) {
+                boolean isNotAuthAction = Arrays.asList(Pydio.no_auth_required_actions).contains(this.action);
+                if(! isNotAuthAction && request_status != Pydio.NO_ERROR) {
                     request_status = Pydio.NO_ERROR;
                 }
                 return response;
