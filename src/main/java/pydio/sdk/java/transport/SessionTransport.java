@@ -88,7 +88,7 @@ public class SessionTransport implements Transport{
         return HttpResponseParser.getString(resp);
     }
 
-    private void authenticate() throws IOException {
+    public void login() throws IOException {
         Requester req;
         String seed = getSeed();
         if(seed.indexOf("\"seed\":-1") != -1 || seed.contains("require_auth")){
@@ -279,7 +279,7 @@ public class SessionTransport implements Transport{
         if(!Arrays.asList(Pydio.no_auth_required_actions).contains(this.action)){
             if((request_status == Pydio.ERROR_AUTHENTICATION || request_status == Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA)){
                 try {
-                    authenticate();
+                    login();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -356,7 +356,7 @@ public class SessionTransport implements Transport{
                             refreshToken();
                         }
                     } else if (request_status == Pydio.ERROR_AUTHENTICATION) {
-                        authenticate();
+                        login();
                     }
                     continue;
                 }catch (Exception e){
