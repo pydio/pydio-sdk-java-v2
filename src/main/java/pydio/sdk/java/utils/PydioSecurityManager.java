@@ -65,7 +65,6 @@ public abstract class PydioSecurityManager {
             e.printStackTrace();
         }
     }
-
     public boolean hasCertificate(String alias) throws KeyStoreException {
         return (X509Certificate) ks.getCertificate(alias) != null;
     }

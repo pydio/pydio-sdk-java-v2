@@ -34,6 +34,7 @@ public class RegistrySaxHandler extends DefaultHandler {
             handler.onNewItem(Pydio.REGISTRY_ITEM_ACTION, action);
             return;
         }
+
         if("plugin".equals(qName) && inside_plugins){
             /*String action = attributes.getValue(attributes.getIndex("name"));
             handler.onNewItem(Pydio.REGISTRY_ITEM_PLUGIN, action);*/
@@ -104,7 +105,7 @@ public class RegistrySaxHandler extends DefaultHandler {
 
             if("repo".equals(qName)){
                 inside_repo = false;
-                handler.onNewItem(Pydio.REGISTRY_ITEM_REPO, NodeFactory.createNode(Node.TYPE_WORKSPACE, p));
+                handler.onNewItem(Pydio.REGISTRY_ITEM_REPO, p);
                 p = null;
                 return;
             }

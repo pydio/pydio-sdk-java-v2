@@ -42,6 +42,7 @@ import pydio.sdk.java.model.PydioMessage;
 import pydio.sdk.java.model.ServerNode;
 import pydio.sdk.java.model.TreeNode;
 import pydio.sdk.java.model.WorkspaceNode;
+import pydio.sdk.java.transport.SessionTransport;
 import pydio.sdk.java.transport.Transport;
 import pydio.sdk.java.transport.TransportFactory;
 import pydio.sdk.java.utils.FileNodeSaxHandler;
@@ -59,7 +60,7 @@ import pydio.sdk.java.utils.WorkspaceNodeSaxHandler;
  */
 public class PydioClient {
 	
-	Transport transport;
+	SessionTransport transport;
     public WorkspaceNode workspace;
     public ServerNode server;
     Properties localConfigs = new Properties();
@@ -78,7 +79,7 @@ public class PydioClient {
         return client;
     }
     public PydioClient(ServerNode server, int mode){
-        transport = TransportFactory.getInstance(mode, server);
+        transport = (SessionTransport) TransportFactory.getInstance(mode, server);
         this.server = server;
         localConfigs = new Properties();
         localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DVALUE);
@@ -95,6 +96,16 @@ public class PydioClient {
     //*****************************************
     //         REMOTE ACTION METHODS
     //*****************************************
+
+    public boolean login(){
+        try {
+            transport.login();
+            return transport.requestStatus() == Pydio.NO_ERROR;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     public boolean selectWorkspace(final String id){
         final WorkspaceNode[] wn = new WorkspaceNode[1];
@@ -116,11 +127,9 @@ public class PydioClient {
 
     public void loadRegistry(RegistryItemHandler handler){
         Map<String, String> params = null;
-        if(workspace != null){
-            params = new HashMap<String , String>();
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
-        }
-        InputStream in = transport.getResponseStream(Pydio.ACTION_GET_REGISTRY, params);
+        //params = new HashMap<String , String>();
+        //params.put(Pydio.PARAM_XPATH, Pydio.XPATH_VALUE_USER_REPO);
+        InputStream in = transport.getResponseStream(Pydio.ACTION_GET_REGISTRY, null);
         if (in == null) return;
         try {
             SAXParser parser = null;

@@ -34,7 +34,9 @@ public class WorkspaceNodeSaxHandler extends DefaultHandler {
                 p.setProperty(attributes.getLocalName(i), attributes.getValue(i));
             }
         }
+
         if(!inside_repo) return;
+
         if("label".equals(qName.toLowerCase()) || "description".equals(qName.toLowerCase())){
             inner_element = qName;
         }
@@ -44,6 +46,7 @@ public class WorkspaceNodeSaxHandler extends DefaultHandler {
         if(max != -1 &&(count < offset || count > max)){
             return;
         }
+
         if(inside_repo && "repo".equals(qName)){
             handler.processNode(NodeFactory.createNode(Node.TYPE_WORKSPACE, p));
             p = null;
@@ -56,8 +59,14 @@ public class WorkspaceNodeSaxHandler extends DefaultHandler {
         if(max != -1 && (count < offset || count > max)){
             return;
         }
+
         if(inside_repo){
-            p.setProperty(inner_element, new String(ch, start, length));
+            String content = new String(ch, 0, length);
+
+
+            if(!p.containsKey(inner_element)){
+                p.setProperty(inner_element, content);
+            }
         }
     }
 
