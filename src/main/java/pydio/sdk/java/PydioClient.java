@@ -64,7 +64,6 @@ public class PydioClient {
     public WorkspaceNode workspace;
     public ServerNode server;
     Properties localConfigs = new Properties();
-
     AuthenticationHelper helper;
 
     //*****************************************
@@ -106,6 +105,11 @@ public class PydioClient {
             return false;
         }
     }
+    public boolean logout(){
+        String action = Pydio.ACTION_LOGOUT;
+        String response = transport.getStringContent(action, null);
+        return response.contains("logging_result value=\"2\"");
+    }
 
     public boolean selectWorkspace(final String id){
         final WorkspaceNode[] wn = new WorkspaceNode[1];
@@ -141,6 +145,38 @@ public class PydioClient {
         } catch (SAXException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadNodeData(String path, NodeHandler handler){
+        DefaultHandler saxHandler = null;
+        String action;
+
+        Map<String, String> params = new HashMap<String , String>();
+
+        action = Pydio.ACTION_LIST;
+        params.put(Pydio.PARAM_OPTIONS, "al");
+        params.put(Pydio.PARAM_FILE, path);
+        saxHandler = new FileNodeSaxHandler(handler, 0, -1);
+
+        if(workspace != null) {
+            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        }
+        try {
+            HttpResponse r = transport.getResponse(action , params);
+            InputStream in  = r.getEntity().getContent();
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser parser = factory.newSAXParser();
+            parser.parse(in, saxHandler);
+            return;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch(Exception e){
             e.printStackTrace();
         }
     }
@@ -306,7 +342,11 @@ public class PydioClient {
         }
         fillParams(params, paths);
         Document doc = transport.getXmlContent(Pydio.ACTION_DELETE, params);
-        handler.onMessage(PydioMessage.create(doc));
+        try {
+            handler.onMessage(PydioMessage.create(doc));
+        }catch (NullPointerException e){
+            handler.onMessage(PydioMessage.create(PydioMessage.ERROR, "Delete failed"));
+        }
     }
 	/**
 	 * 
@@ -599,6 +639,67 @@ public class PydioClient {
             return null;
         }
         return null;
+    }
+
+
+    public JSONObject shareInfo(String path){
+        Map<String, String> params = new HashMap<String , String>();
+        String action = Pydio.ACTION_LOAD_SHARED_ELEMENT_DATA;
+
+        params.put(Pydio.PARAM_WORKSPACE, "1");
+
+        params.put(Pydio.PARAM_FILE, path);
+        Properties p = new Properties();
+        String res = transport.getStringContent(action, params);
+        try {
+            return new JSONObject(res);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String minisiteShare(String[] paths, String ws_label, String ws_description, String password, int expiration, int downloads, boolean canRead, boolean canDownload){
+
+        Map<String, String> params = new HashMap<String , String>();
+        if(workspace != null) {
+            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        }
+
+        String action = Pydio.ACTION_SHARE;
+        fillParams(params, paths);
+
+        params.put(Pydio.PARAM_SUB_ACTION, Pydio.ACTION_CREATE_MINISITE);
+
+        if(password != null && !"".equals(password)) {
+            params.put(Pydio.PARAM_SHARE_GUEST_USER_PASSWORD, password);
+        }
+
+        params.put("create_guest_user", "true");
+        if(canRead)
+        params.put("simple_right_read", "on");
+
+        if(canDownload)
+        params.put("simple_right_download", "on");
+
+        params.put("share_type", "on");
+
+        params.put(Pydio.PARAM_SHARE_EXPIRATION, String.valueOf(expiration));
+        params.put(Pydio.PARAM_SHARE_DOWNLOAD, String.valueOf(downloads));
+        params.put(Pydio.PARAM_SHARE_WORKSPACE_DESCRIPTION, ws_description);
+        params.put(Pydio.PARAM_SHARE_WORKSPACE_LABEL, ws_label);
+
+        return transport.getStringContent(action, params);
+    }
+
+    public void unshareMinisite(String path){
+        Map<String, String> params = new HashMap<String , String>();
+        if(workspace != null) {
+            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        }
+        String action = Pydio.ACTION_UNSHARE;
+        params.put(Pydio.PARAM_FILE, path);
+        transport.getResponse(action, params);
     }
 
     //*********************************************

@@ -9,7 +9,10 @@ package pydio.sdk.java.utils;
 public class Pydio {
 	
 	public final static String PARAM_GET_ACTION					        = "get_action";
+	public final static String PARAM_SUB_ACTION					        = "sub_action";
+
 	public final static String PARAM_ACTION					            = "action";
+	public final static String PARAM_SHARE_ELEMENT_TYPE					= "element_type";
 	public final static String PARAM_CAPTCHA_CODE				        = "captcha_code";
 	public final static String PARAM_NODE 						        = "node";
 	public final static String PARAM_NODES 					    	    = "nodes";
@@ -49,6 +52,11 @@ public class Pydio {
     public static final String PARAM_REMEMBER_ME                        = "remember_me";
     public static final String PARAM_DIMENSION                          = "dimension";
     public static final String PARAM_GET_THUMB                          = "get_thumb";
+    public static final String PARAM_SHARE_GUEST_USER_PASSWORD          = "guest_user_pass";
+    public static final String PARAM_SHARE_EXPIRATION                   = "expiration";
+    public static final String PARAM_SHARE_DOWNLOAD                     = "downloadlimit";
+    public static final String PARAM_SHARE_WORKSPACE_LABEL              = "repo_label";
+    public static final String PARAM_SHARE_WORKSPACE_DESCRIPTION        = "repo_description";
 
     public static final String PARAM_CHANGE_SEQ_ID                      = "seq_id";
     public static final String PARAM_CHANGE_FLATTEN                     = "flatten";
@@ -56,8 +64,11 @@ public class Pydio {
     public static final String PARAM_CHANGE_FILTER                      = "filter";
 
 
+    public static final String PARAM_ELEMENT_TYPE_VALUE_FILE            = "file";
+
 
 	public final static String ACTION_LIST 						        = "ls";
+	public final static String ACTION_LOGOUT 						    = "logout";
 	public final static String ACTION_UPLOAD 					        = "upload";
 	public final static String ACTION_DOWNLOAD 					        = "download";
 	public final static String ACTION_CAPTCHA                           = "get_captcha";
@@ -73,6 +84,9 @@ public class Pydio {
 	public final static String ACTION_COPY 						        = "copy";
 	public final static String ACTION_MOVE 						        = "move";
 	public final static String ACTION_DELETE 					        = "delete";
+	public final static String ACTION_CREATE_MINISITE 					= "create_minisite";
+	public final static String ACTION_SHARE 					        = "share";
+	public final static String ACTION_UNSHARE 					        = "unshare";
     public final static String ACTION_CHMOD 					        = "chmod";
     public final static String ACTION_PREPARE_CHUNK_DL 			        = "prepare_chunk_dl";
     public final static String ACTION_DOWNLOAD_CHUNK 			        = "download_chunk";
@@ -87,6 +101,14 @@ public class Pydio {
     public final static String ACTION_PREVIEW_DATA_PROXY                = "preview_data_proxy";
     public final static String ACTION_STATS                             = "stat";
     public final static String ACTION_CHANGES                           = "changes";
+    public final static String ACTION_LOAD_SHARED_ELEMENT_DATA          = "load_shared_element_data";
+
+
+
+    public final static String PARAM_SHARED_ELEMENT_TYPE_MINISITE       = "minisite";
+    public final static String PARAM_SHARED_ELEMENT_TYPE_WORKSPACE      = "workspace";
+
+
 
 
 
@@ -98,6 +120,7 @@ public class Pydio {
 
 	public final static String XML_NODES_DIFF 					        = "nodes_diff";
     public final static String NODE_PROPERTY_AJXP_MIME 			        = "ajxp_mime";
+    public final static String NODE_PROPERTY_AJXP_SHARED 			    = "ajxp_shared";
     public final static String NODE_PROPERTY_AJXP_MODIFTIME 	        = "ajxp_modiftime";
     public final static String NODE_PROPERTY_BYTESIZE 			        = "bytesize";
     public final static String NODE_PROPERTY_FILE_GROUP 		        = "file_group";
@@ -125,6 +148,7 @@ public class Pydio {
 	public final static String NODE_PROPERTY_DESCRIPTION 		        = "description";
 
 	public final static String MESSAGE_PROPERTY_TYPE 			        = "type";
+	public final static String WORKSPACE_PROPERTY_OWNER 			    = "owner";
     public final static String WORKSPACE_PROPERTY_ID                    = "id";
     public final static String WORKSPACE_PROPERTY_ACCESS_TYPE           = "access_type";
     public final static String WORKSPACE_PROPERTY_CROSS_COPY            = "allowCrossRepositoryCopy";
