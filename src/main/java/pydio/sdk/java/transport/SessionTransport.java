@@ -203,6 +203,7 @@ public class SessionTransport implements Transport{
             CustomEntity.ContentStream stream = (CustomEntity.ContentStream) entity.getContent();
             byte[] buffer = new byte[200];
             int read = stream.safeRead(buffer);
+            if(read == - 1) return false;
             String xmlString = new String(Arrays.copyOfRange(buffer, 0, read), "UTF-8");
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = factory.newSAXParser();
