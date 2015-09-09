@@ -69,7 +69,8 @@ public class CustomEntity extends BasicHttpEntity {
         public synchronized int safeRead(byte[] array) throws IOException {
             if(final_state) throw new IOException("Cannot apply safeRead on the custom entity content since you've once called read()!");
             int len = originalStream.read(array);
-            buffer.put(array, 0, len);
+            if(len != -1)
+                buffer.put(array, 0, len);
             return len;
         }
     }
