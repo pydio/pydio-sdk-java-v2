@@ -38,7 +38,6 @@ public class TreeNode implements Node{
 	public void initFromProperties(Properties p) {
 		properties = (Properties) p.clone();
 	}
-
     @Override
     public void initFromFile(File file) {
         properties = new Properties();
@@ -174,4 +173,13 @@ public class TreeNode implements Node{
 		String mime = mimeString();
 		return mime.equals("video/*") || mime.equals("image/jpeg") || mime.equals("image/gif") || mime.equals("audio/x-wav") || mime.equals("image/jpeg") || mime.equals("image/jpeg") || mime.equals("text/plain") || mime.equals("application/rtf");
 	}
+
+	public void setProperty(String key, String value){
+		properties.put(key, value);
+	}
+
+	public void unSetProperty(String key){
+		properties.remove(key);
+	}
+
 }
