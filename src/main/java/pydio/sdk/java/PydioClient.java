@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,23 +53,25 @@ import pydio.sdk.java.utils.Pydio;
 import pydio.sdk.java.utils.RegistryItemHandler;
 import pydio.sdk.java.utils.RegistrySaxHandler;
 import pydio.sdk.java.utils.WorkspaceNodeSaxHandler;
-
 /**
  * 
  * @author pydio
  *
  */
+
 public class PydioClient {
 	
 	SessionTransport transport;
-    public WorkspaceNode workspace;
+    //public String mTempWorkspace;
     public ServerNode server;
     Properties localConfigs = new Properties();
     AuthenticationHelper helper;
 
+
     //*****************************************
     //         INITIALIZATION METHODS
     //*****************************************
+
     public static PydioClient configure(ServerNode node, int mode){
         PydioClient client = new PydioClient(node, mode);
         return client;
@@ -81,7 +84,7 @@ public class PydioClient {
         transport = (SessionTransport) TransportFactory.getInstance(mode, server);
         this.server = server;
         localConfigs = new Properties();
-        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DVALUE);
+        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
     }
 
     public void setAuthenticationHelper(AuthenticationHelper h){
@@ -97,43 +100,58 @@ public class PydioClient {
     //*****************************************
 
     public boolean login(){
-        try {
-            transport.login();
-            return transport.requestStatus() == Pydio.NO_ERROR;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
+        transport.login();
+        return transport.requestStatus() == Pydio.NO_ERROR;
     }
-    public boolean logout(){
+    public boolean logout() throws IOException {
         String action = Pydio.ACTION_LOGOUT;
         String response = transport.getStringContent(action, null);
-        return response.contains("logging_result value=\"2\"");
+        boolean result = response.contains("logging_result value=\"2\"");
+
+        if(result){
+            transport.secure_token = "";
+        }
+        return result;
     }
 
-    public boolean selectWorkspace(final String id){
-        final WorkspaceNode[] wn = new WorkspaceNode[1];
-        listChildren(null, new NodeHandler() {
-            boolean found = false;
-            @Override
-            public void processNode(Node node) {
-                if(found) return;
-                WorkspaceNode n = (WorkspaceNode) node;
-                if(n!= null && n.getId().equals(id)){
-                    found = true;
-                    wn[0] = n;
-                }
-            }
-        }, 0, -1);
-        workspace = wn[0];
-        return wn[0] != null;
-    }
 
-    public void loadRegistry(RegistryItemHandler handler){
+    public boolean selectWorkspace(final String id) throws IOException {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put(Pydio.PARAM_WORKSPACE, id);
+        transport.getResponse(Pydio.ACTION_SWITCH_REPO, params);
+
+        int status = transport.requestStatus();
+        if(status == Pydio.NO_ERROR){
+            params.clear();
+            String action = Pydio.ACTION_GET_REGISTRY;
+            params.put(Pydio.PARAM_XPATH, Pydio.XPATH_USER_ACTIVE_WORKSPACE);
+            String content = transport.getStringContent(action, params);
+            return content.contains("<active_repo id=\"" + id + "\"");
+        }
+        return false;
+    }
+    public void downloadRegistry(OutputStream out, boolean workspace) throws IOException {
         Map<String, String> params = null;
-        //params = new HashMap<String , String>();
-        //params.put(Pydio.PARAM_XPATH, Pydio.XPATH_VALUE_USER_REPO);
-        InputStream in = transport.getResponseStream(Pydio.ACTION_GET_REGISTRY, null);
+        if(workspace){
+            params = new HashMap<String, String>();
+            params.put(Pydio.PARAM_XPATH, "actions");
+        }else{
+            params = new HashMap<String, String>();
+            params.put(Pydio.PARAM_XPATH, "user");
+        }
+        try {
+            InputStream in = transport.getResponseStream(Pydio.ACTION_GET_REGISTRY, params);
+            byte[] buffer = new byte[Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            in.close();
+        }catch (NullPointerException e){
+            throw new IOException("empty response");
+        }
+    }
+    public void parseRegistry(InputStream in, RegistryItemHandler handler){
         if (in == null) return;
         try {
             SAXParser parser = null;
@@ -149,7 +167,8 @@ public class PydioClient {
         }
     }
 
-    public void loadNodeData(String path, NodeHandler handler){
+
+    public void loadNodeData(String tempWorkspace, String path, NodeHandler handler)throws IOException{
         DefaultHandler saxHandler = null;
         String action;
 
@@ -160,18 +179,16 @@ public class PydioClient {
         params.put(Pydio.PARAM_FILE, path);
         saxHandler = new FileNodeSaxHandler(handler, 0, -1);
 
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
         try {
-            HttpResponse r = transport.getResponse(action , params);
-            InputStream in  = r.getEntity().getContent();
+            HttpResponse r = transport.getResponse(action, params);
+            InputStream in = r.getEntity().getContent();
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = factory.newSAXParser();
             parser.parse(in, saxHandler);
             return;
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
         } catch (SAXException e) {
@@ -181,7 +198,7 @@ public class PydioClient {
         }
     }
 
-    public void listChildren(String path, final NodeHandler handler, int offset, int max) {
+    public void listChildren(String tempWorkspace, String path, final NodeHandler handler, int offset, int max) throws IOException {
         DefaultHandler saxHandler = null;
         String action;
 
@@ -189,33 +206,28 @@ public class PydioClient {
 
         if(path == null){
             action = Pydio.ACTION_GET_REGISTRY;
-            params.put(Pydio.PARAM_XPATH, Pydio.XPATH_VALUE_USER_REPO);
+            params.put(Pydio.PARAM_XPATH, Pydio.XPATH_USER_WORKSPACES);
             saxHandler = new WorkspaceNodeSaxHandler(handler, offset, max);
         }else{
             action = Pydio.ACTION_LIST;
             params.put(Pydio.PARAM_OPTIONS, "al");
             params.put(Pydio.PARAM_DIR, path);
-            if(workspace != null) {
-                params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+            if(tempWorkspace != null) {
+                params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
             }
             saxHandler = new FileNodeSaxHandler(handler, offset, max);
         }
 
+        HttpResponse r = transport.getResponse(action , params);
+        InputStream in  = r.getEntity().getContent();
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParser parser = null;
+
         try {
-            HttpResponse r = transport.getResponse(action , params);
-            InputStream in  = r.getEntity().getContent();
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            SAXParser parser = factory.newSAXParser();
+            parser = factory.newSAXParser();
             parser.parse(in, saxHandler);
-            return;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch(Exception e){
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw new IOException();
         }
     }
 	/**
@@ -227,28 +239,25 @@ public class PydioClient {
 	 * @param name the name on the remote server
 	 * @return a SUCCESS or ERROR Message
 	 */
-    public void write(String path, File source, String name, boolean autoRename, ProgressListener progressListener, final MessageHandler handler) {
+    public void write(String tempWorkspace, String path, File source, String name, boolean autoRename, ProgressListener progressListener, final MessageHandler handler)throws IOException {
         String action;
 		Map<String, String> params = new HashMap<String , String>();
         action =  Pydio.ACTION_UPLOAD;
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
-        }
+
         params.put(Pydio.PARAM_DIR, path);
 		params.put(Pydio.PARAM_XHR_UPLOADER, "true");
 
-		String tmp_name = null;
+		//String tmp_name = null;
         if(name == null){
             name = source.getName();
         }
 
-
-		if(!EncodingUtils.getAsciiString(EncodingUtils.getBytes(name, "US-ASCII")).equals(source.getName())){
+		/*if(!EncodingUtils.getAsciiString(EncodingUtils.getBytes(name, "US-ASCII")).equals(source.getName())){
 			tmp_name = name;
 			name = EncodingUtils.getAsciiString(EncodingUtils.getBytes(source.getName(), "US-ASCII")).replace("?", "") + ".tmp_upload";
-		}
+		}*/
         try {
-            params.put(Pydio.PARAM_URL_ENCODED, java.net.URLEncoder.encode(name, "UTF-8"));
+            params.put(Pydio.PARAM_URL_ENCODED, java.net.URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
         } catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
@@ -257,21 +266,20 @@ public class PydioClient {
 			params.put(Pydio.PARAM_AUTO_RENAME, "true");
 		}
         final Document doc = transport.putContent(action, params, source, name, progressListener);
-		if(tmp_name != null){
-			rename(path, tmp_name, new MessageHandler() {
+		/*if(tmp_name != null){
+			rename(tempWorkspace, path, tmp_name, new MessageHandler() {
                 @Override
                 public void onMessage(PydioMessage m) {
                     if(PydioMessage.SUCCESS.equals(m.getType())) {
                         handler.onMessage(PydioMessage.create(doc));
-                    }else{
                     }
                 }
             });
-		}else{
+		}else{*/
             if(handler != null) {
                 handler.onMessage(PydioMessage.create(doc));
             }
-        }
+        //}
 		//return m;
 	}
 	/**
@@ -280,42 +288,35 @@ public class PydioClient {
 	 * @param outputStream Outputstream on the local target file
 	 * @param progressListener
 	 */
-    public void read(String[] paths, OutputStream outputStream, ProgressListener progressListener) {
+    public void read(String tempWorkspace, String[] paths, OutputStream outputStream, ProgressListener progressListener) throws IOException{
 
         Map<String, String> params = new HashMap<String , String>();
 		fillParams(params, paths);
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
-		InputStream stream = null;
-		try {
-            HttpEntity entity = transport.getResponse(Pydio.ACTION_DOWNLOAD, params).getEntity();
-			stream = entity.getContent();
-		} catch (IllegalStateException e1) {
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+
+        InputStream stream = transport.getResponseStream(Pydio.ACTION_DOWNLOAD, params);
+        if(requestStatus() != Pydio.NO_ERROR) throw new IOException("failed to get stream");
+
+
         long total_read = 0;
-		int read = 0, buffer_size = Integer.parseInt(localConfigs.getProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE));
+		int read = 0, buffer_size = Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE;
 		byte[] buffer = new byte[buffer_size];
 		int i = 0;
-		try {
-			for(;;){
-				read = stream.read(buffer);
-				if(read == -1) break;
-                total_read += read;
-				outputStream.write(buffer, 0, read);
-				if(progressListener != null){
-					progressListener.onProgress(total_read);
-				}
-				i++;
-			}
-			stream.close();
-			outputStream.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
+        for(;;){
+            read = stream.read(buffer);
+            if(read == -1) break;
+            total_read += read;
+            outputStream.write(buffer, 0, read);
+            if(progressListener != null){
+                progressListener.onProgress(total_read);
+            }
+            i++;
+        }
+        stream.close();
+        outputStream.close();
 	}
 	/** 
 	 * 
@@ -327,18 +328,26 @@ public class PydioClient {
 	 * @throws java.io.FileNotFoundException
 	 * @throws IllegalStateException 
 	 */
-    public void read(String[] paths, File target, ProgressListener progressListener) throws IllegalStateException, FileNotFoundException, IOException {
-        read(paths, new FileOutputStream(target), progressListener);
+    public void read(String tempWorkspace, String[] paths, File target, ProgressListener progressListener) throws IllegalStateException, IOException {
+        read(tempWorkspace, paths, new FileOutputStream(target), progressListener);
     }
     /**
      * Remove node on the server
      * @param paths
      * @return
      */
-    public void remove(String[] paths, MessageHandler handler) {
+    public void remove(String tempWorkspace, String[] paths, MessageHandler handler) throws IOException{
+        remove(tempWorkspace, paths, null, handler);
+    }
+
+    public void remove(String tempWorkspace, String[] paths, String dir, MessageHandler handler)throws IOException{
         Map<String, String> params = new HashMap<String , String>();
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
+        }
+
+        if(dir != null){
+            params.put(Pydio.PARAM_DIR, dir);
         }
         fillParams(params, paths);
         Document doc = transport.getXmlContent(Pydio.ACTION_DELETE, params);
@@ -354,18 +363,18 @@ public class PydioClient {
 	 * @param newBaseName
 	 * @return
 	 */
-    public void rename(String path, String newBaseName, MessageHandler handler) {
+    public void rename(String tempWorkspace, String path, String newBaseName, MessageHandler handler)throws IOException {
         Map<String, String> params = new HashMap<String , String>();
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
-		params.put(Pydio.PARAM_FILE, path);
-		if(newBaseName.contains("/")){
-			params.put(Pydio.PARAM_DEST, newBaseName);
-		}else{
-			params.put(Pydio.PARAM_FILENAME_NEW, newBaseName);
-		}
-		Document doc = transport.getXmlContent(Pydio.ACTION_RENAME, params);
+        params.put(Pydio.PARAM_FILE, path);
+        if(newBaseName.contains("/")){
+            params.put(Pydio.PARAM_DEST, newBaseName);
+        }else{
+            params.put(Pydio.PARAM_FILENAME_NEW, newBaseName);
+        }
+        Document doc = transport.getXmlContent(Pydio.ACTION_RENAME, params);
         handler.onMessage(PydioMessage.create(doc));
 	}
 	/**
@@ -374,10 +383,10 @@ public class PydioClient {
 	 * @param destinationParent
 	 * @return
 	 */
-    public void copy(String[] paths, Node destinationParent, MessageHandler handler) {
+    public void copy(String tempWorkspace, String[] paths, Node destinationParent, MessageHandler handler)throws IOException {
 		Map<String, String> params = new HashMap<String , String>();
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
         fillParams(params, paths);
 		params.put(Pydio.PARAM_DEST, ((TreeNode)destinationParent).path());
@@ -390,10 +399,10 @@ public class PydioClient {
 	 * @param destinationParent
 	 * @return
 	 */
-    public void move(String[] paths, Node destinationParent, boolean force_del, MessageHandler handler) {
+    public void move(String tempWorkspace, String[] paths, Node destinationParent, boolean force_del, MessageHandler handler) throws IOException{
         Map<String, String> params = new HashMap<String , String>();
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
         params.put(Pydio.PARAM_ACTION, Pydio.ACTION_MOVE);
 		fillParams(params, paths);
@@ -410,10 +419,10 @@ public class PydioClient {
 	 * @param dirname
 	 * @return
 	 */
-    public void createFolder(String path, String dirname, MessageHandler handler) {
+    public void createFolder(String tempWorkspace, String path, String dirname, MessageHandler handler)throws IOException {
         Map<String, String> params = new HashMap<String , String>();
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
         params.put(Pydio.PARAM_DIR, path);
 		params.put(Pydio.PARAM_DIRNAME, dirname);
@@ -424,20 +433,20 @@ public class PydioClient {
 	 * @param path
 	 * @return
 	 */
-    public void createFile(String path, MessageHandler handler) {
+    public void createFile(String tempWorkspace, String path, MessageHandler handler) throws IOException{
         Map<String, String> params = new HashMap<String , String>();
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
 		params.put(Pydio.PARAM_NODE, path);
 		Document doc = transport.getXmlContent(Pydio.ACTION_MKFILE, params);
         handler.onMessage(PydioMessage.create(doc));
 	}
 
-    public void restore(String path, MessageHandler handler){
+    public void restore(String tempWorkspace, String path, MessageHandler handler)throws IOException{
         Map<String, String> params = new HashMap<String , String>();
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
         params.put(Pydio.PARAM_FILE, path);
         params.put(Pydio.PARAM_DIR, "/recycle_bin");
@@ -446,20 +455,22 @@ public class PydioClient {
         handler.onMessage(PydioMessage.create(doc));
     }
 
-    public void compress(String[] paths, String name, boolean compressFlat, MessageHandler handler){
+    public void compress(String tempWorkspace, String[] paths, String name, boolean compressFlat, MessageHandler handler)throws IOException{
         Map<String, String> params = new HashMap<String , String>();
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
         params.put(Pydio.PARAM_ARCHIVE_NAME, name);
         params.put(Pydio.PARAM_COMPRESS_FLAT, Boolean.toString(compressFlat).toLowerCase());
         fillParams(params, paths);
         handler.onMessage(PydioMessage.create(transport.getXmlContent(Pydio.ACTION_COMPRESS, params)));
     }
+
+
     /**
      * Load the remote config registry of the current server.
      */
-    public void getRemoteConfigs(){
+    public void getRemoteConfigs() throws IOException {
         Map<String, String> params = new HashMap<String , String>();
         params.put(Pydio.PARAM_XPATH, Pydio.XPATH_VALUE_PLUGINS);
         Document doc = transport.getXmlContent(Pydio.ACTION_GET_REGISTRY , params);
@@ -470,14 +481,13 @@ public class PydioClient {
             org.w3c.dom.Node result = (org.w3c.dom.Node)expr.evaluate(doc, XPathConstants.NODE);
             server.addConfig(Pydio.REMOTE_CONFIG_UPLOAD_SIZE, result.getFirstChild().getNodeValue().replace("\"", ""));
         } catch (XPathExpressionException e1) {
-            //publish error message
         }
     }
 
-    public InputStream previewData(String path, boolean force_redim, int dim){
+    public InputStream previewData(String tempWorkspace, String path, boolean force_redim, int dim)throws IOException{
         Map<String, String> params = new HashMap<String , String>();
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
         params.put(Pydio.PARAM_FILE, path);
         if(force_redim) {
@@ -491,15 +501,15 @@ public class PydioClient {
         return null;
     }
 
-    public String listUsers(){
+    public String listUsers()throws IOException{
         return transport.getStringContent(Pydio.ACTION_LIST_USERS, null);
     }
 
-    public String newUser(String login, String password){
+    public String newUser(String login, String password)throws IOException{
         return transport.getStringContent(Pydio.ACTION_CREATE_USER + login + "/" + password, null);
     }
 
-    public InputStream getAuthenticationChallenge(String type){
+    public InputStream getAuthenticationChallenge(String type)throws IOException{
         //return transport.getAuthenticationChallenge();
         if(Pydio.AUTH_CHALLENGE_TYPE_CAPTCHA.equals(type)) {
             boolean image = false;
@@ -524,10 +534,10 @@ public class PydioClient {
         }
     }
 
-    public final int checkServer(){
+    public final int checkServer(String tempWorkspace)throws IOException{
         Map<String, String> params = new HashMap<String , String>();
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
         params.put(Pydio.PARAM_ACTION, Pydio.ACTION_GET_SEED);
         HttpResponse response = transport.getResponse(Pydio.ACTION_MKDIR, null);
@@ -551,11 +561,11 @@ public class PydioClient {
         return Pydio.NO_ERROR;
     }
 
-    public int changes(int seq, boolean flatten, String filter, ChangeProcessor p){
+    public int changes(String tempWorkspace, int seq, boolean flatten, String filter, ChangeProcessor p)throws IOException{
         Map<String, String> params = new HashMap<String , String>();
         int result_seq = 0;
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
         params.put(Pydio.PARAM_CHANGE_SEQ_ID, seq+"");
         if(filter != null) {
@@ -570,7 +580,7 @@ public class PydioClient {
             HttpResponse r = transport.getResponse(action, params);
             String charset = EntityUtils.getContentCharSet(r.getEntity());
             if(charset == null){
-                charset = "utf-8";
+                charset = StandardCharsets.UTF_8.name();
             }
             InputStream is = r.getEntity().getContent();
             Scanner sc = new Scanner(is, charset);
@@ -606,64 +616,67 @@ public class PydioClient {
         return Math.max(seq, result_seq);
     }
 
-    public JSONObject stats(String[] paths, boolean with_hash){
+    public JSONObject stats(String tempWorkspace, String[] paths, boolean with_hash) throws IOException {
         Map<String, String> params = new HashMap<String , String>();
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
         String action = Pydio.ACTION_STATS;
         if(with_hash){
             action += "_hash";
         }
         fillParams(params, paths);
+        HttpResponse r = transport.getResponse(action, params);
         try {
-            HttpResponse r = transport.getResponse(action, params);
             String charset = EntityUtils.getContentCharSet(r.getEntity());
             if(charset == null){
-                charset = "UTF-8";
+                charset = StandardCharsets.UTF_8.name();
             }
             InputStream is = r.getEntity().getContent();
 
             BufferedReader br = new BufferedReader(new InputStreamReader(is, charset));
             StringBuilder sb = new StringBuilder();
             String line = null;
+
             while ((line = br.readLine()) != null) {
                 sb.append(line);
             }
+
+            if(sb.length() == 0) return null;
             return new JSONObject(sb.toString());
-        } catch (IOException e) {
+
+        }catch (ParseException e) {
             e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (Exception e){
-            return null;
         }
         return null;
     }
 
-
-    public JSONObject shareInfo(String path){
+    public JSONObject shareInfo(String tempWorkspace, String path)throws IOException{
         Map<String, String> params = new HashMap<String , String>();
+
+        if(tempWorkspace != null){
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
+        }
+
         String action = Pydio.ACTION_LOAD_SHARED_ELEMENT_DATA;
-
-        params.put(Pydio.PARAM_WORKSPACE, "1");
-
         params.put(Pydio.PARAM_FILE, path);
+        params.put(Pydio.PARAM_SHARE_ELEMENT_TYPE, Pydio.SHARE_ELEMENT_TYPE_FILE);
+
         Properties p = new Properties();
         String res = transport.getStringContent(action, params);
         try {
             return new JSONObject(res);
-        } catch (ParseException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public String minisiteShare(String[] paths, String ws_label, String ws_description, String password, int expiration, int downloads, boolean canRead, boolean canDownload){
+    public String minisiteShare(String tempWorkspace, String[] paths, String ws_label, String ws_description, String password, int expiration, int downloads, boolean canRead, boolean canDownload)throws IOException{
 
         Map<String, String> params = new HashMap<String , String>();
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
 
         String action = Pydio.ACTION_SHARE;
@@ -676,12 +689,8 @@ public class PydioClient {
         }
 
         params.put("create_guest_user", "true");
-        if(canRead)
-        params.put("simple_right_read", "on");
-
-        if(canDownload)
-        params.put("simple_right_download", "on");
-
+        if(canRead) params.put("simple_right_read", "on");
+        if(canDownload) params.put("simple_right_download", "on");
         params.put("share_type", "on");
 
         params.put(Pydio.PARAM_SHARE_EXPIRATION, String.valueOf(expiration));
@@ -692,24 +701,47 @@ public class PydioClient {
         return transport.getStringContent(action, params);
     }
 
-    public void unshareMinisite(String path){
+    public void unshareMinisite(String tempWorkspace, String path)throws IOException{
         Map<String, String> params = new HashMap<String , String>();
-        if(workspace != null) {
-            params.put(Pydio.PARAM_WORKSPACE, workspace.getId());
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
         String action = Pydio.ACTION_UNSHARE;
         params.put(Pydio.PARAM_FILE, path);
         transport.getResponse(action, params);
     }
 
+    public void search(String tempWorkspace, String query, int limit, NodeHandler handler)throws IOException{
+        Map<String, String> params = new HashMap<String , String>();
+        if(tempWorkspace != null) {
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
+        }
+        params.put(Pydio.PARAM_SEARCH_QUERY, query);
+        if(limit != - 1) {
+            params.put(Pydio.PARAM_SEARCH_QUERY, limit + "");
+        }
+
+        try {
+            HttpResponse response = transport.getResponse(Pydio.ACTION_SEARCH, params);
+            InputStream in  = response.getEntity().getContent();
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser parser = factory.newSAXParser();
+            parser.parse(in, new FileNodeSaxHandler(handler, 0, -1));
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+    }
     //*********************************************
     //            OTHERS
     //*********************************************
+
     /**
      * @param params
      * @param paths
      */
-    private void fillParams(Map<String, String> params, String[] paths){
+    private void fillParams(Map<String, String> params, String[] paths) throws UnsupportedEncodingException {
         if(paths != null){
             if(paths.length == 1){
                 params.put(Pydio.PARAM_FILE, paths[0]);
@@ -720,13 +752,6 @@ public class PydioClient {
                 params.put(Pydio.PARAM_FILE+"_"+i, path);
             }
         }
-    }
-    /**
-     *
-     * @param w
-     */
-    public void setWorkspace(WorkspaceNode w){
-        this.workspace = w;
     }
 
     public void setServer(ServerNode server){
@@ -740,4 +765,5 @@ public class PydioClient {
     public int requestStatus(){
         return transport.requestStatus();
     }
+
 }
