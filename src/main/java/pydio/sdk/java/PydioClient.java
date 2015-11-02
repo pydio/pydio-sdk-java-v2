@@ -242,45 +242,25 @@ public class PydioClient {
     public void write(String tempWorkspace, String path, File source, String name, boolean autoRename, ProgressListener progressListener, final MessageHandler handler)throws IOException {
         String action;
 		Map<String, String> params = new HashMap<String , String>();
+        if(tempWorkspace != null){
+            params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
+        }
         action =  Pydio.ACTION_UPLOAD;
-
         params.put(Pydio.PARAM_DIR, path);
 		params.put(Pydio.PARAM_XHR_UPLOADER, "true");
-
-		//String tmp_name = null;
         if(name == null){
             name = source.getName();
         }
-
-		/*if(!EncodingUtils.getAsciiString(EncodingUtils.getBytes(name, "US-ASCII")).equals(source.getName())){
-			tmp_name = name;
-			name = EncodingUtils.getAsciiString(EncodingUtils.getBytes(source.getName(), "US-ASCII")).replace("?", "") + ".tmp_upload";
-		}*/
         try {
             params.put(Pydio.PARAM_URL_ENCODED, java.net.URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
         } catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
-
-		if(autoRename){
-			params.put(Pydio.PARAM_AUTO_RENAME, "true");
-		}
+        params.put(Pydio.PARAM_AUTO_RENAME, String.valueOf(autoRename));
         final Document doc = transport.putContent(action, params, source, name, progressListener);
-		/*if(tmp_name != null){
-			rename(tempWorkspace, path, tmp_name, new MessageHandler() {
-                @Override
-                public void onMessage(PydioMessage m) {
-                    if(PydioMessage.SUCCESS.equals(m.getType())) {
-                        handler.onMessage(PydioMessage.create(doc));
-                    }
-                }
-            });
-		}else{*/
-            if(handler != null) {
-                handler.onMessage(PydioMessage.create(doc));
-            }
-        //}
-		//return m;
+        if(handler != null) {
+            handler.onMessage(PydioMessage.create(doc));
+        }
 	}
 	/**
 	 * Download content from the remote server.
@@ -365,6 +345,7 @@ public class PydioClient {
 	 */
     public void rename(String tempWorkspace, String path, String newBaseName, MessageHandler handler)throws IOException {
         Map<String, String> params = new HashMap<String , String>();
+
         if(tempWorkspace != null) {
             params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
