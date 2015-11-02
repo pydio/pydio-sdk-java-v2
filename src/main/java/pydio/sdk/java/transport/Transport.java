@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.w3c.dom.Document;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -22,17 +23,17 @@ public interface Transport {
 
     public int requestStatus();
 
-    public HttpResponse getResponse(String action, Map<String, String> params);
+    public HttpResponse getResponse(String action, Map<String, String> params) throws IOException;
 
-    public String getStringContent(String action, Map<String, String> params);
+    public String getStringContent(String action, Map<String, String> params) throws IOException;
 
-    public Document getXmlContent(String action, Map<String, String> params);
+    public Document getXmlContent(String action, Map<String, String> params) throws IOException;
 
     public JSONObject getJsonContent(String action, Map<String, String> params);
 
-    public InputStream getResponseStream(String action, Map<String, String> params) ;
+    public InputStream getResponseStream(String action, Map<String, String> params) throws IOException;
 
-    public Document putContent(String action, Map<String, String> params, File file, String filename, ProgressListener handler);
+    public Document putContent(String action, Map<String, String> params, File file, String filename, ProgressListener handler) throws IOException;
 
     public Document putContent(String action, Map<String, String> params, byte[] data, String filename, ProgressListener handler);
 
