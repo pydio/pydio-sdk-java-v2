@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 public class CustomEntity extends BasicHttpEntity {
 
     ContentStream customStream;
+    HttpEntity mEntity;
 
     public class ContentStream extends InputStream{
 
@@ -29,8 +30,8 @@ public class CustomEntity extends BasicHttpEntity {
         public int read(byte[] b, int off, int len) throws IOException {
             int read = 0;
             if(!final_state){
-                buffer.flip();
                 final_state = true;
+                buffer.flip();
             }
 
             if(forget_buffer){
@@ -39,11 +40,13 @@ public class CustomEntity extends BasicHttpEntity {
             }
 
             int remaining = buffer.remaining();
+
             if(len > remaining){
                 buffer.get(b, off, remaining);
                 forget_buffer = true;
-                read =  remaining + originalStream.read(b, off+remaining, len-remaining);
-                return read;
+
+                read = originalStream.read(b, off+remaining, len-remaining);
+                return remaining + (read == -1 ? 0 : read);
             }
 
             buffer.get(b, off, len);
@@ -55,8 +58,8 @@ public class CustomEntity extends BasicHttpEntity {
         @Override
         public synchronized int read() throws IOException {
             if(!final_state){
-                buffer.flip();
                 final_state = true;
+                buffer.flip();
             }
 
             if(buffer.hasRemaining()) {
@@ -77,6 +80,8 @@ public class CustomEntity extends BasicHttpEntity {
 
     public CustomEntity(HttpEntity entity) throws IOException {
         this.customStream = new ContentStream(entity.getContent());
+        mEntity = entity;
+        chunked = entity.isChunked();
     }
 
     public InputStream getContent(){

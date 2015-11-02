@@ -64,13 +64,17 @@ public class CountingMultipartRequestEntity implements HttpEntity {
         public void write(byte[] b, int off, int len) throws IOException {
             out.write(b, off, len);
             this.transferred += len;
-            this.listener.transferred(this.transferred);
+            try{
+                this.listener.transferred(this.transferred);
+            }catch (Exception e){}
         }
 
         public void write(int b) throws IOException {
             out.write(b);
             this.transferred++;
-            this.listener.transferred(this.transferred);
+            try{
+                this.listener.transferred(this.transferred);
+            }catch (Exception e){}
         }
     }
 

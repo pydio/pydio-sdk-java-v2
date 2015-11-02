@@ -54,13 +54,16 @@ public class AjxpHttpClient extends DefaultHttpClient {
 	boolean trustSelfSignedSSL;
 	static HttpContext localContext = new BasicHttpContext();
 	public static CookieStore cookieStore = new BasicCookieStore();
+	int port;
 
-	public AjxpHttpClient(boolean trustSSL) {
+	public AjxpHttpClient(boolean trustSSL, int port) {
 		super();
+
+		this.port = port <= 0 ? 80 : port;
+
 		this.trustSelfSignedSSL = trustSSL;
 		localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
 		this.getParams().setParameter(ClientPNames.ALLOW_CIRCULAR_REDIRECTS,true);
-
 	}
 	
 	public void refreshCredentials(String user, String pass){
@@ -76,24 +79,14 @@ public class AjxpHttpClient extends DefaultHttpClient {
                 credentials
         );
 	}
+
 	@Override
 	protected ClientConnectionManager createClientConnectionManager() {
-		
 		SchemeRegistry registry = new SchemeRegistry();
-		registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+		registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), port));
 		
 		if(trustSelfSignedSSL){
-			//HostnameVerifier hostnameVerifier = org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
-		    //socketFactory.setHostnameVerifier((X509HostnameVerifier) hostnameVerifier);
-			//HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
-			/*
-			HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-				public boolean verify(String hostname, SSLSession session) {
-					return true;
-				}
-			});*/
 			registry.register(new Scheme("https", new AjxpSSLSocketFactory(), 443));
-			
 		}else{
 			SSLSocketFactory socketFactory = SSLSocketFactory.getSocketFactory();
 			registry.register(new Scheme("https", socketFactory, 443));

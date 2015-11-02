@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -62,7 +63,7 @@ public class Requester {
 	 */
 	public HttpResponse issueRequest(URI uri, Map<String, String> postParameters) throws IOException {
 		
-		httpClient = new AjxpHttpClient(server.isSSLselfSigned());
+		httpClient = new AjxpHttpClient(server.isSSLselfSigned(), server.port());
 
         try {
             CookieStore cstore = httpClient.getCookieStore();
@@ -82,7 +83,10 @@ public class Requester {
 
         HttpRequestBase request;
         if(postParameters != null || file != null){
+
             request = new HttpPost();
+            request.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+
             if(file != null){
                 if(fileBody == null){
                     if(fileName == null) fileName = file.getName();
@@ -133,7 +137,7 @@ public class Requester {
                     Map.Entry<String, String> entry = it.next();
                     nameValuePairs.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
                 }
-                ((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                ((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs, StandardCharsets.UTF_8.name()));
             }
         }else{
             request = new HttpGet();
