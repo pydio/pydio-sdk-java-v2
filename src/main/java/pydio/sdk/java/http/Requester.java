@@ -83,7 +83,6 @@ public class Requester {
 
         HttpRequestBase request;
         if(postParameters != null || file != null){
-
             request = new HttpPost();
             request.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 
@@ -108,18 +107,18 @@ public class Requester {
                 reqEntity.addPart("userfile_0", fileBody);
 
                 if(fileName != null && !EncodingUtils.getAsciiString(EncodingUtils.getBytes(fileName, "US-ASCII")).equals(fileName)){
-                    reqEntity.addPart("urlencoded_filename", new StringBody(java.net.URLEncoder.encode(fileName, "UTF-8")));
+                    reqEntity.addPart("urlencoded_filename", new StringBody(java.net.URLEncoder.encode(fileName, StandardCharsets.UTF_8.name())));
                 }
 
                 if(fileBody != null && !fileBody.getFilename().equals(fileBody.getRootFilename())){
-                    reqEntity.addPart("appendto_urlencoded_part", new StringBody(java.net.URLEncoder.encode(fileBody.getRootFilename(), "UTF-8")));
+                    reqEntity.addPart("appendto_urlencoded_part", new StringBody(java.net.URLEncoder.encode(fileBody.getRootFilename(), StandardCharsets.UTF_8.name())));
                 }
 
                 if(postParameters != null){
                     Iterator<Map.Entry<String, String>> it = postParameters.entrySet().iterator();
                     while(it.hasNext()){
                         Map.Entry<String, String> entry = it.next();
-                        reqEntity.addPart(entry.getKey(), new StringBody(entry.getValue()));
+                        reqEntity.addPart(entry.getKey(), new StringBody(entry.getValue(), StandardCharsets.UTF_8));
                     }
                 }
 
