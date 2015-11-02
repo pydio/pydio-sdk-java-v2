@@ -11,6 +11,7 @@ import java.util.Properties;
  * @author pydio
  *
  */
+
 public class ServerNode implements Node{
 		
 	private boolean legacy = false;
@@ -18,30 +19,20 @@ public class ServerNode implements Node{
 	private String protocol;
 	private String host;
 	private String path;
-	private Map<String, String> remoteCapacities;
+	private int port;
+	private Map<String, String> mConfigs;
     Properties properties;
 	
 
-	public void initFromProperties(Properties spec) {
-	}
-
+	public void initFromProperties(Properties spec) {}
     @Override
-    public void initFromFile(File file) {
-
-    }
-
-
+    public void initFromFile(File file) {}
     @Override
-    public String getProperty(String key) {
-        return properties.getProperty(key, "");
-    }
+    public String getProperty(String key) {return properties.getProperty(key, "");}
 
-    public void initFromXml(org.w3c.dom.Node xml) {
-	}
+    public void initFromXml(org.w3c.dom.Node xml) {}
 
-	public void initFromJson(JSONObject json) {		
-	}
-	
+	public void initFromJson(JSONObject json) {}
 	/**
 	 * 
 	 * @return
@@ -60,6 +51,10 @@ public class ServerNode implements Node{
 	
 	public String protocol(){
 		return protocol;
+	}
+
+	public int port(){
+		return port;
 	}
 
 	public int type() {
@@ -89,9 +84,17 @@ public class ServerNode implements Node{
             path = p;
         }
 	}
+
+    public void setPort(int port){
+        this.port = port;
+    }
 	
 	public String url(){
-        return protocol+"://"+host+path;
+        String url = protocol+"://"+host;
+        if(port > 0 && port != 80){
+            url += ":"+port;
+        }
+        return url+path;
 	}
 	
 	public String path(){
@@ -99,13 +102,13 @@ public class ServerNode implements Node{
 	}
 	
 	public String getRemoteConfig(String name){
-		if(remoteCapacities == null) return null;
-		return remoteCapacities.get(name);
+		if(mConfigs == null) return null;
+		return mConfigs.get(name);
 	}
 	
 	public void addConfig(String key, String value){
-		if(remoteCapacities == null) remoteCapacities = new HashMap<String, String>();
-		remoteCapacities.put(key, value);
+		if(mConfigs == null) mConfigs = new HashMap<String, String>();
+		mConfigs.put(key, value);
        // properties.setProperty(key, value);
 	}
 
