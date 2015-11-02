@@ -18,7 +18,7 @@ public class Pydio {
 	public final static String PARAM_NODES 					    	    = "nodes";
 	public final static String PARAM_DIRNAME 					        = "dirname";
 	public final static String PARAM_PATH 						        = "path";
-	public final static String PARAM_URL_ENCODED 				        = "url_encoded";
+	public final static String PARAM_URL_ENCODED 				        = "urlencoded_filename";
 	public final static String PARAM_OPTIONS 					        = "options";
 	public final static String PARAM_RECURSIVE 					        = "recursive";
 	public final static String PARAM_CONTENT 					        = "content";
@@ -47,7 +47,8 @@ public class Pydio {
 	public final static String PARAM_CHUNK_COUNT 				        = "chunk_count";
 	public final static String PARAM_XHR_UPLOADER				        = "xhr_uploader";
     public final static String PARAM_XPATH                              = "xPath";
-    public static final String PARAM_WORKSPACE                          = "tmp_repository_id";
+    public static final String PARAM_TEMP_WORKSPACE                     = "tmp_repository_id";
+    public static final String PARAM_WORKSPACE                          = "repository_id";
     public static final String PARAM_SECURE_TOKEN                       = "secure_token";
     public static final String PARAM_REMEMBER_ME                        = "remember_me";
     public static final String PARAM_DIMENSION                          = "dimension";
@@ -57,6 +58,8 @@ public class Pydio {
     public static final String PARAM_SHARE_DOWNLOAD                     = "downloadlimit";
     public static final String PARAM_SHARE_WORKSPACE_LABEL              = "repo_label";
     public static final String PARAM_SHARE_WORKSPACE_DESCRIPTION        = "repo_description";
+    public static final String PARAM_SEARCH_QUERY                       = "query";
+    public static final String PARAM_SEARCH_LIMIT                       = "limit";
 
     public static final String PARAM_CHANGE_SEQ_ID                      = "seq_id";
     public static final String PARAM_CHANGE_FLATTEN                     = "flatten";
@@ -64,7 +67,8 @@ public class Pydio {
     public static final String PARAM_CHANGE_FILTER                      = "filter";
 
 
-    public static final String PARAM_ELEMENT_TYPE_VALUE_FILE            = "file";
+
+    public static String SHARE_ELEMENT_TYPE_FILE                        = "file";
 
 
 	public final static String ACTION_LIST 						        = "ls";
@@ -86,6 +90,7 @@ public class Pydio {
 	public final static String ACTION_DELETE 					        = "delete";
 	public final static String ACTION_CREATE_MINISITE 					= "create_minisite";
 	public final static String ACTION_SHARE 					        = "share";
+	public final static String ACTION_SEARCH 					        = "search";
 	public final static String ACTION_UNSHARE 					        = "unshare";
     public final static String ACTION_CHMOD 					        = "chmod";
     public final static String ACTION_PREPARE_CHUNK_DL 			        = "prepare_chunk_dl";
@@ -112,7 +117,8 @@ public class Pydio {
 
 
 
-    public final static String XPATH_VALUE_USER_REPO			        = "user/repositories";
+    public final static String XPATH_USER_WORKSPACES                    = "user/repositories";
+    public final static String XPATH_USER_ACTIVE_WORKSPACE              = "user/active_repo";
     public final static String XPATH_VALUE_PLUGINS				        = "plugins";
     public final static String XML_TREE 						        = "tree";
     public final static String XML_MESSAGE 						        = "message";
@@ -181,7 +187,7 @@ public class Pydio {
 
 	public final static String REMOTE_CONFIG_UPLOAD_SIZE                = "//property[@name='UPLOAD_MAX_SIZE']";
     public final static String LOCAL_CONFIG_BUFFER_SIZE                 = "buffer_size";
-	public final static int LOCAL_CONFIG_BUFFER_SIZE_DVALUE             = 16384;
+	public final static int LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE      = 16384;
 
 
     public final static String CHANGE_SEQ                               = "seq";
@@ -216,10 +222,11 @@ public class Pydio {
 
     public final static int REGISTRY_ITEM_ACTION                        = 1;
     public final static int REGISTRY_ITEM_PLUGIN                        = 2;
-    public final static int REGISTRY_ITEM_REPO                          = 3;
+    public final static int REGISTRY_ITEM_WORKSPACE = 3;
 
 
     public final static String AUTH_CHALLENGE_TYPE_CAPTCHA              = "CHALLENGE_CAPTCHA";
+    public static final String ACTION_SWITCH_REPO                       = "switch_repository";
     public static String[] no_auth_required_actions                     = {Pydio.ACTION_CAPTCHA, Pydio.ACTION_GET_SEED, Pydio.ACTION_LOGIN};
 
     public final static int

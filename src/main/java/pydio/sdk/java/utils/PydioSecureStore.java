@@ -2,25 +2,13 @@ package pydio.sdk.java.utils;
 
 import org.apache.commons.codec.binary.Base64;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
-import java.util.Arrays;
 import java.util.Random;
 
 import javax.crypto.BadPaddingException;
@@ -36,88 +24,20 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * Created by pydio on 01/04/2015.
  */
-public abstract class PydioSecurityManager {
+public abstract class PydioSecureStore {
 
-    private static PydioSecurityManager sm;
+    public static PydioSecureStore instance;
 
     public static String ENCRYPTED_PASSWORD_PREFIX = "enc:";
     private final int KEY_SIZE = 128;
     private final int PBKDF2_ITERATION_NUMBER = 20000;
 
-    KeyStore ks = null;
-    private String KEYSTORE_PASSWORD = "pydioks";
 
-    public PydioSecurityManager(){
-        FileInputStream in = null;
-        try {
-            if(ks == null){
-                ks = KeyStore.getInstance(KeyStore.getDefaultType());
-                ks.load(null, getKeystorePassword().toCharArray());
-                this.load();
-            }
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    public boolean hasCertificate(String alias) throws KeyStoreException {
-        return (X509Certificate) ks.getCertificate(alias) != null;
-    }
+    public abstract void addCertificate(String alias, X509Certificate cert)
+    throws Exception;
 
-    public void addCertificate(String alias, X509Certificate cert)
-    throws KeyStoreException, CertificateNotYetValidException, CertificateExpiredException {
-        if(ks == null) return;
-        cert.checkValidity();
-        ks.setCertificateEntry(alias, cert);
-        this.store();
-    }
-
-    public boolean checkCertificate(String alias, X509Certificate cert)
-    throws KeyStoreException, CertificateEncodingException, CertificateNotYetValidException, CertificateExpiredException {
-        if(ks == null) return false;
-        cert.checkValidity();
-
-        X509Certificate certificate = (X509Certificate) ks.getCertificate(alias);
-        if(certificate == null) return false;
-        try {
-            MessageDigest hash = MessageDigest.getInstance("MD5");
-            byte[] c1 = hash.digest(certificate.getEncoded());
-            byte[] c2 = hash.digest(cert.getEncoded());
-            return Arrays.equals(c1, c2);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return Arrays.equals(cert.getEncoded(), certificate.getEncoded());
-        }
-    }
-
-    private String getKeystorePassword(){
-        return KEYSTORE_PASSWORD;
-    }
-
-    private void store(){
-        try {
-            ks.store(getKeystoreFileOutputStream(), getKeystorePassword().toCharArray());
-        } catch (IOException e) {
-        } catch (CertificateException e) {
-        } catch (NoSuchAlgorithmException e) {
-        } catch (KeyStoreException e) {
-        }
-    }
-
-    private void load(){
-        try {
-            InputStream in = getKeystoreFileInputStream();
-            ks.load(in, getKeystorePassword().toCharArray());
-        } catch (IOException e) {
-        } catch (CertificateException e) {
-        } catch (NoSuchAlgorithmException e) {
-        }
-    }
+    public abstract boolean checkCertificate(String alias, X509Certificate cert)
+    throws Exception;
 
     public String decrypt(String masterPassword, String salt, String pass){
         byte[] encryptedPass = Base64.decodeBase64(pass.substring(pass.indexOf(ENCRYPTED_PASSWORD_PREFIX)));
@@ -238,13 +158,7 @@ public abstract class PydioSecurityManager {
         return false;
     }
 
-    public abstract InputStream getKeystoreFileInputStream();
-    public abstract OutputStream getKeystoreFileOutputStream();
-
-    public static void setInstance(PydioSecurityManager sm){
-        PydioSecurityManager.sm = sm;
-    }
-    public static PydioSecurityManager securityManager(){
-        return sm;
+    public static PydioSecureStore securityManager(){
+        return instance;
     }
 }

@@ -6,9 +6,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.Properties;
 
-import pydio.sdk.java.model.Node;
-import pydio.sdk.java.model.NodeFactory;
-
 /**
  * Created by pydio on 03/06/2015.
  */
@@ -16,10 +13,10 @@ public class RegistrySaxHandler extends DefaultHandler {
 
     RegistryItemHandler handler;
 
-    boolean inside_actions = false;
-    boolean inside_plugins = false;
-    boolean inside_repositories = false;
-    boolean inside_repo = false;
+    public boolean inside_actions = false;
+    public boolean inside_plugins = false;
+    public boolean inside_repositories = false;
+    public boolean inside_repo = false;
 
     Properties p;
     String inner_element;
@@ -105,7 +102,7 @@ public class RegistrySaxHandler extends DefaultHandler {
 
             if("repo".equals(qName)){
                 inside_repo = false;
-                handler.onNewItem(Pydio.REGISTRY_ITEM_REPO, p);
+                handler.onNewItem(Pydio.REGISTRY_ITEM_WORKSPACE, p);
                 p = null;
                 return;
             }
