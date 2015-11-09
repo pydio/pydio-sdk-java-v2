@@ -13,6 +13,7 @@ public interface Node extends Serializable {
 	public final static int TYPE_WORKSPACE = 2;
 	public final static int TYPE_SERVER = 3;
 	public final static int TYPE_VIRTUAL = 4;
+	public final static int TYPE_SEARCH = 5;
 
 	public int type();
 

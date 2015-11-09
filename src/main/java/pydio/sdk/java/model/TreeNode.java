@@ -77,11 +77,8 @@ public class TreeNode implements Node{
 	}
 
 	public boolean isFolder(){
-		String mime = getProperty(Pydio.NODE_PROPERTY_MIMESTRING);
-		if(mime != null){
-			return "Directory".equals(mime);
-		}
-		return new File(path()).isDirectory();
+		String mime = getProperty(Pydio.NODE_PROPERTY_IS_FILE);
+		return "false".equals(mime);
 	}
 
 	public long lastModified(){
