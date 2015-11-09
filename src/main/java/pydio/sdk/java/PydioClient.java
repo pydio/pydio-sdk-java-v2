@@ -272,6 +272,7 @@ public class PydioClient {
 
         Map<String, String> params = new HashMap<String , String>();
 		fillParams(params, paths);
+
         if(tempWorkspace != null) {
             params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
@@ -296,7 +297,6 @@ public class PydioClient {
             i++;
         }
         stream.close();
-        outputStream.close();
 	}
 	/** 
 	 * 
@@ -309,7 +309,9 @@ public class PydioClient {
 	 * @throws IllegalStateException 
 	 */
     public void read(String tempWorkspace, String[] paths, File target, ProgressListener progressListener) throws IllegalStateException, IOException {
-        read(tempWorkspace, paths, new FileOutputStream(target), progressListener);
+        OutputStream out = new FileOutputStream(target);
+        read(tempWorkspace, paths, out, progressListener);
+        out.close();
     }
     /**
      * Remove node on the server
@@ -364,13 +366,13 @@ public class PydioClient {
 	 * @param destinationParent
 	 * @return
 	 */
-    public void copy(String tempWorkspace, String[] paths, Node destinationParent, MessageHandler handler)throws IOException {
+    public void copy(String tempWorkspace, String[] paths, String destinationParent, MessageHandler handler)throws IOException {
 		Map<String, String> params = new HashMap<String , String>();
         if(tempWorkspace != null) {
             params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
         fillParams(params, paths);
-		params.put(Pydio.PARAM_DEST, ((TreeNode)destinationParent).path());
+		params.put(Pydio.PARAM_DEST, destinationParent);
 		Document doc = transport.getXmlContent(Pydio.ACTION_COPY, params);
         handler.onMessage(PydioMessage.create(doc));
 	}
@@ -380,14 +382,14 @@ public class PydioClient {
 	 * @param destinationParent
 	 * @return
 	 */
-    public void move(String tempWorkspace, String[] paths, Node destinationParent, boolean force_del, MessageHandler handler) throws IOException{
+    public void move(String tempWorkspace, String[] paths, String destinationParent, boolean force_del, MessageHandler handler) throws IOException{
         Map<String, String> params = new HashMap<String , String>();
         if(tempWorkspace != null) {
             params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
         params.put(Pydio.PARAM_ACTION, Pydio.ACTION_MOVE);
 		fillParams(params, paths);
-		params.put(Pydio.PARAM_DEST, ((TreeNode)destinationParent).path());
+		params.put(Pydio.PARAM_DEST, destinationParent);
 		if(force_del){
 			params.put(Pydio.PARAM_FORCE_COPY_DELETE, "true");
 		}
@@ -617,16 +619,16 @@ public class PydioClient {
 
             BufferedReader br = new BufferedReader(new InputStreamReader(is, charset));
             StringBuilder sb = new StringBuilder();
-            String line = null;
-
+            String line;
             while ((line = br.readLine()) != null) {
                 sb.append(line);
             }
-
             if(sb.length() == 0) return null;
             return new JSONObject(sb.toString());
 
         }catch (ParseException e) {
+            e.printStackTrace();
+        } catch (Exception e){
             e.printStackTrace();
         }
         return null;
@@ -692,16 +694,12 @@ public class PydioClient {
         transport.getResponse(action, params);
     }
 
-    public void search(String tempWorkspace, String query, int limit, NodeHandler handler)throws IOException{
+    public void search(String tempWorkspace, String query, NodeHandler handler)throws IOException{
         Map<String, String> params = new HashMap<String , String>();
         if(tempWorkspace != null) {
             params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
         params.put(Pydio.PARAM_SEARCH_QUERY, query);
-        if(limit != - 1) {
-            params.put(Pydio.PARAM_SEARCH_QUERY, limit + "");
-        }
-
         try {
             HttpResponse response = transport.getResponse(Pydio.ACTION_SEARCH, params);
             InputStream in  = response.getEntity().getContent();
