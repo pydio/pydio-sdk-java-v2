@@ -38,7 +38,6 @@ import pydio.sdk.java.utils.Pydio;
  *
  */
 public class Requester {
-
     private AjxpFileBody fileBody;
 	private File file;
 	private String fileName;
@@ -84,7 +83,6 @@ public class Requester {
         HttpRequestBase request;
         if(postParameters != null || file != null){
             request = new HttpPost();
-            request.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 
             if(file != null){
                 if(fileBody == null){
@@ -118,10 +116,9 @@ public class Requester {
                     Iterator<Map.Entry<String, String>> it = postParameters.entrySet().iterator();
                     while(it.hasNext()){
                         Map.Entry<String, String> entry = it.next();
-                        reqEntity.addPart(entry.getKey(), new StringBody(entry.getValue(), StandardCharsets.UTF_8));
+                        reqEntity.addPart(entry.getKey(), new StringBody(new String(entry.getValue().getBytes(), StandardCharsets.UTF_8.name())));
                     }
                 }
-
                 if(progressListener != null){
                     CountingMultipartRequestEntity countingEntity = new CountingMultipartRequestEntity(reqEntity, progressListener);
                     ((HttpPost)request).setEntity(countingEntity);
@@ -129,6 +126,8 @@ public class Requester {
                     ((HttpPost)request).setEntity(reqEntity);
                 }
             }else{
+                request.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+
                 List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(postParameters.size());
                 Iterator<Map.Entry<String, String>> it = postParameters.entrySet().iterator();
 
