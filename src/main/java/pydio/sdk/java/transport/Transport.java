@@ -12,6 +12,7 @@ import java.util.Map;
 import pydio.sdk.java.auth.AuthenticationHelper;
 import pydio.sdk.java.model.ServerNode;
 import pydio.sdk.java.utils.ProgressListener;
+import pydio.sdk.java.utils.UploadStopNotifierProgressListener;
 
 /**
  * Created by pydio on 13/02/2015.
@@ -33,9 +34,9 @@ public interface Transport {
 
     public InputStream getResponseStream(String action, Map<String, String> params) throws IOException;
 
-    public Document putContent(String action, Map<String, String> params, File file, String filename, ProgressListener handler) throws IOException;
+    public Document putContent(String action, Map<String, String> params, File file, String filename, UploadStopNotifierProgressListener handler) throws IOException;
 
-    public Document putContent(String action, Map<String, String> params, byte[] data, String filename, ProgressListener handler);
+    public Document putContent(String action, Map<String, String> params, byte[] data, String filename, UploadStopNotifierProgressListener handler);
 
     public void setAuthenticationHelper(AuthenticationHelper helper);
 

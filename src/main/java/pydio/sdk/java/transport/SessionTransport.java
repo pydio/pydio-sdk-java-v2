@@ -1,5 +1,6 @@
 package pydio.sdk.java.transport;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -16,6 +17,8 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,10 +38,10 @@ import pydio.sdk.java.http.HttpResponseParser;
 import pydio.sdk.java.http.Requester;
 import pydio.sdk.java.model.ServerNode;
 import pydio.sdk.java.utils.CustomCertificateException;
-import pydio.sdk.java.utils.ProgressListener;
 import pydio.sdk.java.utils.Pydio;
 import pydio.sdk.java.utils.PydioSecureTokenStore;
 import pydio.sdk.java.utils.ServerResolution;
+import pydio.sdk.java.utils.UploadStopNotifierProgressListener;
 
 
 /**
@@ -55,9 +58,13 @@ public class SessionTransport implements Transport{
 
     private String action;
     int request_status = Pydio.NO_ERROR;
-    boolean loginStateChanged = false;
-
+    boolean attemptedLogin, accessRefused, loggedIn = false, trustSSL = false;
     AuthenticationHelper helper;
+    Requester mRequester;
+
+    public void setTrustSSL(boolean trust){
+        trustSSL = trust;
+    }
 
     public SessionTransport(ServerNode server){
         this.server = server;
@@ -90,100 +97,84 @@ public class SessionTransport implements Transport{
         return HttpResponseParser.getString(resp);
     }
 
-    public void login() {
-        Requester req = new Requester(server);
+    public void login() throws IOException {
 
-        for(;;) {
+        HttpResponse resp = request(getActionURI(Pydio.ACTION_GET_SEED), null);
+        if(request_status == Pydio.ERROR_CON_SSL_SELF_SIGNED_CERT || request_status == Pydio.ERROR_CON_FAILED_SSL){
+            throw new IOException();
+        }
 
-            try {
-                HttpResponse resp = req.issueRequest(this.getActionURI(Pydio.ACTION_GET_SEED), null);
-                String seed = HttpResponseParser.getString(resp);
+        String seed = HttpResponseParser.getString(resp);
+        boolean seemsToBePydio = false;
+        Header[] headers = resp.getHeaders("Content-Type");
 
-                if(!"-1".equals(seed) && !seed.contains("seed") && !seed.contains("require_auth")){
-                    request_status = Pydio.ERROR_NOT_A_SERVER;
-                    return;
-                }
+        for(int i = 0; i < headers.length; i++){
+            Header h = headers[i];
+            seemsToBePydio |= (h.getValue().toLowerCase().contains("text/plain"));
+            seemsToBePydio |= (h.getValue().toLowerCase().contains("text/xml"));
+            seemsToBePydio |= (h.getValue().toLowerCase().contains("text/json"));
+            seemsToBePydio |= (h.getValue().toLowerCase().contains("application/json"));
+        }
 
-                if(seed.indexOf("\"seed\":-1") != -1) {
-                    seed = "-1";
-                }
-
-                if(seed != null) seed = seed.trim();
-
-                if(helper == null){
-                    return;
-                }
-                String[] c = helper.requestForLoginPassword();
-                UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(c[0], c[1]);
-                String user = credentials.getUserName();
-                String password = credentials.getPassword();
-
-                if(!seed.trim().equals("-1")){
-                    password = AuthenticationUtils.processPydioPassword(password, seed);
-                }
-
-                Map<String, String> loginPass = new HashMap<>();
-                //if(this.request_status == Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA) {
-                String captcha_code = helper.getChallengeResponse();
-
-                if(captcha_code != null && !"".equals(captcha_code)) {
-                    loginPass.put(Pydio.PARAM_CAPTCHA_CODE, captcha_code);
-                }
-                //}
-
-                loginPass.put("userid", user);
-                loginPass.put("password", password);
-                loginPass.put("login_seed", seed);
-                loginPass.put("Ajxp-Force-Login", "true");
+        if(!seemsToBePydio){
+            request_status = Pydio.ERROR_NOT_A_SERVER;
+            return;
+        }
 
 
-                Document doc = HttpResponseParser.getXML(req.issueRequest(this.getActionURI("login"), loginPass));
-                if (doc.getElementsByTagName("logging_result").getLength() > 0) {
-                    String result = doc.getElementsByTagName("logging_result").item(0).getAttributes().getNamedItem("value").getNodeValue();
-                    if (result.equals("1")) {
-                        request_status = Pydio.NO_ERROR;
-                        String newToken = doc.getElementsByTagName("logging_result").item(0).getAttributes().getNamedItem("secure_token").getNodeValue();
-                        loginStateChanged = true;
-                        secure_token = newToken;
-                        String key = helper.requestForLoginPassword()[0] + "@" + server.host() + server.path();
-                        PydioSecureTokenStore.getInstance().add(key, secure_token);
+        if(!"-1".equals(seed) && !seed.contains("seed") && !seed.contains("require_auth")){
+            request_status = Pydio.ERROR_NOT_A_SERVER;
+            return;
+        }
 
-                    } else {
-                        request_status = Pydio.ERROR_AUTHENTICATION;
-                        if (result.equals("-4")) {
-                            request_status = Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA;
-                        }
-                    }
+        if(seed.indexOf("\"seed\":-1") != -1) {
+            seed = "-1";
+        }
+        if(seed != null) seed = seed.trim();
+
+        if(helper == null){
+            return;
+        }
+        String[] c = helper.requestForLoginPassword();
+        UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(c[0], c[1]);
+        String user = credentials.getUserName();
+        String password = credentials.getPassword();
+
+        if(!seed.trim().equals("-1")){
+            password = AuthenticationUtils.processPydioPassword(password, seed);
+        }
+        Map<String, String> loginPass = new HashMap<>();
+        String captcha_code = helper.getChallengeResponse();
+
+        if(captcha_code != null && !"".equals(captcha_code)) {
+            loginPass.put(Pydio.PARAM_CAPTCHA_CODE, captcha_code);
+        }
+
+        loginPass.put("userid", user);
+        loginPass.put("password", password);
+        loginPass.put("login_seed", seed);
+        loginPass.put("Ajxp-Force-Login", "true");
+
+        Document doc = HttpResponseParser.getXML(request(getActionURI(Pydio.ACTION_LOGIN), loginPass));
+
+        if(doc != null) {
+            if (doc.getElementsByTagName("logging_result").getLength() > 0) {
+                String result = doc.getElementsByTagName("logging_result").item(0).getAttributes().getNamedItem("value").getNodeValue();
+                if (loggedIn = result.equals("1")) {
+                    request_status = Pydio.NO_ERROR;
+                    String newToken = doc.getElementsByTagName("logging_result").item(0).getAttributes().getNamedItem("secure_token").getNodeValue();
+                    secure_token = newToken;
+                    String key = helper.requestForLoginPassword()[0] + "@" + server.host() + server.path();
+                    PydioSecureTokenStore.getInstance().add(key, secure_token);
+
                 } else {
-                    request_status = Pydio.ERROR_INTERNAL;
-                }
-                return;
-            } catch (IOException e) {
-
-                if (e instanceof SSLPeerUnverifiedException) {
-                    server.setSelSigned(true);
-                    req.setTrustSSL(true);
-                    continue;
-                } else if (e instanceof SSLHandshakeException) {
-                    request_status = Pydio.ERROR_CON_SSL_SELF_SIGNED_CERT;
-                    try {
-                        helper.setCertificate(((CustomCertificateException) e.getCause()).cert);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+                    request_status = Pydio.ERROR_AUTHENTICATION;
+                    if (result.equals("-4")) {
+                        request_status = Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA;
                     }
-                    return;
-                } else if (e instanceof SSLException) {
-                    request_status = Pydio.ERROR_CON_FAILED_SSL;
-                    return;
-                } else {
-                    request_status = Pydio.ERROR_CON_FAILED;
-                    return;
                 }
-            } catch (Exception e) {
-                if (e instanceof IllegalArgumentException && e.getMessage().toLowerCase().contains("unreachable")) {
-                    request_status = Pydio.ERROR_UNREACHABLE_HOST;
-                }
-                return;
+            } else {
+                request_status = Pydio.ERROR_INTERNAL;
             }
         }
     }
@@ -215,7 +206,7 @@ public class SessionTransport implements Transport{
         JSONObject jObject;
         try {
             jObject = new JSONObject(HttpResponseParser.getString(resp));
-            loginStateChanged = true;
+            loggedIn = true;
             secure_token = jObject.getString("SECURE_TOKEN");
         }  catch (ParseException e) {
             // TODO Auto-generated catch block
@@ -226,17 +217,6 @@ public class SessionTransport implements Transport{
     }
 
     private boolean isAuthenticationRequested(HttpResponse response) {
-
-        /*Header[] heads = response.getHeaders("Content-type");
-        boolean xml = false;
-
-        for (int i = 0; i < heads.length; i++) {
-            if (heads[i].getValue().contains("text/xml")) xml = true;
-        }
-
-        if (!xml || loginStateChanged) return false;
-        //if(!xml) return false;*/
-
         HttpEntity ent = response.getEntity();
 
         final boolean[] is_required = {false};
@@ -247,7 +227,7 @@ public class SessionTransport implements Transport{
             byte[] buffer = new byte[1024];
             int read = stream.safeRead(buffer);
             if(read == - 1) return false;
-            String xmlString = new String(Arrays.copyOfRange(buffer, 0, read), StandardCharsets.UTF_8.name());
+            String xmlString = new String(Arrays.copyOfRange(buffer, 0, read), "utf-8");
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = factory.newSAXParser();
 
@@ -296,8 +276,8 @@ public class SessionTransport implements Transport{
                 public void characters(char ch[], int start, int length) throws SAXException {
                     String str = new String(ch);
                     if (tag_msg){
-                        if("You are not allowed to access this resource.".equals(str)){
-                            is_required[0] = true; //SessionTransport.this.auth_step = "RENEW-TOKEN";
+                        if(str.toLowerCase().contains("you are not allowed to access")){
+                            accessRefused = is_required[0] = true; //SessionTransport.this.auth_step = "RENEW-TOKEN";
                             throw new SAXException("TOKEN");
                         }
                     }
@@ -328,27 +308,21 @@ public class SessionTransport implements Transport{
 
     }
 
-    private HttpResponse request(Requester req, URI uri, Map<String, String> params) throws IOException {
-        if(!Arrays.asList(Pydio.no_auth_required_actions).contains(this.action)){
-            if((request_status == Pydio.ERROR_AUTHENTICATION || request_status == Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA)){
-                login();
-            }else if(request_status == Pydio.ERROR_OLD_AUTHENTICATION_TOKEN){
-                try {
-                    refreshToken();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+    private HttpResponse request(URI uri, Map<String, String> params) throws IOException {
+
+        if(mRequester == null){
+            mRequester = new Requester(server);
+            mRequester.trustSSL = trustSSL;
         }
-        if(req == null){
-            req = new Requester(server);
+
+        if(mRequester.trustSSL && "http".equals(uri.getScheme())){
+            mRequester = new Requester(server);
+            mRequester.trustSSL = false;
         }
+
         HttpResponse response = null;
 
         for(;;){
-            if((request_status == Pydio.ERROR_OLD_AUTHENTICATION_TOKEN || request_status == Pydio.ERROR_AUTHENTICATION || request_status == Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA) && !Arrays.asList(Pydio.no_auth_required_actions).contains(this.action)){
-                break;
-            }
             if(!"".equals(secure_token)){
                 if(params == null) params = new HashMap<String, String>();
                 params.put("secure_token", secure_token);
@@ -360,36 +334,58 @@ public class SessionTransport implements Transport{
             }
 
             try {
-                response = req.issueRequest(uri, params);
-            }catch (IOException e){
+                response = mRequester.issueRequest(uri, params);
+                trustSSL = mRequester.trustSSL;
+
+            } catch (IOException e){
                 if(e instanceof SSLPeerUnverifiedException){
-                    server.setSelSigned(true);
-                    req.setTrustSSL(true);
+                    mRequester.setTrustSSL(true);
                     continue;
+
                 }else if ( e instanceof  SSLHandshakeException){
                     request_status = Pydio.ERROR_CON_SSL_SELF_SIGNED_CERT;
-                    try{
-                        helper.setCertificate(((CustomCertificateException)e.getCause()).cert);
-                    }catch(Exception ex){
-                        ex.printStackTrace();
+                    Exception cause = (Exception) e.getCause();
+
+                    if(cause instanceof CustomCertificateException){
+                        helper.setCertificate(((CustomCertificateException) e.getCause()).cert);
+                        return null;
                     }
 
+                    Exception causeCause = (Exception) cause.getCause();
+
+                    if(causeCause == null){}
+
+                    if(causeCause != null && causeCause instanceof CertPathValidatorException && !mRequester.trustSSL){
+                        if(!mRequester.trustSSL) {
+                            CertPathValidatorException ex = (CertPathValidatorException) cause.getCause();
+                            helper.setCertificate((X509Certificate) ex.getCertPath().getCertificates().get(0));
+                            mRequester.trustSSL = true;
+                            continue;
+                        }
+                        throw e;
+                    }
                     return null;
+
                 }else if (e instanceof SSLException) {
                     request_status = Pydio.ERROR_CON_FAILED_SSL;
-                    return null;
+                    throw e;
+
                 }else{
                     request_status = Pydio.ERROR_CON_FAILED;
                     throw e;
                 }
+
             }catch (Exception e){
                 if(e instanceof IllegalArgumentException && e.getMessage().toLowerCase().contains("unreachable")){
                     request_status = Pydio.ERROR_UNREACHABLE_HOST;
                     return null;
                 }
+
                 e.printStackTrace();
-                throw  e;
+                return null;
             }
+
+            if(Arrays.asList(Pydio.no_auth_required_actions).contains(action)) return response;
 
             if(!isAuthenticationRequested(response)){
                 boolean isNotAuthAction = Arrays.asList(Pydio.no_auth_required_actions).contains(this.action);
@@ -400,18 +396,36 @@ public class SessionTransport implements Transport{
 
             }else{
                 try {
+                    if(loggedIn && accessRefused){
+                        request_status = Pydio.ERROR_ACCESS_REFUSED;
+                        throw new IOException("access refused");
+                    }
+
+
                     if (request_status == Pydio.ERROR_OLD_AUTHENTICATION_TOKEN) {
                         String key = helper.requestForLoginPassword()[0] + "@" + server.host() + server.path();
-                        if("".equals(secure_token)){
+                        if ("".equals(secure_token)) {
                             secure_token = PydioSecureTokenStore.getInstance().get(key);
                             request_status = Pydio.NO_ERROR;
-                        }else if (!secure_token.equals(PydioSecureTokenStore.getInstance().get(key))){
+                        } else {
                             refreshToken();
+                            attemptedLogin = true;
                         }
-                    } else if (request_status == Pydio.ERROR_AUTHENTICATION) {
-                        login();
+                        continue;
+
                     }
-                    continue;
+
+                    if (request_status == Pydio.ERROR_AUTHENTICATION) {
+                        login();
+                        attemptedLogin = true;
+                        if(!loggedIn){
+                            throw new IOException("authentication required");
+                        }
+                        continue;
+                    }
+
+                    request_status = Pydio.ERROR_INTERNAL;
+                    break;
                 }catch (Exception e){
                     return null;
                 }
@@ -420,54 +434,80 @@ public class SessionTransport implements Transport{
         return response;
     }
 
-
     //*****************************************
     //     TRANSPORT OVERRIDEN METHODS
     //*****************************************
 
 
     public HttpResponse getResponse(String action, Map<String, String> params) throws IOException {
+        accessRefused = false;
+        loggedIn = false;
+        attemptedLogin = false;
         this.action = action;
-        return request(null, getActionURI(action), params);
+        return request(getActionURI(action), params);
     }
 
     public String getStringContent(String action, Map<String, String> params) throws IOException {
+        accessRefused = false;
+        loggedIn = false;
+        attemptedLogin = false;
         this.action = action;
-        HttpResponse response  = this.request(null, this.getActionURI(action), params);
+        HttpResponse response  = this.request(this.getActionURI(action), params);
         return HttpResponseParser.getString(response);
     }
 
     public Document getXmlContent(String action, Map<String, String> params) throws IOException {
+        accessRefused = false;
+        loggedIn = false;
+        attemptedLogin = false;
         this.action = action;
-        HttpResponse response  = this.request(null, this.getActionURI(action), params);
+        HttpResponse response  = this.request(this.getActionURI(action), params);
         return HttpResponseParser.getXML(response);
     }
 
     public JSONObject getJsonContent(String action, Map<String, String> params) {
+        accessRefused = false;
+        loggedIn = false;
+        attemptedLogin = false;
         this.action = action;
         return null;
     }
 
     public InputStream getResponseStream(String action, Map<String, String> params) throws IOException {
+        accessRefused = false;
+        loggedIn = false;
+        attemptedLogin = false;
         this.action = action;
-        return request(null, getActionURI(action), params).getEntity().getContent();
+        return request(getActionURI(action), params).getEntity().getContent();
     }
 
-    public Document putContent( String action, Map<String, String> params, File file, String filename, ProgressListener listener) throws IOException {
+    public Document putContent( String action, Map<String, String> params, File file, String filename, UploadStopNotifierProgressListener listener) throws IOException {
+        accessRefused = false;
+        loggedIn = false;
+        attemptedLogin = false;
         this.action = action;
-        Requester req = new Requester(server);
-        req.setFile(file);
-        req.setProgressListener(listener);
-        req.setFilename(filename);
+        mRequester.setFile(file);
+        mRequester.setProgressListener(listener);
+        mRequester.setFilename(filename);
+
         if(!"".equals(secure_token)){
             params.put("secure_token", secure_token);
         }
+
         HttpResponse response = null;
-        response = request(req, getActionURI(action), params);
+        response = request(getActionURI(action), params);
+
+        mRequester.setFile(null);
+        mRequester.setProgressListener(null);
+        mRequester.setFilename(null);
+
         return HttpResponseParser.getXML(response);
     }
 
-    public Document putContent(String action, Map<String, String> params, byte[] data, String filename, ProgressListener listener) {
+    public Document putContent(String action, Map<String, String> params, byte[] data, String filename, UploadStopNotifierProgressListener listener) {
+        accessRefused = false;
+        loggedIn = false;
+        attemptedLogin = false;
         this.action = action;
         return null;
     }

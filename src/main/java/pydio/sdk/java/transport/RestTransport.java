@@ -16,6 +16,7 @@ import pydio.sdk.java.auth.AuthenticationHelper;
 import pydio.sdk.java.http.HttpResponseParser;
 import pydio.sdk.java.model.ServerNode;
 import pydio.sdk.java.utils.ProgressListener;
+import pydio.sdk.java.utils.UploadStopNotifierProgressListener;
 
 /**
  * Class that generates rest requests
@@ -91,14 +92,16 @@ public class RestTransport implements Transport{
 			return null;
 	}
 
-	public Document putContent(String action, Map<String, String> params, File file, String filename, ProgressListener handler) {
+	@Override
+	public Document putContent(String action, Map<String, String> params, File file, String filename, UploadStopNotifierProgressListener handler) throws IOException {
 		return null;
 	}
 
-	public Document putContent(String action, Map<String, String> params, byte[] data, String filename, ProgressListener handler) {
-		// TODO Auto-generated method stub
+	@Override
+	public Document putContent(String action, Map<String, String> params, byte[] data, String filename, UploadStopNotifierProgressListener handler) {
 		return null;
 	}
+
     @Override
     public void setServer(ServerNode server) {
 
