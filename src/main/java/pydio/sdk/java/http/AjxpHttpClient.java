@@ -58,12 +58,10 @@ public class AjxpHttpClient extends DefaultHttpClient {
 
 	public AjxpHttpClient(boolean trustSSL, int port) {
 		super();
-
 		this.port = port <= 0 ? 80 : port;
-
 		this.trustSelfSignedSSL = trustSSL;
 		localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
-		this.getParams().setParameter(ClientPNames.ALLOW_CIRCULAR_REDIRECTS,true);
+		this.getParams().setParameter(ClientPNames.ALLOW_CIRCULAR_REDIRECTS, true);
 	}
 	
 	public void refreshCredentials(String user, String pass){
@@ -79,14 +77,14 @@ public class AjxpHttpClient extends DefaultHttpClient {
                 credentials
         );
 	}
-
 	@Override
 	protected ClientConnectionManager createClientConnectionManager() {
 		SchemeRegistry registry = new SchemeRegistry();
 		registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), port));
 		
 		if(trustSelfSignedSSL){
-			registry.register(new Scheme("https", new AjxpSSLSocketFactory(), 443));
+			AjxpSSLSocketFactory socketFactory = new AjxpSSLSocketFactory();
+			registry.register(new Scheme("https", socketFactory, 443));
 		}else{
 			SSLSocketFactory socketFactory = SSLSocketFactory.getSocketFactory();
 			registry.register(new Scheme("https", socketFactory, 443));

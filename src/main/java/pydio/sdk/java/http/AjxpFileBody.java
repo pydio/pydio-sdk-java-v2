@@ -51,7 +51,6 @@ public class AjxpFileBody extends FileBody {
 		super(file);
 		customFileName = fileName;
 		bufsize = 16384;
-		System.out.println("LOCAL CONFIG BUFFER SIZE : "+bufsize);
 	}
 	
 	public void chunkIntoPieces(int chunkSize){
@@ -65,8 +64,6 @@ public class AjxpFileBody extends FileBody {
 		
 		if (totalChunks > 1 && bufsize > chunkSize){			
 			bufsize = chunkSize;
-			//maybe publish message to alert
-			System.out.println("ATTENTION : la taille du buffer est sup�rieur au max upload!\nFINAL BUFFER SIZE USED: "+bufsize);
 		}
 	}
 	public int getCurrentIndex(){
