@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 
 import pydio.sdk.java.model.ServerNode;
-import pydio.sdk.java.utils.ProgressListener;
 import pydio.sdk.java.utils.Pydio;
+import pydio.sdk.java.utils.UploadStopNotifierProgressListener;
 
 
 /**
@@ -42,9 +42,9 @@ public class Requester {
 	private File file;
 	private String fileName;
 	private AjxpHttpClient httpClient;
-	private boolean trustSSL = false;
+	public boolean trustSSL = false;
 	private CountingMultipartRequestEntity.ProgressListener progressListener;
-    private ProgressListener listener;
+    private UploadStopNotifierProgressListener listener;
 	private String authStep;
     ServerNode server;
     boolean fresh = true;
@@ -61,20 +61,14 @@ public class Requester {
 	 * @return returns an HTTPResponse.
 	 */
 	public HttpResponse issueRequest(URI uri, Map<String, String> postParameters) throws IOException {
-		
-		httpClient = new AjxpHttpClient(server.isSSLselfSigned(), server.port());
-
+		httpClient = new AjxpHttpClient(trustSSL, server.port());
         try {
             CookieStore cstore = httpClient.getCookieStore();
             List<Cookie> cookies = cstore.getCookies();
             for (int i = 0; i < cookies.size(); i++) {
                 Cookie c = cookies.get(i);
-                System.out.println(c.toString());
             }
-
-        }catch(Exception e){
-            System.out.println(e.getMessage());
-        }
+        }catch(Exception e){}
 
 		if(credentials != null){
 			httpClient.refreshCredentials(credentials);
@@ -105,18 +99,18 @@ public class Requester {
                 reqEntity.addPart("userfile_0", fileBody);
 
                 if(fileName != null && !EncodingUtils.getAsciiString(EncodingUtils.getBytes(fileName, "US-ASCII")).equals(fileName)){
-                    reqEntity.addPart("urlencoded_filename", new StringBody(java.net.URLEncoder.encode(fileName, StandardCharsets.UTF_8.name())));
+                    reqEntity.addPart("urlencoded_filename", new StringBody(java.net.URLEncoder.encode(fileName, "utf-8")));
                 }
 
                 if(fileBody != null && !fileBody.getFilename().equals(fileBody.getRootFilename())){
-                    reqEntity.addPart("appendto_urlencoded_part", new StringBody(java.net.URLEncoder.encode(fileBody.getRootFilename(), StandardCharsets.UTF_8.name())));
+                    reqEntity.addPart("appendto_urlencoded_part", new StringBody(java.net.URLEncoder.encode(fileBody.getRootFilename(), "utf-8")));
                 }
 
                 if(postParameters != null){
                     Iterator<Map.Entry<String, String>> it = postParameters.entrySet().iterator();
                     while(it.hasNext()){
                         Map.Entry<String, String> entry = it.next();
-                        reqEntity.addPart(entry.getKey(), new StringBody(new String(entry.getValue().getBytes(), StandardCharsets.UTF_8.name())));
+                        reqEntity.addPart(entry.getKey(), new StringBody(new String(entry.getValue().getBytes(), "utf-8")));
                     }
                 }
                 if(progressListener != null){
@@ -135,7 +129,7 @@ public class Requester {
                     Map.Entry<String, String> entry = it.next();
                     nameValuePairs.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
                 }
-                ((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs, StandardCharsets.UTF_8.name()));
+                ((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs, "utf-8"));
             }
         }else{
             request = new HttpGet();
@@ -196,17 +190,21 @@ public class Requester {
 	 * Set a listener to follow upload progress.
 	 * @param listener
 	 */
-	public void setProgressListener(final ProgressListener listener){
+	public void setProgressListener(final UploadStopNotifierProgressListener listener){
 		this.listener = listener;
         progressListener = new CountingMultipartRequestEntity.ProgressListener() {
             @Override
             public void transferred(long num) throws IOException {
-                listener.onProgress(num);
+                if(listener.onProgress(num)){
+                    throw new IOException("");
+                }
             }
 
             @Override
             public void partTransferred(int part, int total) throws IOException {
-                listener.onProgress(part*100 / total);
+                if(listener.onProgress(part*100 / total)){
+                    throw new IOException("");
+                }
             }
         };
 	}
