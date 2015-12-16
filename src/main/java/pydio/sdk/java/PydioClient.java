@@ -52,6 +52,7 @@ import pydio.sdk.java.utils.ProgressListener;
 import pydio.sdk.java.utils.Pydio;
 import pydio.sdk.java.utils.RegistryItemHandler;
 import pydio.sdk.java.utils.RegistrySaxHandler;
+import pydio.sdk.java.utils.UploadStopNotifierProgressListener;
 import pydio.sdk.java.utils.WorkspaceNodeSaxHandler;
 /**
  * 
@@ -99,7 +100,7 @@ public class PydioClient {
     //         REMOTE ACTION METHODS
     //*****************************************
 
-    public boolean login(){
+    public boolean login() throws IOException {
         transport.login();
         return transport.requestStatus() == Pydio.NO_ERROR;
     }
@@ -166,7 +167,6 @@ public class PydioClient {
             e.printStackTrace();
         }
     }
-
 
     public void loadNodeData(String tempWorkspace, String path, NodeHandler handler)throws IOException{
         DefaultHandler saxHandler = null;
@@ -239,25 +239,32 @@ public class PydioClient {
 	 * @param name the name on the remote server
 	 * @return a SUCCESS or ERROR Message
 	 */
-    public void write(String tempWorkspace, String path, File source, String name, boolean autoRename, ProgressListener progressListener, final MessageHandler handler)throws IOException {
+    public void write(String tempWorkspace, String path, File source, String name, boolean autoRename, UploadStopNotifierProgressListener progressListener, final MessageHandler handler)throws IOException {
         String action;
 		Map<String, String> params = new HashMap<String , String>();
         if(tempWorkspace != null){
             params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
+
         action =  Pydio.ACTION_UPLOAD;
         params.put(Pydio.PARAM_DIR, path);
 		params.put(Pydio.PARAM_XHR_UPLOADER, "true");
+
         if(name == null){
             name = source.getName();
         }
         try {
-            params.put(Pydio.PARAM_URL_ENCODED, java.net.URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
+            params.put(Pydio.PARAM_URL_ENCODED, java.net.URLEncoder.encode(name, "utf-8"));
         } catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
-        params.put(Pydio.PARAM_AUTO_RENAME, String.valueOf(autoRename));
+
+        if(autoRename) {
+            params.put(Pydio.PARAM_AUTO_RENAME, "true");
+        }
+
         final Document doc = transport.putContent(action, params, source, name, progressListener);
+
         if(handler != null) {
             handler.onMessage(PydioMessage.create(doc));
         }
@@ -560,20 +567,17 @@ public class PydioClient {
         params.put(Pydio.PARAM_CHANGE_STREAM, "true");
         String action = Pydio.ACTION_CHANGES;
         try {
-            HttpResponse r = transport.getResponse(action, params);
-            String charset = EntityUtils.getContentCharSet(r.getEntity());
-            if(charset == null){
-                charset = StandardCharsets.UTF_8.name();
-            }
-            InputStream is = r.getEntity().getContent();
-            Scanner sc = new Scanner(is, charset);
-            sc.useDelimiter("\\n");
-            String line = sc.nextLine();
-            while(!line.toLowerCase().startsWith("last_seq") && line.length() != 0){
-                final String[] change = new String[10];
-                while(!line.endsWith("}}")){
-                    line += sc.nextLine();
+            String str = transport.getStringContent(action, params);
+            String[] splits = str.split("\\n");
+            System.out.printf(str);
+            String line = "";
+
+            for(int i = 0; i < splits.length; i++){
+                line = splits[i];
+                if(line.toLowerCase().startsWith("last_seq")){
+                    break;
                 }
+                final String[] change = new String[10];
                 JSONObject json =  new JSONObject(line);
 
                 change[Pydio.CHANGE_INDEX_SEQ] = json.getString(Pydio.CHANGE_SEQ);
@@ -588,8 +592,8 @@ public class PydioClient {
                 change[Pydio.CHANGE_INDEX_NODE_PATH] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_PATH);
                 change[Pydio.CHANGE_INDEX_NODE_WORKSPACE] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_WORKSPACE);
                 p.process(change);
-                line = sc.nextLine();
             }
+
             if(line.toLowerCase().startsWith("last_seq")) {
                 result_seq = Integer.parseInt(line.split(":")[1]);
             }
@@ -613,7 +617,7 @@ public class PydioClient {
         try {
             String charset = EntityUtils.getContentCharSet(r.getEntity());
             if(charset == null){
-                charset = StandardCharsets.UTF_8.name();
+                charset = "utf-8";
             }
             InputStream is = r.getEntity().getContent();
 
@@ -636,19 +640,31 @@ public class PydioClient {
 
     public JSONObject shareInfo(String tempWorkspace, String path)throws IOException{
         Map<String, String> params = new HashMap<String , String>();
-
         if(tempWorkspace != null){
             params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
-
         String action = Pydio.ACTION_LOAD_SHARED_ELEMENT_DATA;
         params.put(Pydio.PARAM_FILE, path);
-        params.put(Pydio.PARAM_SHARE_ELEMENT_TYPE, Pydio.SHARE_ELEMENT_TYPE_FILE);
-
-        Properties p = new Properties();
+        //params.put(Pydio.PARAM_SHARE_ELEMENT_TYPE, Pydio.SHARE_ELEMENT_TYPE_FILE);
         String res = transport.getStringContent(action, params);
         try {
             return new JSONObject(res);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public InputStream getAvatar(String user, String binary) throws IOException {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put(Pydio.PARAM_USER_ID, user);
+        params.put(Pydio.PARAM_BINARY_ID, binary);
+        return transport.getResponseStream(Pydio.ACTION_GET_BINARY_PARAM, params);
+    }
+
+    public JSONObject bootConf(){
+        try {
+            return new JSONObject(transport.getStringContent(Pydio.ACTION_GET_BOOT_CONF, null));
         } catch (Exception e) {
             e.printStackTrace();
         }
