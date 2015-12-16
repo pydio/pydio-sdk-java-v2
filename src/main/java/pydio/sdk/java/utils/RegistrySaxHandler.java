@@ -17,6 +17,7 @@ public class RegistrySaxHandler extends DefaultHandler {
     public boolean inside_plugins = false;
     public boolean inside_repositories = false;
     public boolean inside_repo = false;
+    public boolean inside_preferences = false;
 
     Properties p;
     String inner_element;
@@ -28,8 +29,12 @@ public class RegistrySaxHandler extends DefaultHandler {
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         if("action".equals(qName) && inside_actions){
             String action = attributes.getValue(attributes.getIndex("name"));
-            handler.onNewItem(Pydio.REGISTRY_ITEM_ACTION, action);
+            handler.onAction(action);
             return;
+        }
+
+        if("pref".equals(qName) && inside_preferences){
+            handler.onPref(attributes.getValue(attributes.getIndex("name")), attributes.getValue(attributes.getIndex("value")));
         }
 
         if("plugin".equals(qName) && inside_plugins){
@@ -66,6 +71,11 @@ public class RegistrySaxHandler extends DefaultHandler {
             return;
         }
 
+        if("preferences".equals(qName)){
+            inside_preferences = true;
+            return;
+        }
+
         if(inside_repositories && "repo".equals(qName)){
             inside_repo = true;
             return;
@@ -94,6 +104,11 @@ public class RegistrySaxHandler extends DefaultHandler {
             return;
         }
 
+        if(inside_preferences && "preferences".equals(qName)){
+           inside_preferences = false;
+            return;
+        }
+
         if(inside_repo){
             if("label".equals(qName.toLowerCase()) || "description".equals(qName.toLowerCase())){
                 inner_element = "";
@@ -102,7 +117,7 @@ public class RegistrySaxHandler extends DefaultHandler {
 
             if("repo".equals(qName)){
                 inside_repo = false;
-                handler.onNewItem(Pydio.REGISTRY_ITEM_WORKSPACE, p);
+                handler.onWorkspace(p);
                 p = null;
                 return;
             }
