@@ -60,6 +60,8 @@ public class Pydio {
     public static final String PARAM_SHARE_WORKSPACE_DESCRIPTION        = "repo_description";
     public static final String PARAM_SEARCH_QUERY                       = "query";
     public static final String PARAM_SEARCH_LIMIT                       = "limit";
+    public static final String PARAM_BINARY_ID                          = "binary_id";
+    public static final String PARAM_USER_ID                            = "user_id";
 
     public static final String PARAM_CHANGE_SEQ_ID                      = "seq_id";
     public static final String PARAM_CHANGE_FLATTEN                     = "flatten";
@@ -72,6 +74,7 @@ public class Pydio {
 
 
 	public final static String ACTION_LIST 						        = "ls";
+	public final static String ACTION_GET_BOOT_CONF 					= "get_boot_conf";
 	public final static String ACTION_LOGOUT 						    = "logout";
 	public final static String ACTION_UPLOAD 					        = "upload";
 	public final static String ACTION_DOWNLOAD 					        = "download";
@@ -107,6 +110,7 @@ public class Pydio {
     public final static String ACTION_STATS                             = "stat";
     public final static String ACTION_CHANGES                           = "changes";
     public final static String ACTION_LOAD_SHARED_ELEMENT_DATA          = "load_shared_element_data";
+    public final static String ACTION_GET_BINARY_PARAM                  = "get_binary_param";
 
 
 
@@ -170,6 +174,7 @@ public class Pydio {
     public final static String WORKSPACE_ACCESS_TYPE_JSAPI              = "jsapi";
     public final static String WORKSPACE_ACCESS_TYPE_USER               = "ajxp_user";
     public final static String WORKSPACE_ACCESS_TYPE_HOME               = "ajxp_home";
+    public final static String WORKSPACE_ACCESS_TYPE_ADMIN               = "ajxp_admin";
     public final static String WORKSPACE_ACCESS_TYPE_FS                 = "fs";
 
 
@@ -220,9 +225,10 @@ public class Pydio {
 
 
 
-    public final static int REGISTRY_ITEM_ACTION                        = 1;
-    public final static int REGISTRY_ITEM_PLUGIN                        = 2;
-    public final static int REGISTRY_ITEM_WORKSPACE = 3;
+    public final static String REGISTRY_PREF_EMAIL                      = "email";
+    public final static String REGISTRY_PREF_AVATAR                     = "avatar";
+    public final static String REGISTRY_PREF_USER_DISPLAY_NAME          = "USER_DISPLAY_NAME";
+    public final static String REGISTRY_PREF_DEFAULT_WS                 = "DEFAULT_START_REPOSITORY";
 
 
     public final static String AUTH_CHALLENGE_TYPE_CAPTCHA              = "CHALLENGE_CAPTCHA";
@@ -245,5 +251,7 @@ public class Pydio {
             ERROR_NOT_FOUND                                             = 13,
             ERROR_USER_ALREADY_AUTH                                     = 14,
             ERROR_OLD_AUTHENTICATION_TOKEN                              = 15,
-            ERROR_UNREACHABLE_HOST                                      = 16;
+            ERROR_UNREACHABLE_HOST                                      = 16,
+            ERROR_ACCESS_REFUSED                                        = 17;
+
 }
