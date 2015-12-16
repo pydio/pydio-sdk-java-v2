@@ -33,6 +33,7 @@ import java.net.UnknownHostException;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
 import pydio.sdk.java.auth.AuthenticationHelper;
@@ -40,22 +41,15 @@ import pydio.sdk.java.auth.AuthenticationHelper;
 public class AjxpSSLSocketFactory implements SocketFactory, LayeredSocketFactory {
 	private String certKey = null;
     private SSLContext sslcontext = null;
-    private AuthenticationHelper cp;
 
-    public AjxpSSLSocketFactory(String certKey){
-    	this.certKey = certKey;
+    public AjxpSSLSocketFactory() {
+
     }
-
-    public AjxpSSLSocketFactory(AuthenticationHelper cp){
-        this.cp = cp;
-    }
-
-    public AjxpSSLSocketFactory() { }
 
     private static SSLContext createEasySSLContext() throws IOException {
         try {
             SSLContext context = SSLContext.getInstance("TLS");
-            context.init(null, new TrustManager[] { new AjxpSSLTrustManager() }, null);
+            context.init(null, new TrustManager[] { new AjxpSSLTrustManager()}, null);
             return context;
         } catch (Exception e) {
             throw new IOException(e.getMessage());
