@@ -138,6 +138,7 @@ public class Pydio {
     public final static String NODE_PROPERTY_FILE_PERMS 		        = "file_perms";
     public final static String NODE_PROPERTY_FILE_SIZE 			        = "filesize";
     public final static String NODE_PROPERTY_FILENAME 			        = "filename";
+    public final static String NODE_PROPERTY_ORIGINAL_PATH		        = "original_path";
     public final static String NODE_PROPERTY_ICON 				        = "icon";
     public final static String NODE_PROPERTY_IS_FILE 			        = "is_file";
     public final static String NODE_PROPERTY_IS_IMAGE 			        = "is_image";
