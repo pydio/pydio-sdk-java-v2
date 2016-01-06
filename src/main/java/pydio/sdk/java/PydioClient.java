@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,7 +62,6 @@ import pydio.sdk.java.utils.WorkspaceNodeSaxHandler;
 public class PydioClient {
 	
 	SessionTransport transport;
-    //public String mTempWorkspace;
     public ServerNode server;
     Properties localConfigs = new Properties();
     AuthenticationHelper helper;
@@ -572,7 +570,7 @@ public class PydioClient {
             HttpResponse r = transport.getResponse(action, params);
             String charset = EntityUtils.getContentCharSet(r.getEntity());
             if(charset == null){
-                charset = StandardCharsets.UTF_8.name();
+                charset = "UTF-8";
             }
             InputStream is = r.getEntity().getContent();
             Scanner sc = new Scanner(is, charset);
