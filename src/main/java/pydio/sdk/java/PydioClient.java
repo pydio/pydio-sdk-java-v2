@@ -275,7 +275,7 @@ public class PydioClient {
 	 * @param outputStream Outputstream on the local target file
 	 * @param progressListener
 	 */
-    public void read(String tempWorkspace, String[] paths, OutputStream outputStream, ProgressListener progressListener) throws IOException{
+    public long read(String tempWorkspace, String[] paths, OutputStream outputStream, ProgressListener progressListener) throws IOException{
 
         Map<String, String> params = new HashMap<String , String>();
 		fillParams(params, paths);
@@ -304,6 +304,7 @@ public class PydioClient {
             i++;
         }
         stream.close();
+        return total_read;
 	}
 	/** 
 	 * 
@@ -315,10 +316,11 @@ public class PydioClient {
 	 * @throws java.io.FileNotFoundException
 	 * @throws IllegalStateException 
 	 */
-    public void read(String tempWorkspace, String[] paths, File target, ProgressListener progressListener) throws IllegalStateException, IOException {
+    public long read(String tempWorkspace, String[] paths, File target, ProgressListener progressListener) throws IllegalStateException, IOException {
         OutputStream out = new FileOutputStream(target);
-        read(tempWorkspace, paths, out, progressListener);
+        long read = read(tempWorkspace, paths, out, progressListener);
         out.close();
+        return read;
     }
     /**
      * Remove node on the server
@@ -567,17 +569,21 @@ public class PydioClient {
         params.put(Pydio.PARAM_CHANGE_STREAM, "true");
         String action = Pydio.ACTION_CHANGES;
         try {
-            String str = transport.getStringContent(action, params);
-            String[] splits = str.split("\\n");
-            System.out.printf(str);
-            String line = "";
+            HttpResponse r = transport.getResponse(action, params);
+            String charset = EntityUtils.getContentCharSet(r.getEntity());
+            if(charset == null){
+                charset = StandardCharsets.UTF_8.name();
+            }
+            InputStream is = r.getEntity().getContent();
+            Scanner sc = new Scanner(is, charset);
+            sc.useDelimiter("\\n");
+            String line = sc.nextLine();
 
-            for(int i = 0; i < splits.length; i++){
-                line = splits[i];
-                if(line.toLowerCase().startsWith("last_seq")){
-                    break;
-                }
+            while(!line.toLowerCase().startsWith("last_seq")){
                 final String[] change = new String[10];
+                while(!line.endsWith("}}")){
+                    line += sc.nextLine();
+                }
                 JSONObject json =  new JSONObject(line);
 
                 change[Pydio.CHANGE_INDEX_SEQ] = json.getString(Pydio.CHANGE_SEQ);
@@ -592,8 +598,8 @@ public class PydioClient {
                 change[Pydio.CHANGE_INDEX_NODE_PATH] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_PATH);
                 change[Pydio.CHANGE_INDEX_NODE_WORKSPACE] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_WORKSPACE);
                 p.process(change);
+                line = sc.nextLine();
             }
-
             if(line.toLowerCase().startsWith("last_seq")) {
                 result_seq = Integer.parseInt(line.split(":")[1]);
             }
