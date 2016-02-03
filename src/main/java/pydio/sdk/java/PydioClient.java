@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -35,12 +36,14 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import pydio.sdk.java.auth.AuthenticationHelper;
+import pydio.sdk.java.http.HttpResponseParser;
 import pydio.sdk.java.model.ChangeProcessor;
 import pydio.sdk.java.model.Node;
 import pydio.sdk.java.model.NodeHandler;
 import pydio.sdk.java.model.PydioMessage;
 import pydio.sdk.java.model.ServerNode;
 import pydio.sdk.java.model.TreeNode;
+import pydio.sdk.java.model.UnexpectedResponseException;
 import pydio.sdk.java.model.WorkspaceNode;
 import pydio.sdk.java.transport.SessionTransport;
 import pydio.sdk.java.transport.Transport;
@@ -292,16 +295,29 @@ public class PydioClient {
 		int i = 0;
 
         for(;;){
-            read = stream.read(buffer);
+            try {
+                read = stream.read(buffer);
+            } catch (IOException e){
+                throw  new IOException("R");
+            }
+
             if(read == -1) break;
             total_read += read;
-            outputStream.write(buffer, 0, read);
+            try {
+                outputStream.write(buffer, 0, read);
+            } catch (IOException e){
+                throw  new IOException("W");
+            }
+
             if(progressListener != null){
                 progressListener.onProgress(total_read);
             }
             i++;
         }
-        stream.close();
+        try { stream.close(); }
+        catch (IOException e){
+            throw  new IOException("C");
+        }
         return total_read;
 	}
 	/** 
@@ -310,8 +326,8 @@ public class PydioClient {
 	 * @param paths Remotes nodes to read content from
 	 * @param target local file to put read content in
 	 * @param progressListener
-	 * @throws java.io.IOException
-	 * @throws java.io.FileNotFoundException
+	 * @throws IOException
+	 * @throws FileNotFoundException
 	 * @throws IllegalStateException 
 	 */
     public long read(String tempWorkspace, String[] paths, File target, ProgressListener progressListener) throws IllegalStateException, IOException {
@@ -551,7 +567,7 @@ public class PydioClient {
         return Pydio.NO_ERROR;
     }
 
-    public int changes(String tempWorkspace, int seq, boolean flatten, String filter, ChangeProcessor p)throws IOException{
+    public int changes(String tempWorkspace, int seq, boolean flatten, String filter, ChangeProcessor p)throws IOException, UnexpectedResponseException{
         Map<String, String> params = new HashMap<String , String>();
         int result_seq = 0;
         if(tempWorkspace != null) {
@@ -568,6 +584,12 @@ public class PydioClient {
         String action = Pydio.ACTION_CHANGES;
         try {
             HttpResponse r = transport.getResponse(action, params);
+            Header[] h = r.getHeaders("Content-Type");
+
+            if(!h[0].getValue().toLowerCase().contains("application/json")){
+                throw new UnexpectedResponseException(HttpResponseParser.getString(r));
+            }
+
             String charset = EntityUtils.getContentCharSet(r.getEntity());
             if(charset == null){
                 charset = "UTF-8";
@@ -578,7 +600,7 @@ public class PydioClient {
             String line = sc.nextLine();
 
             while(!line.toLowerCase().startsWith("last_seq")){
-                final String[] change = new String[10];
+                final String[] change = new String[11];
                 while(!line.endsWith("}}")){
                     line += sc.nextLine();
                 }
@@ -595,6 +617,7 @@ public class PydioClient {
                 change[Pydio.CHANGE_INDEX_NODE_MTIME] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_MTIME);
                 change[Pydio.CHANGE_INDEX_NODE_PATH] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_PATH);
                 change[Pydio.CHANGE_INDEX_NODE_WORKSPACE] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_WORKSPACE);
+                change[10] = "remote";
                 p.process(change);
                 line = sc.nextLine();
             }
@@ -607,7 +630,10 @@ public class PydioClient {
         return Math.max(seq, result_seq);
     }
 
-    public JSONObject stats(String tempWorkspace, String[] paths, boolean with_hash) throws IOException {
+    public JSONObject stats(String tempWorkspace, String[] paths, boolean with_hash) throws UnexpectedResponseException, IOException {
+        System.err.println("PYD SYNC : " + paths[0]);
+        String text = "";
+
         Map<String, String> params = new HashMap<String , String>();
         if(tempWorkspace != null) {
             params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
@@ -616,8 +642,16 @@ public class PydioClient {
         if(with_hash){
             action += "_hash";
         }
+
         fillParams(params, paths);
         HttpResponse r = transport.getResponse(action, params);
+
+        Header[] h = r.getHeaders("Content-Type");
+        System.out.println("STAT CONTENT TYPE : " + h[0].getValue());
+        if(!"application/json".equals(h[0].getValue().toLowerCase())){
+            throw new UnexpectedResponseException(HttpResponseParser.getString(r));
+        }
+
         try {
             String charset = EntityUtils.getContentCharSet(r.getEntity());
             if(charset == null){
@@ -632,14 +666,14 @@ public class PydioClient {
                 sb.append(line);
             }
             if(sb.length() == 0) return null;
-            return new JSONObject(sb.toString());
+            text  = sb.toString();
+            System.out.println("JSON STAT : " + text);
+            return new JSONObject(text);
 
         }catch (ParseException e) {
             e.printStackTrace();
-        } catch (Exception e){
-            e.printStackTrace();
+            throw  new IOException(text);
         }
-        return null;
     }
 
     public JSONObject shareInfo(String tempWorkspace, String path)throws IOException{
@@ -740,7 +774,7 @@ public class PydioClient {
      * @param params
      * @param paths
      */
-    private void fillParams(Map<String, String> params, String[] paths) throws UnsupportedEncodingException {
+    private void fillParams(Map<String, String> params, String[] paths) {
         if(paths != null){
             if(paths.length == 1){
                 params.put(Pydio.PARAM_FILE, paths[0]);
