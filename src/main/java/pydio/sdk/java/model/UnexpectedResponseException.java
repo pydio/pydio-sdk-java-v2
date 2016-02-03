@@ -1,0 +1,17 @@
+package pydio.sdk.java.model;
+
+/**
+ * Created by jabar on 29/01/2016.
+ */
+public class UnexpectedResponseException extends Exception {
+
+    String mMessage;
+
+    public UnexpectedResponseException(String message){
+        mMessage = message;
+    }
+
+    public String getMessage(){
+        return mMessage;
+    }
+}
