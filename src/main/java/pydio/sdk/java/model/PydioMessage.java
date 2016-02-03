@@ -9,15 +9,10 @@ import pydio.sdk.java.utils.Pydio;
 
 public class PydioMessage implements Serializable{
 
-	
-	/**
-	 * Message result SUCCESS
-	 */
 	public final static String SUCCESS = "SUCCESS";
-	/**
-	 * Message result ERROR
-	 */
 	public final static String ERROR 	= "ERROR";
+	public final static String EMPTY 	= "EMPTY";
+
 	private String message;
 	private String type;
 
@@ -41,18 +36,31 @@ public class PydioMessage implements Serializable{
 	public void setType(String type){
 		this.type = type;
 	}
+
+	private static PydioMessage empty(){
+		PydioMessage m = new PydioMessage();
+		m.type = ERROR;
+		return m;
+	}
+
 	/**
 	 * create a message from the given XML Document and fire associated event
 	 * @param doc An instance of XML Document
 	 * @return An instance of a Message
 	 */
 	public static PydioMessage create(Document doc){
+		if(doc == null){
+			return empty();
+		}
+
 		org.w3c.dom.Node xml_message = doc.getElementsByTagName(Pydio.XML_MESSAGE).item(0);
 		PydioMessage msg = new PydioMessage();
+
 		if(xml_message != null){
 			msg.setMessage(xml_message.getTextContent());
 			msg.setType(xml_message.getAttributes().getNamedItem(Pydio.MESSAGE_PROPERTY_TYPE).getNodeValue());
 		}
+
         org.w3c.dom.Node diff = doc.getElementsByTagName(Pydio.XML_NODES_DIFF).item(0);
         if(diff != null) {
             for (int i = 0; i < diff.getChildNodes().getLength(); i++) {
