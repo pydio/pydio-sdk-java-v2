@@ -62,7 +62,7 @@ public class HttpResponseParser {
 	public static String getString(HttpResponse response){
 		if(response == null) return null;		
 		HttpEntity entity = response.getEntity();			
-		InputStream in;
+		InputStream in = null;
 		StringBuilder sb = new StringBuilder();
 		int bufsize = Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE;
 		try {
@@ -79,6 +79,8 @@ public class HttpResponseParser {
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
+		} finally {
+			try {in.close();} catch (IOException e) {}
 		}
 	}
 
