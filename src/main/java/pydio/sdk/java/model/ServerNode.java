@@ -90,7 +90,7 @@ public class ServerNode implements Node{
     }
 	
 	public String url(){
-        String url = protocol+"://"+host;
+        String url = protocol.toLowerCase()+"://"+host;
         if(port > 0 && port != 80){
             url += ":"+port;
         }
