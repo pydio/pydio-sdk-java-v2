@@ -4,6 +4,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.conn.HttpHostConnectException;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
@@ -338,13 +339,25 @@ public class SessionTransport implements Transport{
                 trustSSL = mRequester.trustSSL;
 
             } catch (IOException e){
+
+                if(e instanceof HttpHostConnectException){
+                    request_status = Pydio.ERROR_CON_FAILED;
+                    return null;
+                }
+
                 if(e instanceof SSLPeerUnverifiedException){
                     mRequester.setTrustSSL(true);
                     continue;
 
-                }else if ( e instanceof  SSLHandshakeException){
+                }
+
+                if ( e instanceof  SSLHandshakeException){
                     request_status = Pydio.ERROR_CON_SSL_SELF_SIGNED_CERT;
+
                     Exception cause = (Exception) e.getCause();
+                    if(cause == null) {
+                        return null;
+                    }
 
                     if(cause instanceof CustomCertificateException){
                         helper.setCertificate(((CustomCertificateException) e.getCause()).cert);
@@ -352,8 +365,6 @@ public class SessionTransport implements Transport{
                     }
 
                     Exception causeCause = (Exception) cause.getCause();
-
-                    if(causeCause == null){}
 
                     if(causeCause != null && causeCause instanceof CertPathValidatorException && !mRequester.trustSSL){
                         if(!mRequester.trustSSL) {
@@ -366,14 +377,16 @@ public class SessionTransport implements Transport{
                     }
                     return null;
 
-                }else if (e instanceof SSLException) {
+                }
+
+                if (e instanceof SSLException) {
                     request_status = Pydio.ERROR_CON_FAILED_SSL;
                     throw e;
-
-                }else{
-                    request_status = Pydio.ERROR_CON_FAILED;
-                    throw e;
                 }
+
+                request_status = Pydio.ERROR_CON_FAILED;
+                throw e;
+
 
             }catch (Exception e){
                 if(e instanceof IllegalArgumentException && e.getMessage().toLowerCase().contains("unreachable")){
