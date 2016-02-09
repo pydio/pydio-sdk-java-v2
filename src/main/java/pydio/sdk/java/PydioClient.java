@@ -108,7 +108,8 @@ public class PydioClient {
     public boolean logout() throws IOException {
         String action = Pydio.ACTION_LOGOUT;
         String response = transport.getStringContent(action, null);
-        boolean result = response.contains("logging_result value=\"2\"");
+
+        boolean result = response != null && response.contains("logging_result value=\"2\"");
 
         if(result){
             transport.secure_token = "";
@@ -128,7 +129,7 @@ public class PydioClient {
             String action = Pydio.ACTION_GET_REGISTRY;
             params.put(Pydio.PARAM_XPATH, Pydio.XPATH_USER_ACTIVE_WORKSPACE);
             String content = transport.getStringContent(action, params);
-            return content.contains("<active_repo id=\"" + id + "\"");
+            return content != null && content.contains("<active_repo id=\"" + id + "\"");
         }
         return false;
     }
@@ -165,6 +166,8 @@ public class PydioClient {
         } catch (SAXException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e){
             e.printStackTrace();
         }
     }
@@ -223,7 +226,6 @@ public class PydioClient {
         InputStream in  = r.getEntity().getContent();
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser parser = null;
-
         try {
             parser = factory.newSAXParser();
             parser.parse(in, saxHandler);
@@ -631,13 +633,13 @@ public class PydioClient {
     }
 
     public JSONObject stats(String tempWorkspace, String[] paths, boolean with_hash) throws UnexpectedResponseException, IOException {
-        System.err.println("PYD SYNC : " + paths[0]);
         String text = "";
 
         Map<String, String> params = new HashMap<String , String>();
         if(tempWorkspace != null) {
             params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }
+
         String action = Pydio.ACTION_STATS;
         if(with_hash){
             action += "_hash";
@@ -645,9 +647,9 @@ public class PydioClient {
 
         fillParams(params, paths);
         HttpResponse r = transport.getResponse(action, params);
+        if(r == null) return null;
 
         Header[] h = r.getHeaders("Content-Type");
-        System.out.println("STAT CONTENT TYPE : " + h[0].getValue());
         if(!"application/json".equals(h[0].getValue().toLowerCase())){
             throw new UnexpectedResponseException(HttpResponseParser.getString(r));
         }
@@ -667,7 +669,6 @@ public class PydioClient {
             }
             if(sb.length() == 0) return null;
             text  = sb.toString();
-            System.out.println("JSON STAT : " + text);
             return new JSONObject(text);
 
         }catch (ParseException e) {
