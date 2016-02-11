@@ -165,6 +165,7 @@ public class Pydio {
     public final static String WORKSPACE_PROPERTY_CROSS_COPY            = "allowCrossRepositoryCopy";
     public final static String WORKSPACE_PROPERTY_META_SYNC  	        = "meta_syncable_REPO_SYNCABLE";
     public final static String WORKSPACE_PROPERTY_SLUG                  = "repositorySlug";
+    public final static String WORKSPACE_PROPERTY_ACL                   = "acl";
     public final static String WORKSPACE_DESCRIPTION                    = "description";
 
 
