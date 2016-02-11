@@ -30,6 +30,10 @@ public class WorkspaceNode implements Node{
 	public String getAccessType(){
 		return properties.getProperty(Pydio.WORKSPACE_PROPERTY_ACCESS_TYPE);
 	}
+
+    public boolean syncable(){
+        return "true".equals(getProperty(Pydio.WORKSPACE_PROPERTY_META_SYNC));
+    }
 	
 	public String label() {
 		return properties.getProperty(Pydio.NODE_PROPERTY_LABEL);
