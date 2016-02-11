@@ -15,11 +15,11 @@ import pydio.sdk.java.utils.Pydio;
 public class WorkspaceNode implements Node{
     Properties properties;
 	
-	public boolean isAllowedCrossRepositoryCopy(){
+	public boolean allowsCrossCopy(){
 		return properties.getProperty(Pydio.WORKSPACE_PROPERTY_CROSS_COPY) == "true";
 	}
 	
-	public String getSlug(){
+	public String slug(){
 		return properties.getProperty(Pydio.WORKSPACE_PROPERTY_SLUG);
 	}
 	
@@ -38,6 +38,22 @@ public class WorkspaceNode implements Node{
 	public String getId(){
 		return properties.getProperty(Pydio.WORKSPACE_PROPERTY_ID);
 	}
+
+	public String acl(){
+        return properties.getProperty(Pydio.WORKSPACE_PROPERTY_ACL);
+    }
+
+    public String owner(){
+        return properties.getProperty(Pydio.WORKSPACE_PROPERTY_OWNER);
+    }
+
+    public boolean isReadOnly(){
+        return "r".equals(acl());
+    }
+
+    public boolean readableWritable(){
+        return "rw".equals(acl());
+    }
 
 	public void initFromXml(org.w3c.dom.Node xml) {
         properties = new Properties();
