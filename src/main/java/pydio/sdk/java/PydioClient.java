@@ -162,13 +162,9 @@ public class PydioClient {
             parser = factory.newSAXParser();
             parser.parse(in, new RegistrySaxHandler(handler));
         } catch (ParserConfigurationException e) {
-            e.printStackTrace();
         } catch (SAXException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
         } catch (NullPointerException e){
-            e.printStackTrace();
         }
     }
 
@@ -194,12 +190,7 @@ public class PydioClient {
             parser.parse(in, saxHandler);
             return;
         } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch(Exception e){
-            e.printStackTrace();
-        }
+        } catch (SAXException e) {} catch(Exception e){}
     }
 
     public void listChildren(String tempWorkspace, String path, final NodeHandler handler, int offset, int max) throws IOException {
@@ -258,9 +249,7 @@ public class PydioClient {
         }
         try {
             params.put(Pydio.PARAM_URL_ENCODED, java.net.URLEncoder.encode(name, "utf-8"));
-        } catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
+        } catch (UnsupportedEncodingException e) {}
 
         if(autoRename) {
             params.put(Pydio.PARAM_AUTO_RENAME, "true");
@@ -481,7 +470,7 @@ public class PydioClient {
     public void getRemoteConfigs() throws IOException {
         Map<String, String> params = new HashMap<String , String>();
         params.put(Pydio.PARAM_XPATH, Pydio.XPATH_VALUE_PLUGINS);
-        Document doc = transport.getXmlContent(Pydio.ACTION_GET_REGISTRY , params);
+        Document doc = transport.getXmlContent(Pydio.ACTION_GET_REGISTRY, params);
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
         try {
@@ -492,7 +481,7 @@ public class PydioClient {
         }
     }
 
-    public InputStream previewData(String tempWorkspace, String path, boolean force_redim, int dim)throws IOException{
+    public InputStream previewData(String tempWorkspace, String path, boolean force_redim, int dim)throws IOException, UnexpectedResponseException{
         Map<String, String> params = new HashMap<String , String>();
         if(tempWorkspace != null) {
             params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
@@ -502,7 +491,18 @@ public class PydioClient {
             params.put(Pydio.PARAM_GET_THUMB, "true");
             params.put(Pydio.PARAM_DIMENSION, dim+"");
         }
+
         HttpResponse response = transport.getResponse(Pydio.ACTION_PREVIEW_DATA_PROXY, params);
+        Header h = response.getHeaders("Content-Type")[0];
+
+        if(!h.getValue().toLowerCase().contains("image")){
+            System.err.println("PYDIO - SDK : " + "Preview Data content-type:"+ h.getValue());
+            System.err.println("PYDIO - SDK : " + "Parameters are [path="+path+", "+ Pydio.PARAM_GET_THUMB +"="+ String.valueOf(force_redim) + "," + Pydio.PARAM_DIMENSION + "=" + String.valueOf(dim) + "]");
+            String content = HttpResponseParser.getString(response);
+            System.err.println("PYDIO - SDK : " + "Preview Data content:"+ content);
+            throw new UnexpectedResponseException(content);
+        }
+
         try{
             return response.getEntity().getContent();
         }catch(Exception e){}
@@ -534,7 +534,6 @@ public class PydioClient {
             try {
                 return entity.getContent();
             } catch (IOException e) {
-                e.printStackTrace();
                 return null;
             }
         }else{
@@ -626,9 +625,7 @@ public class PydioClient {
             if(line.toLowerCase().startsWith("last_seq")) {
                 result_seq = Integer.parseInt(line.split(":")[1]);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {}
         return Math.max(seq, result_seq);
     }
 
@@ -672,7 +669,6 @@ public class PydioClient {
             return new JSONObject(text);
 
         }catch (ParseException e) {
-            e.printStackTrace();
             throw  new IOException(text);
         }
     }
@@ -688,9 +684,7 @@ public class PydioClient {
         String res = transport.getStringContent(action, params);
         try {
             return new JSONObject(res);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {}
         return null;
     }
 
@@ -705,7 +699,6 @@ public class PydioClient {
         try {
             return new JSONObject(transport.getStringContent(Pydio.ACTION_GET_BOOT_CONF, null));
         } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -761,11 +754,7 @@ public class PydioClient {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = factory.newSAXParser();
             parser.parse(in, new FileNodeSaxHandler(handler, 0, -1));
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
+        } catch (SAXException e) {} catch (ParserConfigurationException e) {}
     }
     //*********************************************
     //            OTHERS
