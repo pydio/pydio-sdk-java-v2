@@ -23,7 +23,9 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
@@ -39,6 +41,7 @@ import pydio.sdk.java.http.HttpResponseParser;
 import pydio.sdk.java.http.Requester;
 import pydio.sdk.java.model.ServerNode;
 import pydio.sdk.java.utils.CustomCertificateException;
+import pydio.sdk.java.utils.Log;
 import pydio.sdk.java.utils.Pydio;
 import pydio.sdk.java.utils.PydioSecureTokenStore;
 import pydio.sdk.java.utils.ServerResolution;
@@ -156,6 +159,7 @@ public class SessionTransport implements Transport{
         loginPass.put("login_seed", seed);
         loginPass.put("Ajxp-Force-Login", "true");
 
+        Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_LOGIN + Log.paramString(loginPass) + "]");
         Document doc = HttpResponseParser.getXML(request(getActionURI(Pydio.ACTION_LOGIN), loginPass));
 
         if(doc != null) {
@@ -202,6 +206,7 @@ public class SessionTransport implements Transport{
         loginPass.put("password", pass);
 
         HttpResponse resp = null;
+       Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_GET_TOKEN + Log.paramString(loginPass) + "]");
         resp = req.issueRequest(this.getActionURI(Pydio.ACTION_GET_TOKEN), loginPass);
 
         JSONObject jObject;
@@ -229,6 +234,7 @@ public class SessionTransport implements Transport{
             int read = stream.safeRead(buffer);
             if(read == - 1) return false;
             String xmlString = new String(Arrays.copyOfRange(buffer, 0, read), "utf-8");
+            //Log.info("PYDIO SDK : " + "[response head=" + xmlString.substring(0, Math.min(xmlString.length(), 150)) + "]");
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = factory.newSAXParser();
 
@@ -536,5 +542,6 @@ public class SessionTransport implements Transport{
     public void setAuthenticationHelper(AuthenticationHelper helper) {
         this.helper = helper;
     }
+
 
 }
