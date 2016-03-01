@@ -141,10 +141,9 @@ public class PydioClient {
     public void downloadRegistry(String tempWorkspace, OutputStream out, boolean workspace) throws IOException {
         Map<String, String> params = new HashMap<String, String>();
         if(workspace){
+            selectWorkspace(tempWorkspace);
             params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
-            params.put(Pydio.PARAM_XPATH, "actions");
         }else{
-            params = new HashMap<String, String>();
             params.put(Pydio.PARAM_XPATH, "user");
         }
         try {
@@ -158,19 +157,6 @@ public class PydioClient {
             in.close();
         }catch (NullPointerException e){
             throw new IOException("empty response");
-        }
-    }
-    public void parseRegistry(InputStream in, RegistryItemHandler handler){
-        if (in == null) return;
-        try {
-            SAXParser parser = null;
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            parser = factory.newSAXParser();
-            parser.parse(in, new RegistrySaxHandler(handler));
-        } catch (ParserConfigurationException e) {
-        } catch (SAXException e) {
-        } catch (IOException e) {
-        } catch (NullPointerException e){
         }
     }
 
