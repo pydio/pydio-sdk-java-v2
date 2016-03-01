@@ -13,23 +13,49 @@ public class RegistrySaxHandler extends DefaultHandler {
 
     RegistryItemHandler handler;
 
-    public boolean inside_actions = false;
-    public boolean inside_plugins = false;
-    public boolean inside_repositories = false;
-    public boolean inside_repo = false;
-    public boolean inside_preferences = false;
+    boolean inside_actions = false, inside_action = false;
+    boolean inside_plugins = false;
+    boolean inside_repositories = false;
+    boolean inside_repo = false;
+    boolean inside_preferences = false;
 
+
+    public boolean mHasUserElement = false;
+    public String mUser = null;
+
+
+    String action = "", actionRead, actionWrite;
     Properties p;
     String inner_element;
 
     public RegistrySaxHandler(RegistryItemHandler handler){
         this.handler = handler;
     }
+
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+
+        if("user".equals(qName)){
+            mHasUserElement = true;
+            mUser = attributes.getValue("id");
+            return;
+        }
+
+        if("action".equals(qName)){
+            inside_action = true;
+            action = attributes.getValue("name");
+            return;
+        }
+
+        if("rightsContext".equals(qName) && inside_action){
+            actionRead = attributes.getValue("read");
+            actionWrite = attributes.getValue("write");
+            return;
+        }
+
+
         if("action".equals(qName) && inside_actions){
-            String action = attributes.getValue(attributes.getIndex("name"));
-            handler.onAction(action);
+            action = attributes.getValue(attributes.getIndex("name"));
             return;
         }
 
@@ -42,6 +68,7 @@ public class RegistrySaxHandler extends DefaultHandler {
             handler.onNewItem(Pydio.REGISTRY_ITEM_PLUGIN, action);*/
             return;
         }
+
         if("repo".equals(qName) && inside_repositories){
             inside_repo = true;
             p = new Properties();
@@ -89,6 +116,13 @@ public class RegistrySaxHandler extends DefaultHandler {
     }
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
+        if(inside_action && "action".equals(qName)){
+            inside_action = false;
+            handler.onAction(action, actionRead, actionWrite);
+            actionRead = actionWrite = null;
+            return;
+        }
+
         if(inside_plugins && "plugins".equals(qName)){
             inside_plugins = false;
             return;
