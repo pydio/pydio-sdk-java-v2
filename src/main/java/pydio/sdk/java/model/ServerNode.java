@@ -44,7 +44,14 @@ public class ServerNode implements Node{
 	public boolean isSSLselfSigned(){
 		return SSLselfSigned;
 	}
-	
+
+	public String address(){
+		String path = protocol + "://" + host + path();
+		if(!path.endsWith("/"))
+			return path + "/";
+		return path;
+	}
+
 	public String host(){
 		return host;
 	}
