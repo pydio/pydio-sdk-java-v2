@@ -10,6 +10,6 @@ import pydio.sdk.java.model.WorkspaceNode;
 public abstract class RegistryItemHandler {
     //abstract void onNewItem(int type, Object o);
     protected void onPref(String name, String value){}
-    protected void onAction(String action){}
+    protected void onAction(String action, String read, String write){}
     protected void onWorkspace(Properties p){}
 }
