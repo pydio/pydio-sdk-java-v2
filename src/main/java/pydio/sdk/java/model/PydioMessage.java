@@ -13,7 +13,7 @@ public class PydioMessage implements Serializable{
 	public final static String ERROR 	= "ERROR";
 	public final static String EMPTY 	= "EMPTY";
 
-	private String message;
+	public String message;
 	private String type;
 
     public ArrayList<Node> deleted = null;
