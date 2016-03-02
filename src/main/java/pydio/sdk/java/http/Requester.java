@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +40,7 @@ public class Requester {
     private AjxpFileBody fileBody;
 	private File file;
 	private String fileName;
-	private AjxpHttpClient httpClient;
+	private PydioHttpClient httpClient;
 	public boolean trustSSL = false;
 	private CountingMultipartRequestEntity.ProgressListener progressListener;
     private UploadStopNotifierProgressListener listener;
@@ -61,7 +60,10 @@ public class Requester {
 	 * @return returns an HTTPResponse.
 	 */
 	public HttpResponse issueRequest(URI uri, Map<String, String> postParameters) throws IOException {
-		httpClient = new AjxpHttpClient(trustSSL, server.port());
+        if(httpClient == null) {
+            httpClient = new PydioHttpClient(trustSSL, server.port());
+        }
+
         try {
             CookieStore cstore = httpClient.getCookieStore();
             List<Cookie> cookies = cstore.getCookies();
@@ -202,7 +204,8 @@ public class Requester {
 
             @Override
             public void partTransferred(int part, int total) throws IOException {
-                if(listener.onProgress(part*100 / total)){
+                if(total == 0) total = 1;
+                if(listener.onProgress( part*100 / total )){
                     throw new IOException("");
                 }
             }
