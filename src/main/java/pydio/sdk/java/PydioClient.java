@@ -138,10 +138,22 @@ public class PydioClient {
         }
         return false;
     }
+
+    public void switchWorkspace(final String id) throws IOException {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put(Pydio.PARAM_WORKSPACE, id);
+        Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_SWITCH_REPO + Log.paramString(params) + "]");
+        transport.getResponse(Pydio.ACTION_SWITCH_REPO, params);
+        int status = transport.requestStatus();
+        if(status != Pydio.NO_ERROR){
+            throw new IOException();
+        }
+    }
+
     public void downloadRegistry(String tempWorkspace, OutputStream out, boolean workspace) throws IOException {
         Map<String, String> params = new HashMap<String, String>();
         if(workspace){
-            selectWorkspace(tempWorkspace);
+            switchWorkspace(tempWorkspace);
             params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }else{
             params.put(Pydio.PARAM_XPATH, "user");
@@ -549,16 +561,16 @@ public class PydioClient {
             params.put(Pydio.PARAM_DIMENSION, dim+"");
         }
 
-        Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_PREVIEW_DATA_PROXY + Log.paramString(params) + "]");
+        //Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_PREVIEW_DATA_PROXY + Log.paramString(params) + "]");
         HttpResponse response = transport.getResponse(Pydio.ACTION_PREVIEW_DATA_PROXY, params);
         if(response != null) {
             Header h = response.getHeaders("Content-Type")[0];
             if (!h.getValue().toLowerCase().contains("image")) {
-                System.err.println("PYDIO - SDK : " + "Preview Data content-type:" + h.getValue());
+                /*System.err.println("PYDIO - SDK : " + "Preview Data content-type:" + h.getValue());
                 System.err.println("PYDIO - SDK : " + "Parameters are [path=" + path + ", " + Pydio.PARAM_GET_THUMB + "=" + String.valueOf(force_redim) + "," + Pydio.PARAM_DIMENSION + "=" + String.valueOf(dim) + "]");
                 String content = HttpResponseParser.getString(response);
-                System.err.println("PYDIO - SDK : " + "Preview Data content:" + content);
-                throw new UnexpectedResponseException(content);
+                System.err.println("PYDIO - SDK : " + "Preview Data content:" + content);*/
+                throw new UnexpectedResponseException("");
             }
             try {
                 return response.getEntity().getContent();
@@ -842,7 +854,6 @@ public class PydioClient {
     //*********************************************
     //            OTHERS
     //*********************************************
-
     /**
      * @param params
      * @param paths
