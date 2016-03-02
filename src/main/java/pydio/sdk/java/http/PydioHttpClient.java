@@ -18,9 +18,6 @@
  */
 package pydio.sdk.java.http;
 
-
-
-
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -38,6 +35,7 @@ import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.SingleClientConnManager;
+import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
@@ -49,14 +47,14 @@ import java.util.List;
 import pydio.sdk.java.utils.AjxpSSLSocketFactory;
 
 @SuppressWarnings("deprecation")
-public class AjxpHttpClient extends DefaultHttpClient {
+public class PydioHttpClient extends DefaultHttpClient {
 
 	boolean trustSelfSignedSSL;
-	static HttpContext localContext = new BasicHttpContext();
-	public static CookieStore cookieStore = new BasicCookieStore();
+	public HttpContext localContext = new BasicHttpContext();
+	public CookieStore cookieStore = new BasicCookieStore();
 	int port;
 
-	public AjxpHttpClient(boolean trustSSL, int port) {
+	public PydioHttpClient(boolean trustSSL, int port) {
 		super();
 		this.port = port <= 0 ? 80 : port;
 		this.trustSelfSignedSSL = trustSSL;
@@ -97,16 +95,12 @@ public class AjxpHttpClient extends DefaultHttpClient {
 		if(cookieStore != null) cookieStore.clear();
 	}
 
-	public static void clearCookiesStatic() {
-		if(AjxpHttpClient.cookieStore != null) AjxpHttpClient.cookieStore.clear();
-	}
-
-	public HttpResponse executeInContext(HttpRequestBase request)
-			throws ClientProtocolException, IOException {
+	public HttpResponse executeInContext(HttpRequestBase request) throws ClientProtocolException, IOException {
+		HttpConnectionParams.setConnectionTimeout(getParams(), 3000);
 		return execute(request, localContext);
 	}
 
-	public static List<Cookie> getCookies(URI uri) {
+	public List<Cookie> getCookies(URI uri) {
 		// Duplicate and prune
 		List<Cookie> originalCookies = cookieStore.getCookies();
 		List<Cookie> cookies = new ArrayList<Cookie>(originalCookies);
