@@ -35,7 +35,7 @@ public class RegistrySaxHandler extends DefaultHandler {
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 
-        if("user".equals(qName)){
+        if("user".equals(qName) && mUser == null){
             mHasUserElement = true;
             mUser = attributes.getValue("id");
             return;
