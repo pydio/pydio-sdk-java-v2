@@ -218,4 +218,11 @@ public class Requester {
 	public void setFilename(String fname){
 		fileName = fname;
 	}
+
+    public void clearUploadData(){
+        fileBody = null;
+        file = null;
+        progressListener = null;
+        fileName = null;
+    }
 }

@@ -482,6 +482,7 @@ public class SessionTransport implements Transport{
         loggedIn = false;
         attemptedLogin = false;
         this.action = action;
+        mRequester.clearUploadData();
         mRequester.setFile(file);
         mRequester.setProgressListener(listener);
         mRequester.setFilename(filename);
@@ -496,7 +497,6 @@ public class SessionTransport implements Transport{
         mRequester.setFile(null);
         mRequester.setProgressListener(null);
         mRequester.setFilename(null);
-
         return HttpResponseParser.getXML(response);
     }
 
@@ -505,6 +505,7 @@ public class SessionTransport implements Transport{
         loggedIn = false;
         attemptedLogin = false;
         this.action = action;
+        mRequester.clearUploadData();
         return null;
     }
 
