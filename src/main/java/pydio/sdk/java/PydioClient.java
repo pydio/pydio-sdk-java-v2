@@ -145,9 +145,6 @@ public class PydioClient {
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_SWITCH_REPO + Log.paramString(params) + "]");
         transport.getResponse(Pydio.ACTION_SWITCH_REPO, params);
         int status = transport.requestStatus();
-        if(status != Pydio.NO_ERROR){
-            throw new IOException();
-        }
     }
 
     public void downloadRegistry(String tempWorkspace, OutputStream out, boolean workspace) throws IOException {
