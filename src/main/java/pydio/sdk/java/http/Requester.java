@@ -37,16 +37,11 @@ import pydio.sdk.java.utils.UploadStopNotifierProgressListener;
  *
  */
 public class Requester {
-    private AjxpFileBody fileBody;
-	private File file;
-	private String fileName;
 	private PydioHttpClient httpClient;
 	public boolean trustSSL = false;
-	private CountingMultipartRequestEntity.ProgressListener progressListener;
     private UploadStopNotifierProgressListener listener;
 	private String authStep;
     ServerNode server;
-    boolean fresh = true;
 
 	UsernamePasswordCredentials credentials = null;
 	//MA_UPLOAD to be checked
@@ -59,49 +54,31 @@ public class Requester {
 	 * @param postParameters post parameters of the request
 	 * @return returns an HTTPResponse.
 	 */
-	public HttpResponse issueRequest(URI uri, Map<String, String> postParameters) throws IOException {
+	public HttpResponse issueRequest(URI uri, Map<String, String> postParameters, UploadFileBody fileBody) throws IOException {
         if(httpClient == null) {
             httpClient = new PydioHttpClient(trustSSL, server.port());
         }
-
-        try {
-            CookieStore cstore = httpClient.getCookieStore();
-            List<Cookie> cookies = cstore.getCookies();
-            for (int i = 0; i < cookies.size(); i++) {
-                Cookie c = cookies.get(i);
-            }
-        }catch(Exception e){}
 
 		if(credentials != null){
 			httpClient.refreshCredentials(credentials);
 		}
 
         HttpRequestBase request;
-        if(postParameters != null || file != null){
-            request = new HttpPost();
 
-            if(file != null){
-                if(fileBody == null){
-                    if(fileName == null) fileName = file.getName();
-                    fileBody = new AjxpFileBody(file, fileName);
-                    long maxUpload = Long.parseLong(server.getRemoteConfig(Pydio.REMOTE_CONFIG_UPLOAD_SIZE));
-                    if(maxUpload > 0 && maxUpload < file.length()){
-                        fileBody.chunkIntoPieces((int)maxUpload);
-                        if(progressListener != null){
-                            progressListener.partTransferred(fileBody.getCurrentIndex(), fileBody.getTotalChunks());
-                        }
-                    }
-                }else{
-                    if(progressListener != null){
-                        progressListener.partTransferred(fileBody.getCurrentIndex() , fileBody.getTotalChunks());
-                    }
+        if(postParameters != null || fileBody != null){
+            request = new HttpPost();
+            if(fileBody != null){
+                CountingMultipartRequestEntity.ProgressListener listener = fileBody.listener();
+
+                if(listener != null){
+                    listener.partTransferred(fileBody.getCurrentIndex() , fileBody.getTotalChunks());
                 }
 
                 MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
                 reqEntity.addPart("userfile_0", fileBody);
 
-                if(fileName != null && !EncodingUtils.getAsciiString(EncodingUtils.getBytes(fileName, "US-ASCII")).equals(fileName)){
-                    reqEntity.addPart("urlencoded_filename", new StringBody(java.net.URLEncoder.encode(fileName, "utf-8")));
+                if(fileBody.getFilename() != null && !EncodingUtils.getAsciiString(EncodingUtils.getBytes(fileBody.getFilename(), "US-ASCII")).equals(fileBody.getFilename())){
+                    reqEntity.addPart("urlencoded_filename", new StringBody(java.net.URLEncoder.encode(fileBody.getFilename(), "utf-8")));
                 }
 
                 if(fileBody != null && !fileBody.getFilename().equals(fileBody.getRootFilename())){
@@ -115,8 +92,8 @@ public class Requester {
                         reqEntity.addPart(entry.getKey(), new StringBody(new String(entry.getValue().getBytes(), "utf-8")));
                     }
                 }
-                if(progressListener != null){
-                    CountingMultipartRequestEntity countingEntity = new CountingMultipartRequestEntity(reqEntity, progressListener);
+                if(listener != null){
+                    CountingMultipartRequestEntity countingEntity = new CountingMultipartRequestEntity(reqEntity, listener);
                     ((HttpPost)request).setEntity(countingEntity);
                 }else{
                     ((HttpPost)request).setEntity(reqEntity);
@@ -140,7 +117,7 @@ public class Requester {
         HttpResponse response = httpClient.executeInContext(request);
         if(fileBody != null && fileBody.isChunked() && !fileBody.allChunksUploaded()){
             this.discardResponse(response);
-            this.issueRequest(uri, postParameters);
+            this.issueRequest(uri, postParameters, fileBody);
         }
         return response;
 	}
@@ -167,13 +144,6 @@ public class Requester {
 		}
 	}
 	/**
-	 * This method is used to pass a file to upload and  must be called before issueRequest(). 
-	 * @param file Object File to be uploaded
-	 */
-	public void setFile(File file){
-		this.file = file;
-	}
-	/**
 	 * Call this method to trust or not SSL self-signed certificates.
 	 * @param trust
 	 */
@@ -188,41 +158,21 @@ public class Requester {
 	public void setCredentials(String user, String password){
 		this.credentials = new UsernamePasswordCredentials(user, password);
 	}
-	/**
-	 * Set a listener to follow upload progress.
-	 * @param listener
-	 */
-	public void setProgressListener(final UploadStopNotifierProgressListener listener){
-		this.listener = listener;
-        progressListener = new CountingMultipartRequestEntity.ProgressListener() {
-            @Override
-            public void transferred(long num) throws IOException {
-                if(listener.onProgress(num)){
-                    throw new IOException("");
-                }
-            }
 
-            @Override
-            public void partTransferred(int part, int total) throws IOException {
-                if(total == 0) total = 1;
-                if(listener.onProgress( part*100 / total )){
-                    throw new IOException("");
-                }
-            }
-        };
-	}
-	/**
-	 * This method is used to set the final name of the file to be uploaded and must be called before issueRequest();
-	 * @param fname
-	 */
-	public void setFilename(String fname){
-		fileName = fname;
-	}
+    public UploadFileBody newFileBody(File file){
+        UploadFileBody fileBody;
+        String fileName = file.getName();
+        fileBody = new UploadFileBody(file, fileName);
+        long maxUpload = Long.parseLong(server.getRemoteConfig(Pydio.REMOTE_CONFIG_UPLOAD_SIZE));
+        if(maxUpload > 0 && maxUpload < file.length()){
+            fileBody.chunkIntoPieces((int)maxUpload);
+        }
+        return fileBody;
+    }
 
-    public void clearUploadData(){
-        fileBody = null;
-        file = null;
-        progressListener = null;
-        fileName = null;
+    public void clearCookies(){
+        if(httpClient != null){
+            httpClient.clearCookies();
+        }
     }
 }
