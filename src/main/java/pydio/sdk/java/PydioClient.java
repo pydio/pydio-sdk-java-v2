@@ -3,7 +3,6 @@ package pydio.sdk.java;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.util.EncodingUtils;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
@@ -20,13 +19,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -40,7 +36,6 @@ import javax.xml.xpath.XPathFactory;
 import pydio.sdk.java.auth.AuthenticationHelper;
 import pydio.sdk.java.http.HttpResponseParser;
 import pydio.sdk.java.model.ChangeProcessor;
-import pydio.sdk.java.model.Node;
 import pydio.sdk.java.model.NodeHandler;
 import pydio.sdk.java.model.PydioMessage;
 import pydio.sdk.java.model.ServerNode;
@@ -55,8 +50,6 @@ import pydio.sdk.java.utils.Log;
 import pydio.sdk.java.utils.MessageHandler;
 import pydio.sdk.java.utils.ProgressListener;
 import pydio.sdk.java.utils.Pydio;
-import pydio.sdk.java.utils.RegistryItemHandler;
-import pydio.sdk.java.utils.RegistrySaxHandler;
 import pydio.sdk.java.utils.UploadStopNotifierProgressListener;
 import pydio.sdk.java.utils.WorkspaceNodeSaxHandler;
 /**
@@ -67,7 +60,7 @@ import pydio.sdk.java.utils.WorkspaceNodeSaxHandler;
 
 public class PydioClient {
 
-	SessionTransport transport;
+	public SessionTransport http;
     public ServerNode server;
     public WorkspaceNode mWorkspace;
     Properties localConfigs = new Properties();
@@ -86,7 +79,7 @@ public class PydioClient {
         return client;
     }
     public PydioClient(ServerNode server, int mode){
-        transport = (SessionTransport) TransportFactory.getInstance(mode, server);
+        http = (SessionTransport) TransportFactory.getInstance(mode, server);
         this.server = server;
         localConfigs = new Properties();
         localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
@@ -94,7 +87,7 @@ public class PydioClient {
 
     public void setAuthenticationHelper(AuthenticationHelper h){
         helper = h;
-        transport.setAuthenticationHelper(h);
+        http.setAuthenticationHelper(h);
     }
     public AuthenticationHelper authenticationHelper(){
         return helper;
@@ -104,18 +97,18 @@ public class PydioClient {
     //         REMOTE ACTION METHODS
     //*****************************************
     public boolean login() throws IOException {
-        transport.login();
-        return transport.requestStatus() == Pydio.NO_ERROR;
+        http.login();
+        return http.requestStatus() == Pydio.NO_ERROR;
     }
     public boolean logout() throws IOException {
         String action = Pydio.ACTION_LOGOUT;
-        String response = transport.getStringContent(action, null);
+        String response = http.getStringContent(action, null);
 
         Log.info("PYDIO SDK : " + "[action=" + action + "]");
         boolean result = response != null && response.contains("logging_result value=\"2\"");
 
         if(result){
-            transport.secure_token = "";
+            http.mSecureToken = "";
         }
         return result;
     }
@@ -125,15 +118,15 @@ public class PydioClient {
         Map<String, String> params = new HashMap<String, String>();
         params.put(Pydio.PARAM_WORKSPACE, id);
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_SWITCH_REPO + Log.paramString(params) + "]");
-        transport.getResponse(Pydio.ACTION_SWITCH_REPO, params);
-        int status = transport.requestStatus();
+        http.getResponse(Pydio.ACTION_SWITCH_REPO, params);
+        int status = http.requestStatus();
         if(status == Pydio.NO_ERROR){
             params.clear();
             String action = Pydio.ACTION_GET_REGISTRY;
             params.put(Pydio.PARAM_XPATH, Pydio.XPATH_USER_ACTIVE_WORKSPACE);
 
             Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
-            String content = transport.getStringContent(action, params);
+            String content = http.getStringContent(action, params);
             return content != null && content.contains("<active_repo id=\"" + id + "\"");
         }
         return false;
@@ -143,21 +136,24 @@ public class PydioClient {
         Map<String, String> params = new HashMap<String, String>();
         params.put(Pydio.PARAM_WORKSPACE, id);
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_SWITCH_REPO + Log.paramString(params) + "]");
-        transport.getResponse(Pydio.ACTION_SWITCH_REPO, params);
-        int status = transport.requestStatus();
+        http.getResponse(Pydio.ACTION_SWITCH_REPO, params);
+        int status = http.requestStatus();
+        if(status != Pydio.NO_ERROR){
+            throw new IOException();
+        }
     }
 
     public void downloadRegistry(String tempWorkspace, OutputStream out, boolean workspace) throws IOException {
         Map<String, String> params = new HashMap<String, String>();
         if(workspace){
-            switchWorkspace(tempWorkspace);
+            selectWorkspace(tempWorkspace);
             params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         }else{
             params.put(Pydio.PARAM_XPATH, "user");
         }
         try {
             Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_GET_REGISTRY + Log.paramString(params) + "]");
-            InputStream in = transport.getResponseStream(Pydio.ACTION_GET_REGISTRY, params);
+            InputStream in = http.getResponseStream(Pydio.ACTION_GET_REGISTRY, params);
             byte[] buffer = new byte[Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE];
             int read;
             while ((read = in.read(buffer)) != -1) {
@@ -188,7 +184,7 @@ public class PydioClient {
 
         try {
             Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
-            HttpResponse r = transport.getResponse(action, params);
+            HttpResponse r = http.getResponse(action, params);
             InputStream in = r.getEntity().getContent();
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = factory.newSAXParser();
@@ -221,7 +217,7 @@ public class PydioClient {
 
         while(true) {
             Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
-            HttpResponse r = transport.getResponse(action, params);
+            HttpResponse r = http.getResponse(action, params);
             InputStream in = r.getEntity().getContent();
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = null;
@@ -288,7 +284,7 @@ public class PydioClient {
         }
 
         Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
-        final Document doc = transport.putContent(action, params, source, name, progressListener);
+        final Document doc = http.putContent(action, params, source, name, progressListener);
 
         if(handler != null) {
             handler.onMessage(PydioMessage.create(doc));
@@ -312,7 +308,7 @@ public class PydioClient {
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
 
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_DOWNLOAD + Log.paramString(params) + "]");
-        InputStream stream = transport.getResponseStream(Pydio.ACTION_DOWNLOAD, params);
+        InputStream stream = http.getResponseStream(Pydio.ACTION_DOWNLOAD, params);
         if(requestStatus() != Pydio.NO_ERROR) throw new IOException("failed to get stream");
 
 
@@ -387,7 +383,7 @@ public class PydioClient {
         }
         fillParams(params, paths);
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_DELETE + Log.paramString(params) + "]");
-        Document doc = transport.getXmlContent(Pydio.ACTION_DELETE, params);
+        Document doc = http.getXmlContent(Pydio.ACTION_DELETE, params);
         try {
             handler.onMessage(PydioMessage.create(doc));
         }catch (NullPointerException e){
@@ -415,7 +411,7 @@ public class PydioClient {
             params.put(Pydio.PARAM_FILENAME_NEW, newBaseName);
         }
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_RENAME + Log.paramString(params) + "]");
-        Document doc = transport.getXmlContent(Pydio.ACTION_RENAME, params);
+        Document doc = http.getXmlContent(Pydio.ACTION_RENAME, params);
         handler.onMessage(PydioMessage.create(doc));
 	}
 	/**
@@ -434,7 +430,7 @@ public class PydioClient {
         fillParams(params, paths);
 		params.put(Pydio.PARAM_DEST, destinationParent);
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_COPY + Log.paramString(params) + "]");
-		Document doc = transport.getXmlContent(Pydio.ACTION_COPY, params);
+		Document doc = http.getXmlContent(Pydio.ACTION_COPY, params);
         handler.onMessage(PydioMessage.create(doc));
 	}
 	/**
@@ -457,7 +453,7 @@ public class PydioClient {
 			params.put(Pydio.PARAM_FORCE_COPY_DELETE, "true");
 		}
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_MOVE + Log.paramString(params) + "]");
-		Document doc = transport.getXmlContent(Pydio.ACTION_MOVE, params);
+		Document doc = http.getXmlContent(Pydio.ACTION_MOVE, params);
         handler.onMessage(PydioMessage.create(doc));
 	}
 	/**
@@ -476,7 +472,7 @@ public class PydioClient {
         params.put(Pydio.PARAM_DIR, path);
 		params.put(Pydio.PARAM_DIRNAME, dirname);
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_MKDIR + Log.paramString(params) + "]");
-		Document doc = transport.getXmlContent(Pydio.ACTION_MKDIR, params);
+		Document doc = http.getXmlContent(Pydio.ACTION_MKDIR, params);
         handler.onMessage(PydioMessage.create(doc));
 	}
 	/**
@@ -492,7 +488,7 @@ public class PydioClient {
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
 		params.put(Pydio.PARAM_NODE, path);
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_MKFILE + Log.paramString(params) + "]");
-		Document doc = transport.getXmlContent(Pydio.ACTION_MKFILE, params);
+		Document doc = http.getXmlContent(Pydio.ACTION_MKFILE, params);
         handler.onMessage(PydioMessage.create(doc));
 	}
 
@@ -507,7 +503,7 @@ public class PydioClient {
         params.put(Pydio.PARAM_DIR, "/recycle_bin");
 
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_RESTORE + Log.paramString(params) + "]");
-        Document doc = transport.getXmlContent(Pydio.ACTION_RESTORE, params);
+        Document doc = http.getXmlContent(Pydio.ACTION_RESTORE, params);
         handler.onMessage(PydioMessage.create(doc));
     }
 
@@ -522,7 +518,7 @@ public class PydioClient {
         params.put(Pydio.PARAM_COMPRESS_FLAT, Boolean.toString(compressFlat).toLowerCase());
         fillParams(params, paths);
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_COMPRESS + Log.paramString(params) + "]");
-        handler.onMessage(PydioMessage.create(transport.getXmlContent(Pydio.ACTION_COMPRESS, params)));
+        handler.onMessage(PydioMessage.create(http.getXmlContent(Pydio.ACTION_COMPRESS, params)));
     }
 
 
@@ -533,7 +529,7 @@ public class PydioClient {
         Map<String, String> params = new HashMap<String , String>();
         params.put(Pydio.PARAM_XPATH, Pydio.XPATH_VALUE_PLUGINS);
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_GET_REGISTRY + Log.paramString(params) + "]");
-        Document doc = transport.getXmlContent(Pydio.ACTION_GET_REGISTRY, params);
+        Document doc = http.getXmlContent(Pydio.ACTION_GET_REGISTRY, params);
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
         try {
@@ -559,7 +555,7 @@ public class PydioClient {
         }
 
         //Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_PREVIEW_DATA_PROXY + Log.paramString(params) + "]");
-        HttpResponse response = transport.getResponse(Pydio.ACTION_PREVIEW_DATA_PROXY, params);
+        HttpResponse response = http.getResponse(Pydio.ACTION_PREVIEW_DATA_PROXY, params);
         if(response != null) {
             Header h = response.getHeaders("Content-Type")[0];
             if (!h.getValue().toLowerCase().contains("image")) {
@@ -578,20 +574,20 @@ public class PydioClient {
 
     public String listUsers()throws IOException{
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_LIST_USERS + "]");
-        return transport.getStringContent(Pydio.ACTION_LIST_USERS, null);
+        return http.getStringContent(Pydio.ACTION_LIST_USERS, null);
     }
 
     public String newUser(String login, String password)throws IOException{
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_CREATE_USER + "]");
-        return transport.getStringContent(Pydio.ACTION_CREATE_USER + login + "/" + password, null);
+        return http.getStringContent(Pydio.ACTION_CREATE_USER + login + "/" + password, null);
     }
 
     public InputStream getAuthenticationChallenge(String type)throws IOException{
-        //return transport.getAuthenticationChallenge();
+        //return http.getAuthenticationChallenge();
         if(Pydio.AUTH_CHALLENGE_TYPE_CAPTCHA.equals(type)) {
             boolean image = false;
             Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_CAPTCHA + "]");
-            HttpResponse resp = transport.getResponse(Pydio.ACTION_CAPTCHA, null);
+            HttpResponse resp = http.getResponse(Pydio.ACTION_CAPTCHA, null);
             Header[] heads = resp.getHeaders("Content-type");
             for (int i = 0; i < heads.length; i++) {
                 if (heads[i].getValue().contains("image/png")) {
@@ -620,7 +616,7 @@ public class PydioClient {
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         params.put(Pydio.PARAM_ACTION, Pydio.ACTION_GET_SEED);
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_MKDIR + Log.paramString(params) + "]");
-        HttpResponse response = transport.getResponse(Pydio.ACTION_MKDIR, null);
+        HttpResponse response = http.getResponse(Pydio.ACTION_MKDIR, null);
 
         Header[] heads = response.getHeaders("Content-type");
         for(int i=0;i<heads.length;i++){
@@ -660,7 +656,7 @@ public class PydioClient {
         String action = Pydio.ACTION_CHANGES;
         try {
             Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
-            HttpResponse r = transport.getResponse(action, params);
+            HttpResponse r = http.getResponse(action, params);
             Header[] h = r.getHeaders("Content-Type");
 
             if(!h[0].getValue().toLowerCase().contains("application/json")){
@@ -722,7 +718,7 @@ public class PydioClient {
 
         fillParams(params, paths);
         Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
-        HttpResponse r = transport.getResponse(action, params);
+        HttpResponse r = http.getResponse(action, params);
         if(r == null) return null;
 
         Header[] h = r.getHeaders("Content-Type");
@@ -763,7 +759,7 @@ public class PydioClient {
         params.put(Pydio.PARAM_FILE, path);
         //params.put(Pydio.PARAM_SHARE_ELEMENT_TYPE, Pydio.SHARE_ELEMENT_TYPE_FILE);
         Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
-        String res = transport.getStringContent(action, params);
+        String res = http.getStringContent(action, params);
         try {
             return new JSONObject(res);
         } catch (Exception e) {}
@@ -775,12 +771,12 @@ public class PydioClient {
         params.put(Pydio.PARAM_USER_ID, user);
         params.put(Pydio.PARAM_BINARY_ID, binary);
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_GET_BINARY_PARAM + Log.paramString(params) + "]");
-        return transport.getResponseStream(Pydio.ACTION_GET_BINARY_PARAM, params);
+        return http.getResponseStream(Pydio.ACTION_GET_BINARY_PARAM, params);
     }
 
     public JSONObject bootConf(){
         try {
-            return new JSONObject(transport.getStringContent(Pydio.ACTION_GET_BOOT_CONF, null));
+            return new JSONObject(http.getStringContent(Pydio.ACTION_GET_BOOT_CONF, null));
         } catch (Exception e) {
         }
         return null;
@@ -815,7 +811,7 @@ public class PydioClient {
         params.put(Pydio.PARAM_SHARE_WORKSPACE_LABEL, ws_label);
 
         Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
-        return transport.getStringContent(action, params);
+        return http.getStringContent(action, params);
     }
 
     public void unshareMinisite(String tempWorkspace, String path)throws IOException{
@@ -828,7 +824,7 @@ public class PydioClient {
         String action = Pydio.ACTION_UNSHARE;
         params.put(Pydio.PARAM_FILE, path);
         Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
-        transport.getResponse(action, params);
+        http.getResponse(action, params);
     }
 
     public void search(String tempWorkspace, String query, NodeHandler handler)throws IOException{
@@ -841,7 +837,7 @@ public class PydioClient {
         params.put(Pydio.PARAM_SEARCH_QUERY, query);
         try {
             Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_SEARCH + Log.paramString(params) + "]");
-            HttpResponse response = transport.getResponse(Pydio.ACTION_SEARCH, params);
+            HttpResponse response = http.getResponse(Pydio.ACTION_SEARCH, params);
             InputStream in  = response.getEntity().getContent();
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = factory.newSAXParser();
@@ -877,7 +873,7 @@ public class PydioClient {
     }
 
     public int requestStatus(){
-        return transport.requestStatus();
+        return http.requestStatus();
     }
 
 }
