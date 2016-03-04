@@ -38,7 +38,7 @@ import java.io.RandomAccessFile;
  *
  */
 
-public class AjxpFileBody extends FileBody {
+public class UploadFileBody extends FileBody {
 
 	private String customFileName;
 	private int chunkSize = 0;
@@ -46,8 +46,18 @@ public class AjxpFileBody extends FileBody {
 	private int totalChunks;
 	private int lastChunkSize;
 	private int bufsize = 0;
+
+
+    private CountingMultipartRequestEntity.ProgressListener progressListener;
+
+    public CountingMultipartRequestEntity.ProgressListener listener(){
+        return progressListener;
+    }
+    public void setListener(CountingMultipartRequestEntity.ProgressListener listener){
+        progressListener = listener;
+    }
 	
-	public AjxpFileBody(File file, String fileName) {
+	public UploadFileBody(File file, String fileName) {
 		super(file);
 		customFileName = fileName;
 		bufsize = 16384;
