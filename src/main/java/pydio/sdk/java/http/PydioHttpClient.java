@@ -80,7 +80,6 @@ public class PydioHttpClient extends DefaultHttpClient {
 	protected ClientConnectionManager createClientConnectionManager() {
 		SchemeRegistry registry = new SchemeRegistry();
 		registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), port));
-		
 		if(trustSelfSignedSSL){
 			AjxpSSLSocketFactory socketFactory = new AjxpSSLSocketFactory();
 			registry.register(new Scheme("https", socketFactory, 443));
@@ -88,7 +87,6 @@ public class PydioHttpClient extends DefaultHttpClient {
 			SSLSocketFactory socketFactory = SSLSocketFactory.getSocketFactory();
 			registry.register(new Scheme("https", socketFactory, 443));
 		}
-
 		return new ThreadSafeClientConnManager(getParams(), registry);
 	}
 
@@ -97,7 +95,7 @@ public class PydioHttpClient extends DefaultHttpClient {
 	}
 
 	public HttpResponse executeInContext(HttpRequestBase request) throws ClientProtocolException, IOException {
-		HttpConnectionParams.setConnectionTimeout(getParams(), 3000);
+		HttpConnectionParams.setConnectionTimeout(getParams(), 30000);
 		return execute(request, localContext);
 	}
 
