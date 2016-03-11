@@ -528,7 +528,7 @@ public class PydioClient {
     public void getRemoteConfigs() throws IOException {
         Map<String, String> params = new HashMap<String , String>();
         params.put(Pydio.PARAM_XPATH, Pydio.XPATH_VALUE_PLUGINS);
-        Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_GET_REGISTRY + Log.paramString(params) + "]");
+        Log.info("PYDIO SDK : " + "[action=remote_conf, " + Log.paramString(params) + "]");
         Document doc = http.getXmlContent(Pydio.ACTION_GET_REGISTRY, params);
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
