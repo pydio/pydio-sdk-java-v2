@@ -72,7 +72,7 @@ public class FileNodeSaxHandler extends DefaultHandler {
     }
 
     public void characters(char ch[], int start, int length) throws SAXException {
-        if(mInsideTree){
+        if(mInsideTree && p != null){
             p.setProperty(mInnerElement, new String(ch, start, length));
         }
     }
