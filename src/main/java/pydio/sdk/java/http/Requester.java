@@ -38,7 +38,7 @@ import pydio.sdk.java.utils.UploadStopNotifierProgressListener;
  */
 public class Requester {
 	private PydioHttpClient httpClient;
-	public boolean trustSSL = false;
+	private boolean trustSSL = false;
     private UploadStopNotifierProgressListener listener;
 	private String authStep;
     ServerNode server;
@@ -57,6 +57,8 @@ public class Requester {
 	public HttpResponse issueRequest(URI uri, Map<String, String> postParameters, UploadFileBody fileBody) throws IOException {
         if(httpClient == null) {
             httpClient = new PydioHttpClient(trustSSL, server.port());
+        } else {
+            httpClient.setTrustSelfSignedSSL(trustSSL);
         }
 
 		if(credentials != null){
@@ -149,7 +151,13 @@ public class Requester {
 	 */
 	public void setTrustSSL(boolean trust){
 		trustSSL = trust;
+        if(httpClient != null){
+            httpClient.setTrustSelfSignedSSL(trust);
+        }
 	}
+    public boolean isTrustSSL(){
+        return trustSSL;
+    }
 	/**
 	 * Set username and password for Http basic authentication
 	 * @param user username string

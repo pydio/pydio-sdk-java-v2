@@ -39,12 +39,9 @@ import javax.net.ssl.TrustManager;
 import pydio.sdk.java.auth.AuthenticationHelper;
 
 public class AjxpSSLSocketFactory implements SocketFactory, LayeredSocketFactory {
-	private String certKey = null;
     private SSLContext sslcontext = null;
 
-    public AjxpSSLSocketFactory() {
-
-    }
+    public AjxpSSLSocketFactory() {}
 
     private static SSLContext createEasySSLContext() throws IOException {
         try {
@@ -64,8 +61,7 @@ public class AjxpSSLSocketFactory implements SocketFactory, LayeredSocketFactory
     }
 
 	public Socket connectSocket(Socket sock, String host, int port,
-			InetAddress localAddress, int localPort, HttpParams params) throws IOException,
-			UnknownHostException, ConnectTimeoutException {
+			InetAddress localAddress, int localPort, HttpParams params) throws IOException{
         int connTimeout = HttpConnectionParams.getConnectionTimeout(params);
         int soTimeout = HttpConnectionParams.getSoTimeout(params);
 
@@ -96,7 +92,7 @@ public class AjxpSSLSocketFactory implements SocketFactory, LayeredSocketFactory
 	}
 
 	public Socket createSocket(Socket socket, String host, int port, boolean autoClose)
-			throws IOException, UnknownHostException {
+			throws IOException {
 		return getSSLContext().getSocketFactory().createSocket(socket, host, port, autoClose);
 	}
 

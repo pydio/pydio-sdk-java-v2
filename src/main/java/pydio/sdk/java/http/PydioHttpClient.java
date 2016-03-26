@@ -21,7 +21,6 @@ package pydio.sdk.java.http;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.ClientPNames;
@@ -30,11 +29,11 @@ import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.scheme.SocketFactory;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.protocol.BasicHttpContext;
@@ -46,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pydio.sdk.java.utils.AjxpSSLSocketFactory;
+import pydio.sdk.java.utils.Log;
 
 @SuppressWarnings("deprecation")
 public class PydioHttpClient extends DefaultHttpClient {
@@ -53,6 +53,7 @@ public class PydioHttpClient extends DefaultHttpClient {
 	boolean trustSelfSignedSSL;
 	public HttpContext localContext = new BasicHttpContext();
 	public CookieStore cookieStore = new BasicCookieStore();
+    ClientConnectionManager mConnectionManager;
 	int port;
 
 	public PydioHttpClient(boolean trustSSL, int port) {
@@ -67,8 +68,20 @@ public class PydioHttpClient extends DefaultHttpClient {
 		this.getCredentialsProvider().setCredentials(
                 new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM),
                 new UsernamePasswordCredentials(user, pass)
-        );		
+        );
 	}
+
+    public void setTrustSelfSignedSSL(boolean trustSSL){
+        trustSelfSignedSSL = trustSSL;
+        if(mConnectionManager != null) {
+            mConnectionManager.getSchemeRegistry().unregister("https");
+            if(trustSSL) {
+                mConnectionManager.getSchemeRegistry().register(new Scheme("https", new AjxpSSLSocketFactory(), 443));
+            } else {
+                mConnectionManager.getSchemeRegistry().register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+            }
+        }
+    }
 	
 	public void refreshCredentials(UsernamePasswordCredentials credentials){
 		this.getCredentialsProvider().setCredentials(
@@ -78,24 +91,27 @@ public class PydioHttpClient extends DefaultHttpClient {
 	}
 	@Override
 	protected ClientConnectionManager createClientConnectionManager() {
+        if(mConnectionManager != null) return mConnectionManager;
 		SchemeRegistry registry = new SchemeRegistry();
-		registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), port));
-		if(trustSelfSignedSSL){
-			AjxpSSLSocketFactory socketFactory = new AjxpSSLSocketFactory();
-			registry.register(new Scheme("https", socketFactory, 443));
-		}else{
-			SSLSocketFactory socketFactory = SSLSocketFactory.getSocketFactory();
-			registry.register(new Scheme("https", socketFactory, 443));
-		}
-		return new ThreadSafeClientConnManager(getParams(), registry);
+        registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        SocketFactory factory;
+        if(trustSelfSignedSSL){
+            factory = new AjxpSSLSocketFactory();
+        } else {
+            factory = SSLSocketFactory.getSocketFactory();
+        }
+        registry.register(new Scheme("https", factory, 443));
+        mConnectionManager = new ThreadSafeClientConnManager(getParams(), registry);
+		return mConnectionManager;
 	}
 
 	public void clearCookies() {
 		if(cookieStore != null) cookieStore.clear();
 	}
 
-	public HttpResponse executeInContext(HttpRequestBase request) throws ClientProtocolException, IOException {
-		HttpConnectionParams.setConnectionTimeout(getParams(), 30000);
+	public HttpResponse executeInContext(HttpRequestBase request) throws IOException {
+        Log.info("PYDIO HTTP : [full_url="+request.getURI()+"]");
+		HttpConnectionParams.setConnectionTimeout(getParams(), 60000);
 		return execute(request, localContext);
 	}
 
