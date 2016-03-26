@@ -338,12 +338,12 @@ public class SessionTransport implements Transport{
 
         if(mRequester == null){
             mRequester = new Requester(mServerNode);
-            mRequester.trustSSL = mTrustSSL;
+            mRequester.setTrustSSL(mTrustSSL);
         }
 
-        if(mRequester.trustSSL && "http".equals(uri.getScheme())){
+        if(mRequester.isTrustSSL() && "http".equals(uri.getScheme())){
             mRequester = new Requester(mServerNode);
-            mRequester.trustSSL = false;
+            mRequester.setTrustSSL(false);
         }
 
         HttpResponse response = null;
@@ -355,7 +355,7 @@ public class SessionTransport implements Transport{
 
             try {
                 response = mRequester.issueRequest(uri, params, fileBody);
-                mTrustSSL = mRequester.trustSSL;
+                mTrustSSL = mRequester.isTrustSSL();
 
             } catch (IOException e){
 
@@ -365,9 +365,11 @@ public class SessionTransport implements Transport{
                 }
 
                 if(e instanceof SSLPeerUnverifiedException){
-                    mRequester.setTrustSSL(true);
-                    continue;
-
+                    if(!mRequester.isTrustSSL()) {
+                        mRequester.setTrustSSL(true);
+                        continue;
+                    }
+                    throw e;
                 }
 
                 if ( e instanceof  SSLHandshakeException){
@@ -385,17 +387,16 @@ public class SessionTransport implements Transport{
 
                     Exception causeCause = (Exception) cause.getCause();
 
-                    if(causeCause != null && causeCause instanceof CertPathValidatorException && !mRequester.trustSSL){
-                        if(!mRequester.trustSSL) {
+                    if(causeCause != null && causeCause instanceof CertPathValidatorException && !mRequester.isTrustSSL()){
+                        if(!mRequester.isTrustSSL()) {
                             CertPathValidatorException ex = (CertPathValidatorException) cause.getCause();
                             mHelper.setCertificate((X509Certificate) ex.getCertPath().getCertificates().get(0));
-                            mRequester.trustSSL = true;
+                            mRequester.setTrustSSL(true);
                             continue;
                         }
                         throw e;
                     }
                     return null;
-
                 }
 
                 if (e instanceof SSLException) {
