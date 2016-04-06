@@ -22,9 +22,11 @@ public class Log {
     public static void error(String msg){
         System.out.println(ANSI_RED + msg.replace("\n", "") + ANSI_RESET);
     }
-
     public static void info(String msg){
         System.out.println(ANSI_BLUE + msg.replace("\n", "") + ANSI_RESET);
+    }
+    public static void success(String msg){
+        System.out.println(ANSI_GREEN + msg.replace("\n", "") + ANSI_RESET);
     }
 
     public static String paramString(Map<String, String> params){

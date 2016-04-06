@@ -1,4 +1,4 @@
-package pydio.sdk.java.model;
+package pydio.sdk.java.utils;
 
 /**
  * Created by jabar on 29/01/2016.

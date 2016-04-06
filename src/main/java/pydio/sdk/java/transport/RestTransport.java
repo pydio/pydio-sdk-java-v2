@@ -12,10 +12,10 @@ import java.net.URI;
 import java.text.ParseException;
 import java.util.Map;
 
-import pydio.sdk.java.auth.AuthenticationHelper;
+import pydio.sdk.java.http.HttpContentBody;
+import pydio.sdk.java.utils.AuthenticationHelper;
 import pydio.sdk.java.http.HttpResponseParser;
 import pydio.sdk.java.model.ServerNode;
-import pydio.sdk.java.utils.ProgressListener;
 import pydio.sdk.java.utils.UploadStopNotifierProgressListener;
 
 /**
@@ -93,12 +93,7 @@ public class RestTransport implements Transport{
 	}
 
 	@Override
-	public Document putContent(String action, Map<String, String> params, File file, String filename, UploadStopNotifierProgressListener handler) throws IOException {
-		return null;
-	}
-
-	@Override
-	public Document putContent(String action, Map<String, String> params, byte[] data, String filename, UploadStopNotifierProgressListener handler) {
+	public Document putContent(String action, Map<String, String> params, HttpContentBody cb) throws IOException {
 		return null;
 	}
 

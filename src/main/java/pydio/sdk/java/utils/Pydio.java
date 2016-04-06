@@ -18,7 +18,7 @@ public class Pydio {
 	public final static String PARAM_NODES 					    	    = "nodes";
 	public final static String PARAM_DIRNAME 					        = "dirname";
 	public final static String PARAM_PATH 						        = "path";
-	public final static String PARAM_URL_ENCODED 				        = "urlencoded_filename";
+	public final static String PARAM_URL_ENCODED_FILENAME               = "urlencoded_filename";
 	public final static String PARAM_OPTIONS 					        = "options";
 	public final static String PARAM_RECURSIVE 					        = "recursive";
 	public final static String PARAM_CONTENT 					        = "content";
@@ -238,14 +238,14 @@ public class Pydio {
     public static String[] no_auth_required_actions                     = {Pydio.ACTION_CAPTCHA, Pydio.ACTION_GET_SEED, Pydio.ACTION_LOGIN};
 
     public final static int
-            NO_ERROR                                                    = 1,
+            OK = 1,
             ERROR_NOT_A_SERVER                                          = 2,
             ERROR_WRONG_PATH                                            = 3,
             ERROR_CON_FAILED                                            = 4,
             ERROR_CON_FAILED_SSL                                        = 5,
-            ERROR_CON_SSL_SELF_SIGNED_CERT                              = 6,
+            ERROR_UNVERIFIED_CERTIFICATE                                = 6,
             ERROR_IN_NAME_SYNTAX                                        = 7,
-            ERROR_INTERNAL                                              = 8,
+            ERROR_OTHER                                                 = 8,
             ERROR_SERVER_SLEEPING                                       = 9,
             ERROR_AUTHENTICATION                                        = 10,
             ERROR_AUTHENTICATION_WITH_CAPTCHA                           = 11,

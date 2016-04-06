@@ -8,24 +8,21 @@ import java.util.Properties;
 
 import pydio.sdk.java.model.Node;
 import pydio.sdk.java.model.NodeFactory;
-import pydio.sdk.java.model.NodeHandler;
 
 /**
  * Created by pydio on 09/02/2015.
  */
 public class WorkspaceNodeSaxHandler extends DefaultHandler {
 
-    boolean inside_repo= false;
+    boolean inside_repo = false, inside_label = false, inside_description = false;
     String inner_element = "";
-    int count = 0, offset, max;
     NodeHandler handler;
     Properties p = null;
+    //String tabs = "";
 
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        count++;
-        if(max != -1 && (count < offset || count > max)){
-            return;
-        }
+        /*tabs += "\t";
+        Log.info(tabs + qName);*/
 
         if("repo".equals(qName)){
             inside_repo = true;
@@ -33,22 +30,33 @@ public class WorkspaceNodeSaxHandler extends DefaultHandler {
             for(int i = 0; i < attributes.getLength(); i++){
                 p.setProperty(attributes.getLocalName(i), attributes.getValue(i));
             }
+            return;
         }
 
         if(!inside_repo) return;
 
-        if("label".equals(qName.toLowerCase()) || "description".equals(qName.toLowerCase())){
+        inside_label = "label".equals(qName);
+        inside_description = "description".equals(qName);
+        if(inside_label || inside_description){
             inner_element = qName;
         }
     }
 
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if(max != -1 &&(count < offset || count > max)){
+        /*Log.info(tabs + qName);
+        tabs = tabs.substring(0, tabs.length() - 1);*/
+
+        if(inside_repo && (inside_label || inside_description)){
+            if(inside_label){
+                inside_label = false;
+            } else if(inside_description){
+                inside_description = false;
+            }
             return;
         }
 
         if(inside_repo && "repo".equals(qName)){
-            handler.processNode(NodeFactory.createNode(Node.TYPE_WORKSPACE, p));
+            handler.onNode(NodeFactory.createNode(Node.TYPE_WORKSPACE, p));
             p = null;
             inside_repo = false;
             return;
@@ -56,27 +64,16 @@ public class WorkspaceNodeSaxHandler extends DefaultHandler {
     }
 
     public void characters(char ch[], int start, int length) throws SAXException {
-        if(max != -1 && (count < offset || count > max)){
-            return;
-        }
-
-        if(inside_repo){
-            String content = new String(ch, 0, length);
-
-
-            if(!p.containsKey(inner_element)){
+        if(inside_repo && (inside_label || inside_description)){
+            String content = new String(ch, start, length);
+            if (!p.containsKey(inner_element)) {
                 p.setProperty(inner_element, content);
             }
         }
     }
 
-    public void endDocument() throws SAXException {
-        handler.processNode(null);
-    }
 
     public WorkspaceNodeSaxHandler(NodeHandler nodeHandler, int offset, int max){
         this.handler = nodeHandler;
-        this.offset = offset;
-        this.max = max;
     }
 }

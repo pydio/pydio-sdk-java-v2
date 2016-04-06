@@ -8,13 +8,12 @@ import java.util.Properties;
 
 import pydio.sdk.java.model.Node;
 import pydio.sdk.java.model.NodeFactory;
-import pydio.sdk.java.model.NodeHandler;
-import pydio.sdk.java.model.TreeNode;
+import pydio.sdk.java.model.FileNode;
 
 /**
  * Created by pydio on 09/02/2015.
  */
-public class FileNodeSaxHandler extends DefaultHandler {
+public class TreeNodeSaxHandler extends DefaultHandler {
 
     boolean mInsideTree = false;
     String mInnerElement = "";
@@ -24,7 +23,7 @@ public class FileNodeSaxHandler extends DefaultHandler {
     public int mPaginationTotalItem;
     public int mPaginationTotalPage;
     public int mPaginationCurrentPage;
-    public TreeNode mRootNode;
+    public FileNode mRootNode;
 
     NodeHandler mHandler;
     Properties p = null;
@@ -48,7 +47,7 @@ public class FileNodeSaxHandler extends DefaultHandler {
                 if("".equals(p.getProperty(Pydio.NODE_PROPERTY_FILENAME))){
                     p.setProperty(Pydio.NODE_PROPERTY_FILENAME, "/");
                 }
-                mRootNode = (TreeNode) NodeFactory.createNode(Node.TYPE_TREE, p);
+                mRootNode = (FileNode) NodeFactory.createNode(Node.TYPE_TREE, p);
                 p = null;
             }
         }
@@ -63,7 +62,7 @@ public class FileNodeSaxHandler extends DefaultHandler {
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if(mInsideTree && "tree".equals(qName)){
             if(p != null) {
-                mHandler.processNode(NodeFactory.createNode(Node.TYPE_TREE, p));
+                mHandler.onNode(NodeFactory.createNode(Node.TYPE_TREE, p));
                 p = null;
             }
             mInsideTree = false;
@@ -79,7 +78,7 @@ public class FileNodeSaxHandler extends DefaultHandler {
 
     public void endDocument() throws SAXException {}
 
-    public FileNodeSaxHandler(NodeHandler nodeHandler){
+    public TreeNodeSaxHandler(NodeHandler nodeHandler){
         this.mHandler = nodeHandler;
     }
 }
