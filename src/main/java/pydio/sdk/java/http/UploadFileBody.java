@@ -46,13 +46,14 @@ public class UploadFileBody extends FileBody {
 	private int totalChunks;
 	private int lastChunkSize;
 	private int bufsize = 0;
-
+	private int inputStream;
 
     private CountingMultipartRequestEntity.ProgressListener progressListener;
 
     public CountingMultipartRequestEntity.ProgressListener listener(){
         return progressListener;
     }
+
     public void setListener(CountingMultipartRequestEntity.ProgressListener listener){
         progressListener = listener;
     }
@@ -116,11 +117,8 @@ public class UploadFileBody extends FileBody {
 	}
 	
 	public void writeTo(OutputStream out){
-		
 		InputStream in;
 		//int bufsize = Integer.parseInt(StateHolder.getInstance().getLocalConfig(Pydio.LOCAL_CONFIG_BUFFER_SIZE));
-
-		
 		try {
 			if(this.chunkSize > 0){
 				RandomAccessFile raf = new RandomAccessFile(getFile(), "r");
@@ -133,9 +131,9 @@ public class UploadFileBody extends FileBody {
 				if(chunkIndex == (totalChunks -1)){
 					limit = lastChunkSize;
 				}
-				
+
 				raf.seek(start);
-				
+
 				while(count < limit){
 					
 					if(count + bufsize > limit){
@@ -166,6 +164,16 @@ public class UploadFileBody extends FileBody {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
+	}
+
+	public static UploadFileBody create (File file, long maxUpload){
+		UploadFileBody fileBody;
+		String fileName = file.getName();
+		fileBody = new UploadFileBody(file, fileName);
+		if(maxUpload > 0 && maxUpload < file.length()){
+			fileBody.chunkIntoPieces((int)maxUpload);
+		}
+		return fileBody;
 	}
 
 }

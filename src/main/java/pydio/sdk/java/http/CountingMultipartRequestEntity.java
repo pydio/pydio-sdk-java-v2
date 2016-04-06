@@ -44,7 +44,7 @@ public class CountingMultipartRequestEntity implements HttpEntity {
         this.delegate.writeTo(new CountingOutputStream(out, this.listener));
     }
 
-    public static interface ProgressListener {
+    public interface ProgressListener {
         void transferred(long num) throws IOException;
         void partTransferred(int part, int total) throws IOException;
     }
@@ -52,7 +52,6 @@ public class CountingMultipartRequestEntity implements HttpEntity {
     public static class CountingOutputStream extends FilterOutputStream {
 
         private final ProgressListener listener;
-
         private long transferred;
 
         public CountingOutputStream(final OutputStream out, final ProgressListener listener) {
@@ -79,7 +78,6 @@ public class CountingMultipartRequestEntity implements HttpEntity {
     }
 
 	public void consumeContent() throws IOException {
-		//this.delegate.consumeContent();
 		EntityUtils.consume(delegate);
 		
 	}

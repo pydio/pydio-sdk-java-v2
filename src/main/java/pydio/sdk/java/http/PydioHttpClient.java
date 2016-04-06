@@ -19,9 +19,11 @@
 package pydio.sdk.java.http;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.protocol.ClientContext;
@@ -29,80 +31,74 @@ import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.scheme.SocketFactory;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.cookie.Cookie;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EncodingUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
-import pydio.sdk.java.utils.AjxpSSLSocketFactory;
-import pydio.sdk.java.utils.Log;
+import pydio.sdk.java.security.SSLSocketFactory2;
+import pydio.sdk.java.utils.Pydio;
 
-@SuppressWarnings("deprecation")
 public class PydioHttpClient extends DefaultHttpClient {
 
-	boolean trustSelfSignedSSL;
 	public HttpContext localContext = new BasicHttpContext();
 	public CookieStore cookieStore = new BasicCookieStore();
     ClientConnectionManager mConnectionManager;
 	int port;
 
-	public PydioHttpClient(boolean trustSSL, int port) {
+	public PydioHttpClient(int port) {
 		super();
 		this.port = port <= 0 ? 80 : port;
-		this.trustSelfSignedSSL = trustSSL;
 		localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
-		this.getParams().setParameter(ClientPNames.ALLOW_CIRCULAR_REDIRECTS, true);
-	}
-	
-	public void refreshCredentials(String user, String pass){
-		this.getCredentialsProvider().setCredentials(
-                new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM),
-                new UsernamePasswordCredentials(user, pass)
-        );
+		getParams().setParameter(ClientPNames.ALLOW_CIRCULAR_REDIRECTS, true);
 	}
 
-    public void setTrustSelfSignedSSL(boolean trustSSL){
-        trustSelfSignedSSL = trustSSL;
-        if(mConnectionManager != null) {
-            mConnectionManager.getSchemeRegistry().unregister("https");
-            if(trustSSL) {
-                mConnectionManager.getSchemeRegistry().register(new Scheme("https", new AjxpSSLSocketFactory(), 443));
-            } else {
-                mConnectionManager.getSchemeRegistry().register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
-            }
+    public void setTrustSSL(boolean trustSSL){
+        SchemeRegistry registry;
+        if(mConnectionManager != null){
+            registry = mConnectionManager.getSchemeRegistry();
+        } else {
+            registry = new SchemeRegistry();
+            registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+            mConnectionManager = new ThreadSafeClientConnManager(getParams(), registry);
         }
+
+		registry.unregister("https");
+
+		if (trustSSL) {
+            registry.register(new Scheme("https", new SSLSocketFactory2(), 443));
+        } else {
+            registry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+		}
     }
-	
-	public void refreshCredentials(UsernamePasswordCredentials credentials){
-		this.getCredentialsProvider().setCredentials(
-                new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM),
-                credentials
-        );
-	}
+
 	@Override
 	protected ClientConnectionManager createClientConnectionManager() {
         if(mConnectionManager != null) return mConnectionManager;
 		SchemeRegistry registry = new SchemeRegistry();
-        registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        SocketFactory factory;
-        if(trustSelfSignedSSL){
-            factory = new AjxpSSLSocketFactory();
-        } else {
-            factory = SSLSocketFactory.getSocketFactory();
-        }
-        registry.register(new Scheme("https", factory, 443));
+        //registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        registry.register(new Scheme("https", new SSLSocketFactory2(), 443));
         mConnectionManager = new ThreadSafeClientConnManager(getParams(), registry);
-		return mConnectionManager;
+        setTrustSSL(true);
+        return mConnectionManager;
 	}
 
 	public void clearCookies() {
@@ -110,7 +106,6 @@ public class PydioHttpClient extends DefaultHttpClient {
 	}
 
 	public HttpResponse executeInContext(HttpRequestBase request) throws IOException {
-        Log.info("PYDIO HTTP : [full_url="+request.getURI()+"]");
 		HttpConnectionParams.setConnectionTimeout(getParams(), 60000);
 		return execute(request, localContext);
 	}
@@ -129,6 +124,85 @@ public class PydioHttpClient extends DefaultHttpClient {
 	
 	public void destroy() {
 		// TODO Auto-generated method stub
-		
 	}
+
+	public HttpResponse execute(URI uri, Map<String, String> postParameters, HttpContentBody httpBody) throws IOException {
+
+		HttpRequestBase request;
+
+		if(postParameters != null || httpBody != null){
+			request = new HttpPost();
+			if(httpBody != null){
+				CountingMultipartRequestEntity.ProgressListener listener = httpBody.listener();
+
+				if(listener != null){
+					listener.partTransferred(httpBody.getCurrentIndex() , httpBody.getTotalChunks());
+				}
+
+				MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+				reqEntity.addPart("userfile_0", httpBody);
+
+				if(httpBody.getFilename() != null && !EncodingUtils.getAsciiString(EncodingUtils.getBytes(httpBody.getFilename(), "US-ASCII")).equals(httpBody.getFilename())){
+					reqEntity.addPart(Pydio.PARAM_URL_ENCODED_FILENAME, new StringBody(java.net.URLEncoder.encode(httpBody.getFilename(), "utf-8")));
+				}
+
+				if(httpBody != null && !httpBody.getFilename().equals(httpBody.getRootFilename())){
+					reqEntity.addPart(Pydio.PARAM_APPEND_TO_URLENCODED_PART, new StringBody(java.net.URLEncoder.encode(httpBody.getRootFilename(), "utf-8")));
+				}
+
+				if(postParameters != null){
+					Iterator<Map.Entry<String, String>> it = postParameters.entrySet().iterator();
+					while(it.hasNext()){
+						Map.Entry<String, String> entry = it.next();
+						reqEntity.addPart(entry.getKey(), new StringBody(new String(entry.getValue().getBytes(), "utf-8")));
+					}
+				}
+
+				if(listener != null){
+					CountingMultipartRequestEntity countingEntity = new CountingMultipartRequestEntity(reqEntity, listener);
+					((HttpPost)request).setEntity(countingEntity);
+				}else{
+					((HttpPost)request).setEntity(reqEntity);
+				}
+			}else{
+				request.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(postParameters.size());
+				Iterator<Map.Entry<String, String>> it = postParameters.entrySet().iterator();
+				while(it.hasNext()){
+					Map.Entry<String, String> entry = it.next();
+					nameValuePairs.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+				}
+				((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs, "utf-8"));
+			}
+		}else{
+			request = new HttpGet();
+		}
+		request.setURI(uri);
+		HttpResponse response = executeInContext(request);
+		if(httpBody != null && httpBody.isChunked() && !httpBody.allChunksUploaded()){
+			this.discardResponse(response);
+			execute(uri, postParameters, httpBody);
+		}
+		return response;
+	}
+
+	public void discardResponse(HttpResponse response) {
+		try {
+			BufferedReader in = null;
+			in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+			StringBuffer sb = new StringBuffer("");
+			String line = "";
+			String NL = System.getProperty("line.separator");
+
+			while ((line = in.readLine()) != null) {
+				sb.append(line + NL);
+			}
+			in.close();
+		} catch (IllegalStateException e){
+			// Silent, was already consumed
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 }
