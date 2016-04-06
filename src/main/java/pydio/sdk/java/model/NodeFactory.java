@@ -53,7 +53,7 @@ public class NodeFactory {
 	private static Node newNode(int type){
 		switch (type) {			
 			case Node.TYPE_TREE:
-				return new TreeNode();
+				return new FileNode();
 				
 			case Node.TYPE_WORKSPACE:
 				return new WorkspaceNode();

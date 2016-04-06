@@ -15,7 +15,7 @@ import pydio.sdk.java.utils.Pydio;
  * @author pydio
  *
  */
-public class TreeNode implements Node{
+public class FileNode implements Node{
 
 	Properties properties = new Properties();
 

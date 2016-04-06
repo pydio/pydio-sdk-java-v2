@@ -15,8 +15,8 @@ import java.util.Properties;
 public class ServerNode implements Node{
 		
 	private boolean legacy = false;
-	private boolean SSLselfSigned = false;
-	private String protocol;
+	private boolean trustSSL = false;
+	private String scheme;
 	private String host;
 	private String path;
 	private int port;
@@ -41,12 +41,12 @@ public class ServerNode implements Node{
         return legacy;
     }
 	
-	public boolean isSSLselfSigned(){
-		return SSLselfSigned;
+	public boolean trustSSL(){
+		return trustSSL;
 	}
 
 	public String address(){
-		String path = protocol + "://" + host + path();
+		String path = scheme + "://" + host + path();
 		if(!path.endsWith("/"))
 			return path + "/";
 		return path;
@@ -56,8 +56,8 @@ public class ServerNode implements Node{
 		return host;
 	}
 	
-	public String protocol(){
-		return protocol;
+	public String scheme(){
+		return scheme;
 	}
 
 	public int port(){
@@ -76,12 +76,12 @@ public class ServerNode implements Node{
 		host = h;
 	}
 
-	public void setProtocol(String prot){
-		protocol = prot;
+	public void scheme(String scheme){
+		this.scheme = scheme;
 	}
 	
-	public void setSelSigned(boolean ssl){
-		SSLselfSigned = ssl;
+	public void trustSSL(boolean ssl){
+		trustSSL = ssl;
 	}
 	
 	public void setPath(String p){
@@ -97,7 +97,7 @@ public class ServerNode implements Node{
     }
 	
 	public String url(){
-        String url = protocol.toLowerCase()+"://"+host;
+        String url = scheme.toLowerCase()+"://"+host;
         if(port > 0 && port != 80){
             url += ":"+port;
         }

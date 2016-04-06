@@ -1,14 +1,9 @@
 package pydio.sdk.java.model;
 
-import org.json.JSONObject;
-
-import java.io.File;
-import java.util.Properties;
-
 /**
  * Created by jabar on 09/11/2015.
  */
-public class SearchNode extends TreeNode {
+public class SearchNode extends FileNode {
 
     String mLabel, mPath;
     public SearchNode(String label){

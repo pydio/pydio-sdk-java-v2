@@ -21,11 +21,11 @@ public class PydioMessage implements Serializable{
     public ArrayList<Node> updated = null;
 
 
-	public String getType() {
+	public String code() {
 		return type;
 	}
 	
-	public String getContent() {
+	public String text() {
 		return message;
 	}
 	
@@ -42,7 +42,6 @@ public class PydioMessage implements Serializable{
 		m.type = ERROR;
 		return m;
 	}
-
 	/**
 	 * create a message from the given XML Document and fire associated event
 	 * @param doc An instance of XML Document
