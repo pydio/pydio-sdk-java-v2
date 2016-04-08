@@ -1,5 +1,5 @@
 # Getting started
-The pydio java sdk provides a Java implementation of Pydio features for communicating with a Pydio server. Most of the functions are wrapped into the <em>PydioClient</em> class that contains simple methods to easily manage your files on a Pydio server.
+The pydio java sdk provides a Java implementation of features for communicating with a Pydio server. Most of the functions are wrapped into the <em>PydioClient</em> class that contains methods to easily manage your files on a Pydio server.
 
 ## <em>PydioClient</em> instantiation:
 
@@ -20,7 +20,7 @@ When a <em>PydioClient</em> is instantiated like it's done above, an <em>Authent
 
 So when performing a login operation, the PydioClient calls that method to get the user credentials. You can set your own helper as the following example shows:
 ``` java    
-    PydioClient client = new PydioClient("https://demo.pyd.io");    
+    PydioClient client = new PydioClient("serverAddress");    
     client.setAuthenticationHelper(new AuthenticationHelper(){
         public String[] getCredentials(){        
             String[] credentials = new String[2];            
@@ -33,16 +33,21 @@ So when performing a login operation, the PydioClient calls that method to get t
         }
     });
 ```
-The user is prompted every time the users credentials are needed.
+With this helper the user is prompted every time the users credentials are needed.
 
 Now we know how to configure a client we can manage files on the servers.
 
 
 ## Calling PydioClient methods:
 
-Before using our configured client let's have a quick look at some data objects defined in the SDK. The Pydio SDK data objects are simple representation of resource that are sent/received when communicating with a Pydio Server.
+Before showing how to use the client let's have a quick look at some important classes defined in the SDK. A pydio server response contains different sort of data. To easily deal with that data the SDk provides classes to easily
 
-### 1 - Data objects
+### 1 - Useful classes
+
++ Data wrap : definition of resource that are sent/received when communicating with a Pydio Server.
++ Delegates : classes that help in data wrap handling. Theses classes are useful for handling event and better memory usage. 
+
+#### Data wrap
 
 * PydioMessage
 The PydioMessage is a wrap of Pydio server response. It contains the result code, the message and others specific information.
@@ -50,6 +55,17 @@ The PydioMessage is a wrap of Pydio server response. It contains the result code
 * Node
 The Node is an abstract representation of a file tree on Pydio a server. The most common subclasses of Node are ServerNode, WorkspaceNode and FileNode which are wraps of Server, Workspace and files.
 We have also the SearchNode that wrap parameters when searching on a file tree.
+
+#### Delegates
+
+The advanced PydioClient instantiation shows how delegate can be useful to provide data when a login event occurs. Delegates are also used to retrieve data. For example when listing a folder node delegates are used to retrieve children. Delegates are useful for a better memory usage. For example when listing a folder node loading the whole response data into memory is not a good practice. Instead the response is parsed as stream and each parsed node is passed to a delegate. Here are all delegates defined in the SDK:
+
++ <em>AuthenticationHelper</em> : Helps in login
++ <em>NodeHandler</em> : Helps in folder node listing.
++ <em>ProgressListener</em> : Helps in task progress handling.
++ <em>UploadStopNotifierProgressListener</em> : Helps only in Upload progress handling. 
++ <em>MessageHandler</em> : Helps to get requests response.
++ <em>WorkspaceNodeSaxHandler, RegistrySaxHandler, registryItemHandler, </em> : help in registry parsing. 
  
  
 ### 2 - Using PydioClient
@@ -148,3 +164,6 @@ The workspace access is refused or some specific rights are required to perform 
 + Pydio.ERROR_OTHER
 Error other than all cited before.
 
+
+### 4 - Examples
+Find more examples [here](https://github.com/pydio/pydio-sdk-java-v2/tree/master/src/main/java/examples) 
