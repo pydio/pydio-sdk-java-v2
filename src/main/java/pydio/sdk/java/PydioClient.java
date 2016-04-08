@@ -1126,7 +1126,7 @@ public class PydioClient {
     /**
      * @return A ByteArrayOutputStream that contains the captcha bytes
      */
-    public ByteArrayOutputStream captchaContent() {
+    public ByteArrayOutputStream captchaData() {
         return http.getCaptcha();
     }
 
