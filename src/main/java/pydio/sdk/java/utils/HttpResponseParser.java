@@ -1,4 +1,4 @@
-package pydio.sdk.java.http;
+package pydio.sdk.java.utils;
 
 
 
@@ -15,6 +15,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import pydio.sdk.java.http.XMLDocEntity;
 import pydio.sdk.java.utils.Pydio;
 
 /**

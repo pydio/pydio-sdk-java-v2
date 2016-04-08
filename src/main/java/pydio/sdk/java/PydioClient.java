@@ -37,7 +37,7 @@ import javax.xml.xpath.XPathFactory;
 import pydio.sdk.java.http.CountingMultipartRequestEntity;
 import pydio.sdk.java.http.HttpContentBody;
 import pydio.sdk.java.utils.AuthenticationHelper;
-import pydio.sdk.java.http.HttpResponseParser;
+import pydio.sdk.java.utils.HttpResponseParser;
 import pydio.sdk.java.utils.ChangeProcessor;
 import pydio.sdk.java.model.Node;
 import pydio.sdk.java.model.NodeFactory;
