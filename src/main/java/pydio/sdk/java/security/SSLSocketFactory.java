@@ -16,10 +16,8 @@
  *  This file is part of the AjaXplorer Java Client
  *  More info on http://ajaxplorer.info/
  */
-package pydio.sdk.java.utils;
+package pydio.sdk.java.security;
 
-
-import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.scheme.LayeredSocketFactory;
 import org.apache.http.conn.scheme.SocketFactory;
 import org.apache.http.params.HttpConnectionParams;
@@ -29,33 +27,39 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
-import pydio.sdk.java.auth.AuthenticationHelper;
 
-public class AjxpSSLSocketFactory implements SocketFactory, LayeredSocketFactory {
+public class SSLSocketFactory implements SocketFactory, LayeredSocketFactory {
     private SSLContext sslcontext = null;
 
-    public AjxpSSLSocketFactory() {}
+    public static String[] enabledProtocols = new String[]{"TLSv1", "TLSv1.2", "SSLv3", "SSLv2Hello"};
+    public static String[] enabledCipherSuites = new String[]{"SSL_RSA_WITH_RC4_128_MD5", "TLS_RSA_WITH_AES_128_CBC_SHA"};
+
+    public SSLSocketFactory() {
+    }
 
     private static SSLContext createEasySSLContext() throws IOException {
         try {
             SSLContext context = SSLContext.getInstance("TLS");
-            context.init(null, new TrustManager[] { new AjxpSSLTrustManager()}, null);
+            context.init(null, new TrustManager[] { new CertificateTrustManager()}, null);
             return context;
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
     }
 
-    private SSLContext getSSLContext() throws IOException {
+    private SSLContext getSSLContext() throws IOException{
         if (this.sslcontext == null) {
-                this.sslcontext = createEasySSLContext();
+            try {
+                this.sslcontext = SSLContext.getInstance("TLS");
+                this.sslcontext.init(null, new TrustManager[] { new CertificateTrustManager()}, null);
+            } catch (Exception e) {
+                throw new IOException("Failed to create SSL context");
+            }
         }
         return this.sslcontext;
     }
@@ -66,21 +70,21 @@ public class AjxpSSLSocketFactory implements SocketFactory, LayeredSocketFactory
         int soTimeout = HttpConnectionParams.getSoTimeout(params);
 
         InetSocketAddress remoteAddress = new InetSocketAddress(host, port);
-        SSLSocket sslsock = (SSLSocket) ((sock != null) ? sock : createSocket());
+        SSLSocket socket = (SSLSocket) ((sock != null) ? sock : createSocket());
 
         if ((localAddress != null) || (localPort > 0)) {
-                // we need to bind explicitly
-                if (localPort < 0) {
-                        localPort = 0; // indicates "any"
-                }
-                InetSocketAddress isa = new InetSocketAddress(localAddress, localPort);
-                sslsock.bind(isa);
+            // we need to bind explicitly
+            if (localPort < 0) {
+                localPort = 0; // indicates "any"
+            }
+            InetSocketAddress isa = new InetSocketAddress(localAddress, localPort);
+            socket.bind(isa);
         }
-
-        sslsock.connect(remoteAddress, connTimeout);
-        sslsock.setSoTimeout(soTimeout);
-        //sslsock.setEnabledProtocols(new String[]{"TLSv1", "TLSv1.1", "TLSv1.2"});
-        return sslsock;
+        /*socket.setEnabledProtocols(enabledProtocols);
+        socket.setEnabledCipherSuites(enabledCipherSuites);*/
+        socket.setSoTimeout(soTimeout);
+        socket.connect(remoteAddress, connTimeout);
+        return socket;
 	}
 
 	public Socket createSocket() throws IOException {
@@ -95,5 +99,4 @@ public class AjxpSSLSocketFactory implements SocketFactory, LayeredSocketFactory
 			throws IOException {
 		return getSSLContext().getSocketFactory().createSocket(socket, host, port, autoClose);
 	}
-
 }

@@ -31,7 +31,6 @@ import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
@@ -54,7 +53,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import pydio.sdk.java.security.SSLSocketFactory2;
+import pydio.sdk.java.security.SSLSocketFactory;
 import pydio.sdk.java.utils.Pydio;
 
 public class PydioHttpClient extends DefaultHttpClient {
@@ -64,40 +63,34 @@ public class PydioHttpClient extends DefaultHttpClient {
     ClientConnectionManager mConnectionManager;
 	int port;
 
-	public PydioHttpClient(int port) {
+	public PydioHttpClient() {
 		super();
 		this.port = port <= 0 ? 80 : port;
 		localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
 		getParams().setParameter(ClientPNames.ALLOW_CIRCULAR_REDIRECTS, true);
 	}
 
-    public void setTrustSSL(boolean trustSSL){
+    public void turnSecure(){
         SchemeRegistry registry;
         if(mConnectionManager != null){
             registry = mConnectionManager.getSchemeRegistry();
-        } else {
-            registry = new SchemeRegistry();
-            registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-            mConnectionManager = new ThreadSafeClientConnManager(getParams(), registry);
-        }
-
-		registry.unregister("https");
-
-		if (trustSSL) {
-            registry.register(new Scheme("https", new SSLSocketFactory2(), 443));
-        } else {
-            registry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+			registry.unregister("https");
+			registry.unregister("http");
+		} else {
+			registry = new SchemeRegistry();
+			mConnectionManager = new ThreadSafeClientConnManager(getParams(), registry);
 		}
+		registry.register(new Scheme("https", new SSLSocketFactory(), 443));
     }
 
 	@Override
 	protected ClientConnectionManager createClientConnectionManager() {
         if(mConnectionManager != null) return mConnectionManager;
 		SchemeRegistry registry = new SchemeRegistry();
-        //registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        registry.register(new Scheme("https", new SSLSocketFactory2(), 443));
+        registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        registry.register(new Scheme("https", org.apache.http.conn.ssl.SSLSocketFactory.getSocketFactory(), 443));
         mConnectionManager = new ThreadSafeClientConnManager(getParams(), registry);
-        setTrustSSL(true);
+        //setTrustSSL(true);
         return mConnectionManager;
 	}
 
