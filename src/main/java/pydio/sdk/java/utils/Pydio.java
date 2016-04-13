@@ -238,7 +238,7 @@ public class Pydio {
     public static String[] no_auth_required_actions                     = {Pydio.ACTION_CAPTCHA, Pydio.ACTION_GET_SEED, Pydio.ACTION_LOGIN};
 
     public final static int
-            OK = 1,
+            OK                                                          = 1,
             ERROR_NOT_A_SERVER                                          = 2,
             ERROR_WRONG_PATH                                            = 3,
             ERROR_CON_FAILED                                            = 4,
@@ -254,6 +254,7 @@ public class Pydio {
             ERROR_USER_ALREADY_AUTH                                     = 14,
             ERROR_OLD_AUTHENTICATION_TOKEN                              = 15,
             ERROR_UNREACHABLE_HOST                                      = 16,
-            ERROR_ACCESS_REFUSED                                        = 17;
+            ERROR_ACCESS_REFUSED                                        = 17,
+            ERROR_CERTIFICATE_HOSTNAME_UNMATCH                          = 18;
 
 }
