@@ -39,8 +39,7 @@ public class SSLSocketFactory implements SocketFactory, LayeredSocketFactory {
     public static String[] enabledProtocols = new String[]{"TLSv1", "TLSv1.2", "SSLv3", "SSLv2Hello"};
     public static String[] enabledCipherSuites = new String[]{"SSL_RSA_WITH_RC4_128_MD5", "TLS_RSA_WITH_AES_128_CBC_SHA"};
 
-    public SSLSocketFactory() {
-    }
+    public SSLSocketFactory() {}
 
     private static SSLContext createEasySSLContext() throws IOException {
         try {
@@ -64,8 +63,8 @@ public class SSLSocketFactory implements SocketFactory, LayeredSocketFactory {
         return this.sslcontext;
     }
 
-	public Socket connectSocket(Socket sock, String host, int port,
-			InetAddress localAddress, int localPort, HttpParams params) throws IOException{
+	public Socket connectSocket(Socket sock, String host, int port, InetAddress localAddress, int localPort, HttpParams params) throws IOException{
+
         int connTimeout = HttpConnectionParams.getConnectionTimeout(params);
         int soTimeout = HttpConnectionParams.getSoTimeout(params);
 
@@ -80,8 +79,6 @@ public class SSLSocketFactory implements SocketFactory, LayeredSocketFactory {
             InetSocketAddress isa = new InetSocketAddress(localAddress, localPort);
             socket.bind(isa);
         }
-        /*socket.setEnabledProtocols(enabledProtocols);
-        socket.setEnabledCipherSuites(enabledCipherSuites);*/
         socket.setSoTimeout(soTimeout);
         socket.connect(remoteAddress, connTimeout);
         return socket;

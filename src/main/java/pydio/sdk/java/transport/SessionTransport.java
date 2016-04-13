@@ -16,10 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,9 +29,8 @@ import javax.xml.parsers.SAXParserFactory;
 
 import pydio.sdk.java.http.CustomEntity;
 import pydio.sdk.java.http.HttpContentBody;
-import pydio.sdk.java.http.HttpResponseParser;
+import pydio.sdk.java.utils.HttpResponseParser;
 import pydio.sdk.java.http.PydioHttpClient;
-import pydio.sdk.java.http.PydioHttpClient2;
 import pydio.sdk.java.model.ServerNode;
 import pydio.sdk.java.security.Crypto;
 import pydio.sdk.java.utils.AuthenticationHelper;
@@ -159,8 +155,9 @@ public class SessionTransport implements Transport{
         try {
             HttpResponse resp = request(this.getActionURI(Pydio.ACTION_GET_TOKEN), null, null);
             mSecureToken = "";
-            JSONObject jObject = new JSONObject(HttpResponseParser.getString(resp));
-            mLoggedIn = true;
+            String stringResponse = HttpResponseParser.getString(resp);
+            System.out.println(stringResponse);
+            JSONObject jObject = new JSONObject(stringResponse);
             mSecureToken = jObject.getString(Pydio.PARAM_SECURE_TOKEN.toUpperCase());
         } catch (ParseException e) {
             e.printStackTrace();
@@ -347,11 +344,10 @@ public class SessionTransport implements Transport{
             params = new HashMap<String, String>();
         }
 
-        if(mSecureToken == null && !mRefreshingToken) {
-            refreshSecureToken();
+        if(mSecureToken != null) {
+            //refreshSecureToken();
+            params.put(Pydio.PARAM_SECURE_TOKEN, mSecureToken);
         }
-
-        params.put(Pydio.PARAM_SECURE_TOKEN, mSecureToken);
 
         HttpResponse response;
         for(;;){
@@ -372,7 +368,6 @@ public class SessionTransport implements Transport{
                     mServerNode.trustSSL(true);
                     mHttpClient = new PydioHttpClient();
                     mHttpClient.turnSecure();
-
                     continue;
                 }
 

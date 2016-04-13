@@ -5,7 +5,6 @@ import org.apache.http.HttpResponse;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -14,9 +13,8 @@ import java.util.Map;
 
 import pydio.sdk.java.http.HttpContentBody;
 import pydio.sdk.java.utils.AuthenticationHelper;
-import pydio.sdk.java.http.HttpResponseParser;
+import pydio.sdk.java.utils.HttpResponseParser;
 import pydio.sdk.java.model.ServerNode;
-import pydio.sdk.java.utils.UploadStopNotifierProgressListener;
 
 /**
  * Class that generates rest requests
