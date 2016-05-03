@@ -1,7 +1,5 @@
 package pydio.sdk.java.http;
 
-import org.apache.http.entity.mime.MIME;
-import org.apache.http.entity.mime.content.AbstractContentBody;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -15,9 +13,9 @@ import java.io.RandomAccessFile;
 import pydio.sdk.java.utils.Pydio;
 
 /**
- * Created by jabar on 01/04/2016.
+ * Created by jabar on 29/04/2016.
  */
-public class HttpContentBody extends AbstractContentBody {
+public class ContentBody implements HttpEntity{
 
     long mLength;
     String mFilename;
@@ -30,9 +28,10 @@ public class HttpContentBody extends AbstractContentBody {
     private long mChunkSize;
     private long mLastChunkSize;
 
+    private final String MIME = "application/octet-stream";
 
-    public HttpContentBody(String filename, long length, long maxPartSize){
-        super("application/octet-stream");
+
+    public ContentBody(String filename, long length, long maxPartSize){
         mFilename = filename;
         mLength = length;
         if(maxPartSize >= length){
@@ -47,27 +46,26 @@ public class HttpContentBody extends AbstractContentBody {
             }
         }
     }
-
-    public HttpContentBody(File file, String filename, long maxPartSize) throws FileNotFoundException {
+    public ContentBody(File file, String filename, long maxPartSize) throws FileNotFoundException {
         this(filename, file.length(), maxPartSize);
         mFile = file;
     }
-
-    public HttpContentBody(byte[] bytes, String filename, long maxPartSize){
+    public ContentBody(byte[] bytes, String filename, long maxPartSize){
         this(new ByteArrayInputStream(bytes), filename, bytes.length, maxPartSize);
     }
-
-    public HttpContentBody(InputStream in, String filename, long length, long maxPartSize){
+    public ContentBody(InputStream in, String filename, long length, long maxPartSize){
         this(filename, length, maxPartSize);
         mInStream = in;
     }
 
-
-    @Override
     public String getFilename() {
         return mFilename;
     }
-    @Override
+
+    public String getCharset() {
+        return "UTF-8";
+    }
+
     public void writeTo(OutputStream out) throws IOException {
 
         if(mChunkCount > 0){
@@ -120,43 +118,49 @@ public class HttpContentBody extends AbstractContentBody {
         }
     }
     @Override
-    public String getCharset() {
-        return "UTF-8";
+    public boolean isStreaming() {
+        return mInStream != null;
     }
-    @Override
-    public String getTransferEncoding() {
-        return MIME.ENC_BINARY;
-    }
-    @Override
+
     public long getContentLength() {
         return mLength;
     }
-
-
-    public int getCurrentIndex(){
-        return mChunkIndex;
+    @Override
+    public String getContentType() {
+        return MIME;
     }
-    public int getTotalChunks(){
-        return mChunkCount;
+    @Override
+    public String getContentEncoding() {
+        return "binary";
     }
+    @Override
+    public InputStream getContent() throws IOException, IllegalStateException {
+        return mInStream;
+    }
+    @Override
+    public boolean isRepeatable() {
+        return false;
+    }
+
     public boolean isChunked(){
         return mChunkCount > 0;
     }
-    public boolean allChunksUploaded(){
+
+    public boolean allChunksWritten(){
         return mChunkIndex >= mChunkCount;
     }
-    public String getRootFilename(){
-        return mFilename;
+
+    public interface ProgressListener {
+        void transferred(long num) throws IOException;
+        void partTransferred(int part, int total) throws IOException;
     }
 
 
-    private CountingMultipartRequestEntity.ProgressListener progressListener;
-
-    public CountingMultipartRequestEntity.ProgressListener listener(){
+    private ProgressListener progressListener;
+    public ProgressListener listener(){
         return progressListener;
     }
-
-    public void setListener(CountingMultipartRequestEntity.ProgressListener listener){
+    public void setListener(ProgressListener listener){
         progressListener = listener;
     }
 }

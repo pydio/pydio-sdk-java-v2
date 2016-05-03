@@ -1,18 +1,15 @@
 package pydio.sdk.java.transport;
 
-import org.apache.http.HttpResponse;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import pydio.sdk.java.http.HttpContentBody;
-import pydio.sdk.java.utils.AuthenticationHelper;
+import pydio.sdk.java.http.ContentBody;
+import pydio.sdk.java.http.HttpResponse;
 import pydio.sdk.java.model.ServerNode;
-import pydio.sdk.java.utils.UploadStopNotifierProgressListener;
 
 /**
  * Created by pydio on 13/02/2015.
@@ -34,9 +31,7 @@ public interface Transport {
 
     public InputStream getResponseStream(String action, Map<String, String> params) throws IOException;
 
-    public Document putContent( String action, Map<String, String> params, HttpContentBody contentBody) throws IOException;
-
-    public void setAuthenticationHelper(AuthenticationHelper helper);
+    public Document putContent( String action, Map<String, String> params, ContentBody contentBody) throws IOException;
 
     public void setServer(ServerNode server);
 }

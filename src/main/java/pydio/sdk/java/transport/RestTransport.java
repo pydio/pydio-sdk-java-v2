@@ -1,7 +1,6 @@
 package pydio.sdk.java.transport;
 
 
-import org.apache.http.HttpResponse;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 
@@ -11,8 +10,8 @@ import java.net.URI;
 import java.text.ParseException;
 import java.util.Map;
 
-import pydio.sdk.java.http.HttpContentBody;
-import pydio.sdk.java.utils.AuthenticationHelper;
+import pydio.sdk.java.http.ContentBody;
+import pydio.sdk.java.http.HttpResponse;
 import pydio.sdk.java.utils.HttpResponseParser;
 import pydio.sdk.java.model.ServerNode;
 
@@ -53,7 +52,7 @@ public class RestTransport implements Transport{
 			return request(getActionURI(action), params);
 	}
 	
-	public String getStringContent(String action, Map<String, String> params) {
+	public String getStringContent(String action, Map<String, String> params) throws IOException {
 			HttpResponse response = request(getActionURI(action), params);
 			return HttpResponseParser.getString(response);
 	}
@@ -91,17 +90,12 @@ public class RestTransport implements Transport{
 	}
 
 	@Override
-	public Document putContent(String action, Map<String, String> params, HttpContentBody cb) throws IOException {
+	public Document putContent(String action, Map<String, String> params, ContentBody contentBody) throws IOException {
 		return null;
 	}
 
     @Override
     public void setServer(ServerNode server) {
-
-    }
-
-    @Override
-    public void setAuthenticationHelper(AuthenticationHelper helper) {
 
     }
 }

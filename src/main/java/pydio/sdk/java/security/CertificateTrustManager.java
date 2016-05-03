@@ -9,23 +9,26 @@ import javax.net.ssl.X509TrustManager;
 
 public class CertificateTrustManager implements X509TrustManager {
 
-    protected X509Certificate[] mAcceptedIssuers = new X509Certificate[]{};
-    public static X509Certificate[] mLastUnverifiedCertificateChain;
+    CertificateTrust.Helper mHelper;
 
-    public CertificateTrustManager() {
+    public CertificateTrustManager(CertificateTrust.Helper helper) {
+        mHelper = helper;
     }
 
-    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+
+    }
 
     public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-        mLastUnverifiedCertificateChain = chain;
-        CertificateTrust.Helper helper = CertificateTrust.helper();
-        if(helper == null || !helper.isServerTrusted(chain)){
+        if(mHelper == null || !mHelper.isServerTrusted(chain)){
             throw new CertificateException();
         }
     }
 
     public X509Certificate[] getAcceptedIssuers() {
-        return mAcceptedIssuers;
+        if(mHelper != null){
+            return mHelper.getAcceptedIssuers();
+        }
+        return CertificateTrust.revokeAllHelper().getAcceptedIssuers();
     }
 }

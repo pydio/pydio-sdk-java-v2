@@ -1,7 +1,6 @@
 package pydio.sdk.java.security;
 
-import org.apache.commons.codec.binary.Base64;
-
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.KeySpec;
@@ -64,7 +63,7 @@ public class Crypto {
             Cipher cipher = Cipher.getInstance(AES_CBC_PADDING);
             IvParameterSpec ivParameterSpec = new IvParameterSpec(key.getEncoded());
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
-            String enc_password = new String(Base64.encodeBase64(cipher.doFinal(data)));
+            String enc_password = new String(Base64.encode(cipher.doFinal(data)));
             return  enc_password;
 
         } catch (Exception e) {

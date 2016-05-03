@@ -59,6 +59,14 @@ public class VirtualNode implements Node{
 
 
     @Override
+    public void setProperty(String key, String value) {
+        if(properties == null){
+            properties = new Properties();
+        }
+        properties.setProperty(key, value);
+    }
+
+    @Override
     public String getProperty(String key) {
         return properties.getProperty(key, "");
     }

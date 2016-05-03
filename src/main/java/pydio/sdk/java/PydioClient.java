@@ -1,15 +1,11 @@
 package pydio.sdk.java;
 
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -18,7 +14,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,9 +29,9 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import pydio.sdk.java.http.CountingMultipartRequestEntity;
-import pydio.sdk.java.http.HttpContentBody;
-import pydio.sdk.java.utils.AuthenticationHelper;
+import pydio.sdk.java.http.ContentBody;
+import pydio.sdk.java.http.HttpResponse;
+import pydio.sdk.java.security.CertificateTrust;
 import pydio.sdk.java.utils.HttpResponseParser;
 import pydio.sdk.java.utils.ChangeProcessor;
 import pydio.sdk.java.model.Node;
@@ -57,74 +52,96 @@ import pydio.sdk.java.utils.ProgressListener;
 import pydio.sdk.java.utils.Pydio;
 import pydio.sdk.java.utils.UploadStopNotifierProgressListener;
 import pydio.sdk.java.utils.WorkspaceNodeSaxHandler;
+
 /**
- *
  * @author pydio
  *
  */
-
 public class PydioClient {
 
 	public SessionTransport http;
     public ServerNode server;
     protected WorkspaceNode mWorkspace;
     Properties localConfigs = new Properties();
-    AuthenticationHelper helper;
 
 
     //*****************************************
     //         INITIALIZATION METHODS
     //*****************************************
-    public PydioClient(String url, int mode){
-        URI uri = URI.create(url);
+    public PydioClient(ServerNode node){
+        server = node;
+        http = (SessionTransport) TransportFactory.getInstance(Transport.MODE_SESSION, node);
+        localConfigs = new Properties();
+        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
+    }
+    public PydioClient(ServerNode node, final String login, final String password){
+        server = node;
+        http = (SessionTransport) TransportFactory.getInstance(Transport.MODE_SESSION, node);
+        localConfigs = new Properties();
+        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
+    }
+    public PydioClient(ServerNode node, int mode){
+        http = (SessionTransport) TransportFactory.getInstance(mode, node);
+        localConfigs = new Properties();
+        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
+    }
+
+    public PydioClient(String url, int mode, CertificateTrust.Helper h){
         server = (ServerNode) NodeFactory.createNode(Node.TYPE_SERVER);
-        server.setHost(uri.getHost());
-        server.scheme(uri.getScheme());
-        server.setPath(uri.getPath());
-        server.setPort(uri.getPort());
+        server.init(url, h);
         http = (SessionTransport) TransportFactory.getInstance(mode, server);
         localConfigs = new Properties();
         localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
     }
+    public PydioClient(String url, int mode){
+        server = (ServerNode) NodeFactory.createNode(Node.TYPE_SERVER);
+        server.init(url);
+        http = (SessionTransport) TransportFactory.getInstance(mode, server);
+        localConfigs = new Properties();
+        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
+    }
+
+    public PydioClient(String url, int mode, final String login, final String password, CertificateTrust.Helper h){
+        this(url, mode, h);
+    }
     public PydioClient(String url, int mode, final String login, final String password){
         this(url, mode);
-        this.setAuthenticationHelper(new AuthenticationHelper() {
-            @Override
-            public String[] getCredentials() {
-                return new String[]{login, password};
-            }
-        });
+    }
+
+    public PydioClient(String url, final String login, final String password, CertificateTrust.Helper h){
+        this(url, h);
     }
     public PydioClient(String url, final String login, final String password){
         this(url);
-        this.setAuthenticationHelper(new AuthenticationHelper() {
-            @Override
-            public String[] getCredentials() {
-                return new String[]{login, password};
-            }
-        });
     }
-    public PydioClient (String url){
-        URI uri = URI.create(url);
+
+    public PydioClient (String url, CertificateTrust.Helper h){
+        if(!url.endsWith("/")){
+            url += "/";
+        }
         server = (ServerNode) NodeFactory.createNode(Node.TYPE_SERVER);
-        server.setHost(uri.getHost());
-        server.scheme(uri.getScheme());
-        server.setPath(uri.getPath());
-        server.setPort(uri.getPort());
+        server.init(url, h);
         http = (SessionTransport) TransportFactory.getInstance(Transport.MODE_SESSION, server);
         localConfigs = new Properties();
         localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
     }
-    public void setAuthenticationHelper(AuthenticationHelper h){
-        helper = h;
-        http.setAuthenticationHelper(h);
+    public PydioClient (String url){
+        if(!url.endsWith("/")){
+            url += "/";
+        }
+        server = (ServerNode) NodeFactory.createNode(Node.TYPE_SERVER);
+        server.init(url);
+        http = (SessionTransport) TransportFactory.getInstance(Transport.MODE_SESSION, server);
+        localConfigs = new Properties();
+        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
     }
 
-
+    public void setCertificateTrustHelper(CertificateTrust.Helper h){
+        server.setCertificateTrustHelper(h);
+    }
     //*****************************************
     //         REMOTE ACTION METHODS
     //*****************************************
-
     /**
      * Authenticates the user
      * @return      true if the authentication succeeded. false if not
@@ -165,7 +182,6 @@ public class PydioClient {
 
         Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
         HttpResponse r = http.getResponse(action, params);
-
         try {
             SAXParserFactory
                     .newInstance()
@@ -385,9 +401,9 @@ public class PydioClient {
                 e.printStackTrace();
             }
         }
-        HttpContentBody cb = new HttpContentBody(source, name, Long.parseLong(server.getRemoteConfig(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
+        ContentBody cb = new ContentBody(source, name, Long.parseLong(server.getRemoteConfig(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
         if(progressListener != null) {
-            cb.setListener(new CountingMultipartRequestEntity.ProgressListener() {
+            cb.setListener(new ContentBody.ProgressListener() {
                 @Override
                 public void transferred(long num) throws IOException {
                     if (progressListener.onProgress(num)) {
@@ -450,9 +466,9 @@ public class PydioClient {
             }
         }
         Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
-        HttpContentBody cb = new HttpContentBody(source, name, length, Long.parseLong(server.getRemoteConfig(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
+        ContentBody cb = new ContentBody(source, name, length, Long.parseLong(server.getRemoteConfig(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
         if(progressListener != null) {
-            cb.setListener(new CountingMultipartRequestEntity.ProgressListener() {
+            cb.setListener(new ContentBody.ProgressListener() {
                 @Override
                 public void transferred(long num) throws IOException {
                     if (progressListener.onProgress(num)) {
@@ -515,9 +531,9 @@ public class PydioClient {
             }
         }
         Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
-        HttpContentBody cb = new HttpContentBody(source, name, Long.parseLong(server.getRemoteConfig(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
+        ContentBody cb = new ContentBody(source, name, Long.parseLong(server.getRemoteConfig(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
         if(progressListener != null) {
-            cb.setListener(new CountingMultipartRequestEntity.ProgressListener() {
+            cb.setListener(new ContentBody.ProgressListener() {
                 @Override
                 public void transferred(long num) throws IOException {
                     if (progressListener.onProgress(num)) {
@@ -558,7 +574,11 @@ public class PydioClient {
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
 
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_DOWNLOAD + Log.paramString(params) + "]");
-        InputStream stream = http.getResponseStream(Pydio.ACTION_DOWNLOAD, params);
+        HttpResponse response = http.getResponse(Pydio.ACTION_DOWNLOAD, params);
+
+        int contentLength = response.getContentLength();
+        InputStream stream = response.getEntity().getContent();
+
         if(responseStatus() != Pydio.OK) throw new IOException("failed to get stream");
 
 
@@ -566,15 +586,16 @@ public class PydioClient {
 		int read = 0, buffer_size = Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE;
 		byte[] buffer = new byte[buffer_size];
 
-		int i = 0;
         for(;;){
             try {
                 read = stream.read(buffer);
+
             } catch (IOException e){
                 throw  new IOException("R");
             }
 
             if(read == -1) break;
+            System.out.println(read);
             total_read += read;
             try {
                 target.write(buffer, 0, read);
@@ -586,8 +607,8 @@ public class PydioClient {
             if(progressListener != null){
                 progressListener.onProgress(total_read);
             }
-            i++;
         }
+
         try { stream.close(); }
         catch (IOException e){
             Log.error("PYDIO SDK : " + "[error=" + e.getMessage() + "]");
@@ -827,14 +848,7 @@ public class PydioClient {
         }
     }
 
-    /**
-     * Get the preview of a node
-     * @param tempWorkspace   the target workspace ID
-     * @param path Directory name
-     * @param force_redim A boolean when value is true ask a resized preview
-     * @param dim the preview dimension. Useless if force_redim is false
-     */
-    public InputStream previewData(String tempWorkspace, String path, boolean force_redim, int dim)throws IOException, UnexpectedResponseException{
+    public InputStream previewData(String tempWorkspace, String path)throws IOException, UnexpectedResponseException{
         Map<String, String> params = new HashMap<String , String>();
 
         if(tempWorkspace == null){
@@ -843,16 +857,18 @@ public class PydioClient {
 
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         params.put(Pydio.PARAM_FILE, path);
-        if(force_redim) {
-            params.put(Pydio.PARAM_GET_THUMB, "true");
-            params.put(Pydio.PARAM_DIMENSION, dim+"");
-        }
+        params.put(Pydio.PARAM_GET_THUMB, "true");
+        //params.put(Pydio.PARAM_DIMENSION, dim+"");
 
-        //Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_PREVIEW_DATA_PROXY + Log.paramString(params) + "]");
-        HttpResponse response = http.getResponse(Pydio.ACTION_PREVIEW_DATA_PROXY, params);
+        String action = path.endsWith(".pdf") ? Pydio.ACTION_IMAGICK_DATA_PROXY: Pydio.ACTION_PREVIEW_DATA_PROXY;
+
+        Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
+        HttpResponse response = http.getResponse(action, params);
+        //Log.info(HttpResponseParser.getString(response));
+
         if(response != null) {
-            Header h = response.getHeaders("Content-Type")[0];
-            if (!h.getValue().toLowerCase().contains("image")) {
+            String h = response.getHeaders("Content-Type").get(0);
+            if (!h.toLowerCase().contains("image")) {
                 /*System.err.println("PYDIO - SDK : " + "Preview Data content-type:" + h.getValue());
                 System.err.println("PYDIO - SDK : " + "Parameters are [path=" + path + ", " + Pydio.PARAM_GET_THUMB + "=" + String.valueOf(force_redim) + "," + Pydio.PARAM_DIMENSION + "=" + String.valueOf(dim) + "]");
                 String content = HttpResponseParser.getString(response);
@@ -866,10 +882,44 @@ public class PydioClient {
         return null;
     }
 
+    public void previewData(String tempWorkspace, String path, OutputStream out) throws IOException{
+        Map<String, String> params = new HashMap<String , String>();
+
+        if(tempWorkspace == null){
+            tempWorkspace = mWorkspace.getId();
+        }
+
+        params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
+        params.put(Pydio.PARAM_FILE, path);
+        params.put(Pydio.PARAM_GET_THUMB, "true");
+        //params.put(Pydio.PARAM_DIMENSION, dim+"");
+
+        String action = path.endsWith(".pdf") ? Pydio.ACTION_IMAGICK_DATA_PROXY: Pydio.ACTION_PREVIEW_DATA_PROXY;
+
+        Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
+        HttpResponse response = http.getResponse(action, params);
+        //Log.info(HttpResponseParser.getString(response));
+
+        if(response != null) {
+            String h = response.getHeaders("Content-Type").get(0);
+            if (h.toLowerCase().contains("image")) {
+                InputStream in = response.getEntity().getContent();
+                byte[] buffer = new byte[1024];
+                int read;
+                while(-1 != (read = in.read(buffer))){
+                    out.write(buffer, 0 , read);
+                }
+                try{in.close();}catch (IOException e){}
+                try{out.close();}catch (IOException e){}
+            }
+        }
+    }
+
     public String listUsers()throws IOException{
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_LIST_USERS + "]");
         return http.getStringContent(Pydio.ACTION_LIST_USERS, null);
     }
+
     public String createUser(String login, String password)throws IOException{
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_CREATE_USER + "]");
         return http.getStringContent(Pydio.ACTION_CREATE_USER + login + "/" + password, null);
@@ -903,18 +953,14 @@ public class PydioClient {
         try {
             Log.info("PYDIO SDK : " + "[action=" + action + Log.paramString(params) + "]");
             HttpResponse r = http.getResponse(action, params);
-            Header[] h = r.getHeaders("Content-Type");
+            String h = r.getHeaders("Content-Type").get(0);
 
-            if(!h[0].getValue().toLowerCase().contains("application/json")){
+            if(!h.toLowerCase().contains("application/json")){
                 throw new UnexpectedResponseException(HttpResponseParser.getString(r));
             }
 
-            String charset = EntityUtils.getContentCharSet(r.getEntity());
-            if(charset == null){
-                charset = "UTF-8";
-            }
             InputStream is = r.getEntity().getContent();
-            Scanner sc = new Scanner(is, charset);
+            Scanner sc = new Scanner(is, "UTF-8");
             sc.useDelimiter("\\n");
             String line = sc.nextLine();
 
@@ -923,6 +969,7 @@ public class PydioClient {
                 while(!line.endsWith("}}")){
                     line += sc.nextLine();
                 }
+
                 JSONObject json =  new JSONObject(line);
 
                 change[Pydio.CHANGE_INDEX_SEQ] = json.getString(Pydio.CHANGE_SEQ);
@@ -974,19 +1021,15 @@ public class PydioClient {
         HttpResponse r = http.getResponse(action, params);
         if(r == null) return null;
 
-        Header[] h = r.getHeaders("Content-Type");
-        if(!"application/json".equals(h[0].getValue().toLowerCase())){
+        String h = r.getHeaders("Content-Type").get(0);
+        if(!"application/json".equals(h.toLowerCase())){
             throw new UnexpectedResponseException(HttpResponseParser.getString(r));
         }
 
         try {
-            String charset = EntityUtils.getContentCharSet(r.getEntity());
-            if(charset == null){
-                charset = "utf-8";
-            }
             InputStream is = r.getEntity().getContent();
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(is, charset));
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, "utf-8"));
             StringBuilder sb = new StringBuilder();
             String line;
             while ((line = br.readLine()) != null) {
@@ -1122,15 +1165,6 @@ public class PydioClient {
             parser.parse(in, new TreeNodeSaxHandler(handler));
         } catch (SAXException e) {} catch (ParserConfigurationException e) {}
     }
-
-    /**
-     * @return A ByteArrayOutputStream that contains the captcha bytes
-     */
-    public ByteArrayOutputStream captchaData() {
-        return http.getCaptcha();
-    }
-
-
 
     private void fillParams(Map<String, String> params, String[] paths) {
         if(paths != null){

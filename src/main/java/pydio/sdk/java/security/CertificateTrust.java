@@ -6,31 +6,39 @@ import java.security.cert.X509Certificate;
  * Created by jabar on 29/03/2016.
  */
 public class CertificateTrust {
+
     public interface Helper {
         boolean isServerTrusted(X509Certificate[] chain);
+        X509Certificate[] getAcceptedIssuers();
     }
-    private static Helper helper;
 
-    public static void setHelper(Helper h){
-        helper = h;
-    }
-    public static void revokeAll(){
-        helper = new Helper() {
+
+    public static Helper revokeAllHelper(){
+        return new Helper() {
             @Override
             public boolean isServerTrusted(X509Certificate[] chain) {
                 return false;
             }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
         };
     }
-    public static void acceptAll(){
-        helper = new Helper() {
+
+    public static Helper acceptAllHelper(){
+        return new Helper() {
             @Override
             public boolean isServerTrusted(X509Certificate[] chain) {
                 return true;
             }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
         };
     }
-    public static Helper helper(){
-        return helper;
-    }
+
 }

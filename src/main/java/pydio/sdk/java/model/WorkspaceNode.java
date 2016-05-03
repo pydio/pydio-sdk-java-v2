@@ -134,8 +134,15 @@ public class WorkspaceNode implements Node{
     public String getProperty(String key) {
         return properties.getProperty(key, "");
     }
+	@Override
+	public void setProperty(String key, String value) {
+		if(properties == null){
+			properties = new Properties();
+		}
+		properties.setProperty(key, value);
+	}
 
-    public int type() {
+	public int type() {
 		return Node.TYPE_WORKSPACE;
 	}
 

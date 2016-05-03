@@ -107,6 +107,7 @@ public class Pydio {
     public final static String ACTION_CREATE_USER                       = "user_create_user";
     public final static String ACTION_CONF_PREFIX                       = "ajxp_conf/";
     public final static String ACTION_PREVIEW_DATA_PROXY                = "preview_data_proxy";
+    public final static String ACTION_IMAGICK_DATA_PROXY                = "imagick_data_proxy";
     public final static String ACTION_STATS                             = "stat";
     public final static String ACTION_CHANGES                           = "changes";
     public final static String ACTION_LOAD_SHARED_ELEMENT_DATA          = "load_shared_element_data";
@@ -142,6 +143,8 @@ public class Pydio {
     public final static String NODE_PROPERTY_ICON 				        = "icon";
     public final static String NODE_PROPERTY_IS_FILE 			        = "is_file";
     public final static String NODE_PROPERTY_IS_IMAGE 			        = "is_image";
+    public final static String NODE_PROPERTY_SHARE_LINK 			    = "share_link";
+    public final static String NODE_PROPERTY_SHARE_LINK_EXPIRED 		= "share_link_expired";
     public final static String NODE_PROPERTY_META_FIELDS 		        = "meta_fields";
     public final static String NODE_PROPERTY_META_LABELS 		        = "meta_labels";
     public final static String NODE_PROPERTY_META_TYPES 		        = "meta_types";
