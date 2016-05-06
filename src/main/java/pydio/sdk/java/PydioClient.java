@@ -32,6 +32,7 @@ import javax.xml.xpath.XPathFactory;
 import pydio.sdk.java.http.ContentBody;
 import pydio.sdk.java.http.HttpResponse;
 import pydio.sdk.java.security.CertificateTrust;
+import pydio.sdk.java.security.Passwords;
 import pydio.sdk.java.utils.HttpResponseParser;
 import pydio.sdk.java.utils.ChangeProcessor;
 import pydio.sdk.java.model.Node;
@@ -40,6 +41,7 @@ import pydio.sdk.java.utils.NodeHandler;
 import pydio.sdk.java.model.PydioMessage;
 import pydio.sdk.java.model.ServerNode;
 import pydio.sdk.java.model.FileNode;
+import pydio.sdk.java.utils.PasswordLoader;
 import pydio.sdk.java.utils.UnexpectedResponseException;
 import pydio.sdk.java.model.WorkspaceNode;
 import pydio.sdk.java.transport.SessionTransport;
@@ -85,7 +87,6 @@ public class PydioClient {
         localConfigs = new Properties();
         localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
     }
-
     public PydioClient(String url, int mode, CertificateTrust.Helper h){
         server = (ServerNode) NodeFactory.createNode(Node.TYPE_SERVER);
         server.init(url, h);
@@ -107,14 +108,22 @@ public class PydioClient {
     public PydioClient(String url, int mode, final String login, final String password){
         this(url, mode);
     }
-
     public PydioClient(String url, final String login, final String password, CertificateTrust.Helper h){
         this(url, h);
     }
-    public PydioClient(String url, final String login, final String password){
+    public PydioClient(final String url, final String login, final String password){
         this(url);
+        server.setUser(login);
+        Passwords.Loader = new PasswordLoader() {
+            @Override
+            public String loadPassword(String url, String user) {
+                if(server.url().equals(url) && server.user().equals(user)) {
+                    return password;
+                }
+                return null;
+            }
+        };
     }
-
     public PydioClient (String url, CertificateTrust.Helper h){
         if(!url.endsWith("/")){
             url += "/";
@@ -475,7 +484,6 @@ public class PydioClient {
                         throw new IOException("");
                     }
                 }
-
                 @Override
                 public void partTransferred(int part, int total) throws IOException {
                     if (total == 0) total = 1;
@@ -589,13 +597,10 @@ public class PydioClient {
         for(;;){
             try {
                 read = stream.read(buffer);
-
             } catch (IOException e){
                 throw  new IOException("R");
             }
-
             if(read == -1) break;
-            System.out.println(read);
             total_read += read;
             try {
                 target.write(buffer, 0, read);
@@ -924,7 +929,6 @@ public class PydioClient {
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_CREATE_USER + "]");
         return http.getStringContent(Pydio.ACTION_CREATE_USER + login + "/" + password, null);
     }
-
     /**
      * Gets all the changes that occurred in a directory after a sequence number.
      * @param tempWorkspace   the target workspace ID
@@ -993,7 +997,6 @@ public class PydioClient {
         } catch (Exception e) {}
         return Math.max(seq, result_seq);
     }
-
     /**
      * Gets stats of a node
      * @param tempWorkspace   the target workspace ID
@@ -1043,7 +1046,6 @@ public class PydioClient {
             throw  new IOException(text);
         }
     }
-
     /**
      * Gets share info of a node
      * @param tempWorkspace   the target workspace ID
@@ -1067,7 +1069,6 @@ public class PydioClient {
         } catch (Exception e) {}
         return null;
     }
-
     /**
      * Gets data relative to the user
      * @param user The name of the user
