@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
+
 /**
  * Created by pydio on 06/02/2015.
  */
@@ -71,7 +72,6 @@ public class PartialRepeatableEntity implements HttpEntity {
                 byte b = buffer.get();
                 return b;
             }
-
             return originalStream.read();
         }
 
@@ -104,6 +104,12 @@ public class PartialRepeatableEntity implements HttpEntity {
         this.customStream = new ContentStream(entity.getContent(), length);
         mEntity = entity;
     }
+
+    public PartialRepeatableEntity(InputStream in, int length){
+        this.customStream = new ContentStream(in, length);
+        mEntity = null;
+    }
+
     @Override
     public boolean isRepeatable() {
         return false;
@@ -129,6 +135,10 @@ public class PartialRepeatableEntity implements HttpEntity {
         return customStream;
     }
     @Override
+    public int writeTo(OutputStream outstream, long len) throws IOException {
+        return 0;
+    }
+
     public void writeTo(OutputStream outstream) throws IOException {
         if(mConsumed) throw  new IOException("Entity consumed");
 

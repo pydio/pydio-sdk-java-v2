@@ -2,6 +2,7 @@ package pydio.sdk.java.http;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.Iterator;
 import java.util.List;
@@ -13,23 +14,23 @@ import java.util.Set;
  */
 public class HttpResponse {
 
-    HttpURLConnection mConnection;
     HttpEntity mEntity;
+    int mCode;
+    Map<String, List<String>> mHeaders;
 
-    public HttpResponse(HttpURLConnection   con){
-        mConnection = con;
-        //HttpClient.responseHeaders(con);
+    public HttpResponse(int code, Map<String, List<String>> headers, final InputStream in){
+        mHeaders = headers;
+        mEntity = new PartialRepeatableEntity(in, 4096);
+        mCode = code;
+    }
+
+    public HttpResponse(HttpURLConnection   con) throws IOException {
+        mCode = con.getResponseCode();
+        mHeaders = con.getHeaderFields();
+        mEntity = new PartialRepeatableEntity(new HttpResponseEntity(con), 4096);
     }
 
     public HttpEntity getEntity() throws IOException {
-        if(!mConnection.getDoInput()){
-            mConnection.setDoInput(true);
-        }
-
-        if(mEntity == null) {
-            mEntity = new ContentBody(mConnection.getInputStream(), "", mConnection.getContentLength(), Long.MAX_VALUE);
-        }
-
         return mEntity;
     }
 
@@ -38,18 +39,10 @@ public class HttpResponse {
     }
 
     public int code() throws IOException {
-        return mConnection.getResponseCode();
-    }
-
-    public int getContentLength(){
-        return mConnection.getContentLength();
-    }
-
-    public String getContentEncoding(){
-        return mConnection.getContentEncoding();
+        return mCode;
     }
 
     public List<String> getHeaders(String key){
-        return mConnection.getHeaderFields().get(key);
+        return mHeaders.get(key);
     }
 }

@@ -43,13 +43,11 @@ import pydio.sdk.java.utils.ServerResolution;
  *
  */
 public class SessionTransport implements Transport{
-
     public String mIndex = "index.php?";
     public String mSecureToken = null;
 
     int mLastRequestStatus = Pydio.OK;
     boolean mAttemptedLogin, mAccessRefused, mLoggedIn = false;
-
     HttpClient mHttpClient;
 
     String mSeed;
@@ -166,7 +164,20 @@ public class SessionTransport implements Transport{
         }
 
         String seed = mSeed;
-        mSeed = null;
+        seed = seed.trim();
+
+        if(seed.contains("\"seed\":-1")) {
+            mSeed = "-1";
+        }
+
+        if(seed.contains("\"captcha\": true") || seed.contains("\"captcha\":true")){
+            mLastRequestStatus = Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA;
+            mServerNode.setLastRequestResponseCode(Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA);
+        }
+
+        if("-1".equals(mSeed)){
+            return;
+        }
 
         boolean seemsToBePydio = false;
         List<String> headers = resp.getHeaders("Content-Type");
@@ -180,20 +191,12 @@ public class SessionTransport implements Transport{
         }
 
         if(seed == null || !seemsToBePydio){
+            System.out.println(seed);
             mLastRequestStatus = Pydio.ERROR_NOT_A_SERVER;
             throw new IOException();
         }
+        mSeed = "-1";
 
-        seed = seed.trim();
-
-        if(seed.contains("\"seed\":-1")) {
-            mSeed = "-1";
-        }
-
-        if(seed.contains("\"captcha\": true") || seed.contains("\"captcha\":true")){
-            mLastRequestStatus = Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA;
-            mServerNode.setLastRequestResponseCode(Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA);
-        }
     }
 
     private void loadCaptcha() throws IOException {
@@ -225,10 +228,9 @@ public class SessionTransport implements Transport{
     }
 
     private boolean isAuthenticationRequested(HttpResponse response) throws IOException {
-        HttpEntity ent = response.getEntity();
+        PartialRepeatableEntity entity = (PartialRepeatableEntity) response.getEntity();
         final boolean[] is_required = {false};
         try {
-            PartialRepeatableEntity entity = new PartialRepeatableEntity(ent, 4096);
             response.setEntity(entity);
             PartialRepeatableEntity.ContentStream stream = (PartialRepeatableEntity.ContentStream) entity.getContent();
             byte[] buffer = new byte[4096];
@@ -316,8 +318,6 @@ public class SessionTransport implements Transport{
         return is_required[0];
     }
 
-
-
     private HttpResponse request(URI uri, Map<String, String> params, ContentBody contentBody) throws IOException {
         if(mHttpClient == null){
             mHttpClient = new HttpClient(mServerNode.SSLUnverified());
@@ -336,7 +336,6 @@ public class SessionTransport implements Transport{
         for(;;){
             try {
                 response = mHttpClient.send(uri.toString(), params, contentBody);
-
             } catch (IOException e){
                 e.printStackTrace();
                 if(e instanceof SSLException){
@@ -421,10 +420,6 @@ public class SessionTransport implements Transport{
         mServerNode.setLastRequestResponseCode(mLastRequestStatus);
         return response;
     }
-
-
-
-
     @Override
     public HttpResponse getResponse(String action, Map<String, String> params) throws IOException {
         mAccessRefused = false;
@@ -485,8 +480,12 @@ public class SessionTransport implements Transport{
         mAttemptedLogin = false;
         mAction = action;
         mLastRequestStatus = Pydio.OK;
-        HttpResponse response = request(getActionURI(action), params, contentBody);
-        return HttpResponseParser.getXML(response);
+        try {
+            HttpResponse response = request(getActionURI(action), params, contentBody);
+            return HttpResponseParser.getXML(response);
+        }catch (Exception e){
+        }
+        return null;
     }
     @Override
     public void setServer(ServerNode server){
