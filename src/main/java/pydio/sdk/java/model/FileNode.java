@@ -69,7 +69,7 @@ public class FileNode implements Node{
 	}
 
 	public boolean isImage(){
-		return Boolean.parseBoolean(properties.getProperty(Pydio.NODE_PROPERTY_IS_IMAGE));
+		return Boolean.parseBoolean(properties.getProperty(Pydio.NODE_PROPERTY_IS_IMAGE)) || "1".equals(properties.getProperty(Pydio.NODE_PROPERTY_IS_IMAGE));
 	}
 
 	public boolean isFile(){
