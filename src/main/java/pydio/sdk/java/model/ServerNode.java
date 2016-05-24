@@ -4,9 +4,7 @@ package pydio.sdk.java.model;
 
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.OutputStream;
 import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
@@ -37,7 +35,7 @@ public class ServerNode implements Node{
 	private Properties mProperties = null;
 	private byte[] mChallengeData;
 	private X509Certificate[] mLastUnverifiedCertificateChain;
-	private CertificateTrust.Helper mTrustHelper;
+	private CertificateTrust.Helper mGivenTrustHelper, mTrustHelper;
 	private String mCaptcha;
 	private boolean mRememberPassword;
 	private int mLastResponseCode = Pydio.OK;
@@ -80,6 +78,24 @@ public class ServerNode implements Node{
 
 
 	public CertificateTrust.Helper getTrustHelper(){
+		if(mTrustHelper == null) {
+			return mTrustHelper = new CertificateTrust.Helper() {
+				@Override
+				public boolean isServerTrusted(X509Certificate[] chain) {
+					mLastUnverifiedCertificateChain = chain;
+					return mGivenTrustHelper != null && mGivenTrustHelper.isServerTrusted(chain);
+				}
+
+				@Override
+				public X509Certificate[] getAcceptedIssuers() {
+					try {
+						return mGivenTrustHelper.getAcceptedIssuers();
+					}catch (NullPointerException e){
+						return new X509Certificate[0];
+					}
+				}
+			};
+		}
 		return mTrustHelper;
 	}
 
@@ -98,14 +114,14 @@ public class ServerNode implements Node{
 
 	public ServerNode init(String url, CertificateTrust.Helper helper){
 		this.init(url);
-		mTrustHelper = helper;
+		mGivenTrustHelper = helper;
 		return this;
 	}
 
 	public ServerNode init(String url, String user, CertificateTrust.Helper helper){
 		this.init(url);
 		mUser = user;
-		mTrustHelper = helper;
+		mGivenTrustHelper = helper;
 		return this;
 	}
 
@@ -219,7 +235,7 @@ public class ServerNode implements Node{
 	}
 
 	public ServerNode setCertificateTrustHelper(CertificateTrust.Helper helper){
-		mTrustHelper = helper;
+		mGivenTrustHelper = helper;
 		return this;
 	}
 
