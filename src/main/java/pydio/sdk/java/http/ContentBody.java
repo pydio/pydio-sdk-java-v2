@@ -91,7 +91,11 @@ public class ContentBody implements HttpEntity{
     }
     @Override
     public String getContentType() {
-        return MIME;
+        String contentType = URLConnection.guessContentTypeFromName(getFilename());
+        if(contentType == null){
+            return MIME;
+        }
+        return contentType;
     }
     @Override
     public String getContentEncoding() {
@@ -173,9 +177,6 @@ public class ContentBody implements HttpEntity{
             mInStream.close();
             mChunkIndex++;
         }
-
-        System.out.println(mChunkIndex + "/" + mChunkCount + " Sent");
-        System.out.println("Total sent size : " + totalRead + " bytes");
         if(progressListener != null){
             progressListener.partTransferred(mChunkIndex, mChunkCount);
         }
