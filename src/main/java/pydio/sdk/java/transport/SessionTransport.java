@@ -123,9 +123,11 @@ public class SessionTransport implements Transport{
                         Log.info("PYDIO SDK : " + "[ERROR CAPCHA REQUESTED]");
                         mLastRequestStatus = Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA;
                         mServerNode.setLastRequestResponseCode(Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA);
+                        int status = Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA;
                         if(captcha_code != null){
                             loadCaptcha();
                         }
+                        mLastRequestStatus = status;
                     } else {
                         Log.info("PYDIO SDK : " + "[LOGIN FAILED : " + result + "]");
                     }
@@ -154,76 +156,89 @@ public class SessionTransport implements Transport{
     }
 
     private void getSeed() throws IOException{
-        Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_GET_SEED + "]");
-        mAction = Pydio.ACTION_GET_SEED;
-        HttpResponse resp = request(getActionURI(Pydio.ACTION_GET_SEED), null, null);
-        mSeed = HttpResponseParser.getString(resp);
+        int status = mLastRequestStatus;
+        try {
+            Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_GET_SEED + "]");
+            mAction = Pydio.ACTION_GET_SEED;
+            HttpResponse resp = request(getActionURI(Pydio.ACTION_GET_SEED), null, null);
+            mSeed = HttpResponseParser.getString(resp);
 
-        if("-1".equals(mSeed)){
-            return;
-        }
+            if ("-1".equals(mSeed)) {
+                return;
+            }
 
-        String seed = mSeed;
-        seed = seed.trim();
+            String seed = mSeed;
+            seed = seed.trim();
 
-        if(seed.contains("\"seed\":-1")) {
+            if (seed.contains("\"seed\":-1")) {
+                mSeed = "-1";
+            }
+
+            if (seed.contains("\"captcha\": true") || seed.contains("\"captcha\":true")) {
+                mLastRequestStatus = Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA;
+                mServerNode.setLastRequestResponseCode(Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA);
+            }
+
+            if ("-1".equals(mSeed)) {
+                return;
+            }
+
+            boolean seemsToBePydio = false;
+            List<String> headers = resp.getHeaders("Content-Type");
+
+            for (int i = 0; i < headers.size(); i++) {
+                String h = headers.get(i);
+                seemsToBePydio |= (h.toLowerCase().contains("text/plain"));
+                seemsToBePydio |= (h.toLowerCase().contains("text/xml"));
+                seemsToBePydio |= (h.toLowerCase().contains("text/json"));
+                seemsToBePydio |= (h.toLowerCase().contains("application/json"));
+            }
+
+            if (seed == null || !seemsToBePydio) {
+                System.out.println(seed);
+                mLastRequestStatus = Pydio.ERROR_NOT_A_SERVER;
+                throw new IOException();
+            }
             mSeed = "-1";
+            mLastRequestStatus = status;
+        }catch (IOException e){
+            mLastRequestStatus = status;
+            throw e;
         }
-
-        if(seed.contains("\"captcha\": true") || seed.contains("\"captcha\":true")){
-            mLastRequestStatus = Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA;
-            mServerNode.setLastRequestResponseCode(Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA);
-        }
-
-        if("-1".equals(mSeed)){
-            return;
-        }
-
-        boolean seemsToBePydio = false;
-        List<String> headers = resp.getHeaders("Content-Type");
-
-        for(int i = 0; i < headers.size(); i++){
-            String h = headers.get(i);
-            seemsToBePydio |= (h.toLowerCase().contains("text/plain"));
-            seemsToBePydio |= (h.toLowerCase().contains("text/xml"));
-            seemsToBePydio |= (h.toLowerCase().contains("text/json"));
-            seemsToBePydio |= (h.toLowerCase().contains("application/json"));
-        }
-
-        if(seed == null || !seemsToBePydio){
-            System.out.println(seed);
-            mLastRequestStatus = Pydio.ERROR_NOT_A_SERVER;
-            throw new IOException();
-        }
-        mSeed = "-1";
 
     }
 
-    private void loadCaptcha() throws IOException {
-        boolean image = false;
-        Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_CAPTCHA + "]");
-        HttpResponse resp = getResponse(Pydio.ACTION_CAPTCHA, null);
-        List<String> heads = resp.getHeaders("Content-type");
-        for (int i = 0; i < heads.size(); i++) {
-            if (heads.get(i).contains("image/png")) {
-                image = true;
-                break;
-            }
-        }
-        if (image){
-            HttpEntity entity = resp.getEntity();
-            if(entity != null){
-                byte[] buffer = new byte[Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE];
-                int read;
-                InputStream in = entity.getContent();
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                while((read = in.read(buffer, 0, buffer.length)) != -1){
-                    out.write(buffer, 0, read);
+    public void loadCaptcha() throws IOException {
+        int status = mLastRequestStatus;
+        try {
+            boolean image = false;
+            Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_CAPTCHA + "]");
+            HttpResponse resp = getResponse(Pydio.ACTION_CAPTCHA, null);
+            List<String> heads = resp.getHeaders("Content-type");
+            for (int i = 0; i < heads.size(); i++) {
+                if (heads.get(i).contains("image/png")) {
+                    image = true;
+                    break;
                 }
-                mServerNode.setChallengeData(out.toByteArray());
-                out.close();
-                in.close();
             }
+            if (image) {
+                HttpEntity entity = resp.getEntity();
+                if (entity != null) {
+                    byte[] buffer = new byte[Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE];
+                    int read;
+                    InputStream in = entity.getContent();
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    while ((read = in.read(buffer, 0, buffer.length)) != -1) {
+                        out.write(buffer, 0, read);
+                    }
+                    mServerNode.setChallengeData(out.toByteArray());
+                    out.close();
+                    in.close();
+                }
+            }
+        }catch (Exception e){
+            mLastRequestStatus = status;
+            throw e;
         }
     }
 
@@ -344,7 +359,6 @@ public class SessionTransport implements Transport{
                         mServerNode.setLastRequestResponseCode(Pydio.ERROR_UNVERIFIED_CERTIFICATE);
                         throw e;
                     }
-                    System.out.println("Cannot verify the server certificate. Turning into custom SSL connection");
                     mHttpClient.enableUnverifiedMode(mServerNode.setSSLUnverified(true).getTrustHelper());
                     continue;
                 }
@@ -394,7 +408,9 @@ public class SessionTransport implements Transport{
                     getSeed();
 
                     if(mLastRequestStatus == Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA){
+                        int status = mLastRequestStatus;
                         loadCaptcha();
+                        mLastRequestStatus = status;
                         throw new IOException();
                     }
 
