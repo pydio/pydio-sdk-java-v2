@@ -26,10 +26,7 @@ import java.util.Map;
 import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SNIHostName;
-import javax.net.ssl.SNIServerName;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
@@ -67,6 +64,7 @@ public class HttpClient {
     public static final int HTTP_DATA_BUFFER_MAX_SIZE = 100*1024*1024;
 
     public HttpClient(CertificateTrust.Helper helper){
+        mCertificateTrustHelper = helper;
     }
 
     public HttpClient(boolean b) {
@@ -104,18 +102,7 @@ public class HttpClient {
             return rawSend(URI.create(url), params, body);
         }
 
-
-        /*if(body != null){
-            Iterator<Map.Entry<String, String>> it = params.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String, String> entry = it.next();
-                String name = entry.getKey(), value = entry.getValue();
-                url += ("&" + name + "=" + URLEncoder.encode(value, CHARSET_UTF8));
-            }
-        }*/
-
         HttpURLConnection con;
-        System.out.println(url);
         if(mSSLUnverifiedMode){
             HttpsURLConnection c = (HttpsURLConnection) new URL(url).openConnection();
             c.setSSLSocketFactory(sslContext().getSocketFactory());
@@ -147,15 +134,8 @@ public class HttpClient {
         con.setRequestProperty("User-Agent", "Pydio Android Client");
 
         if(body != null){
-
-
-
-            int totalLength = 0;
-
             boundary = "----" + System.currentTimeMillis();
             con.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary );
-            //con.setRequestProperty("Content-type", body.getContentType());
-
 
             ByteArrayOutputStream partHeaderBuffer = new ByteArrayOutputStream();
             Iterator<Map.Entry<String, String>> it = params.entrySet().iterator();
@@ -168,19 +148,18 @@ public class HttpClient {
                 String name = entry.getKey(), value = entry.getValue();
                 partHeaderBuffer.write(("Content-Disposition: form-data; name=\"" + URLEncoder.encode(name, CHARSET_UTF8) + "\"").getBytes());
                 partHeaderBuffer.write(LINE_FEED.getBytes());
-                partHeaderBuffer.write(("Content-Type: text/plain").getBytes());
+                partHeaderBuffer.write(("Content-Type: text/plain; charset="+CHARSET_UTF8).getBytes());
                 partHeaderBuffer.write(DOUBLE_LINE_FEED.getBytes());
-                partHeaderBuffer.write(value.getBytes());
+                partHeaderBuffer.write(value.getBytes(CHARSET_UTF8));
                 partHeaderBuffer.write(LINE_FEED.getBytes());
                 partHeaderBuffer.write(("--" + boundary).getBytes());
                 partHeaderBuffer.write(LINE_FEED.getBytes());
             }
 
-            /*partHeaderBuffer.write(boundary.getBytes());
-            partHeaderBuffer.write(LINE_FEED.getBytes());*/
             partHeaderBuffer.write(("Content-Disposition: form-data; name=\"userfile_0\"; filename=" + URLEncoder.encode(body.getFilename(), CHARSET_UTF8)).getBytes());
             partHeaderBuffer.write(LINE_FEED.getBytes());
-            partHeaderBuffer.write(("Content-Type: " + URLConnection.guessContentTypeFromName(body.getFilename())).getBytes());
+            partHeaderBuffer.write(("Content-Type: " + body.getContentType()).getBytes());
+
             partHeaderBuffer.write(DOUBLE_LINE_FEED.getBytes());
             byte[] partHeaderBytes = partHeaderBuffer.toByteArray();
             byte[] lastBoundaryBytes = (LINE_FEED + "--" + boundary + "--" + LINE_FEED).getBytes();
@@ -188,7 +167,6 @@ public class HttpClient {
             int rest = partHeaderBytes.length + lastBoundaryBytes.length;
             int contentSupposedBodyLength = (int) (body.maxChunkSize() - rest);
             int contentBodyActualLength = (int) Math.min(contentSupposedBodyLength, body.available());
-            System.out.println("BODY CONTENT LENGTH : " + (contentBodyActualLength + rest) );
 
             con.setFixedLengthStreamingMode(contentBodyActualLength + rest);
 
@@ -209,14 +187,17 @@ public class HttpClient {
 
             int code = response.code();
             if(code == 200 && !body.allChunksWritten()){
-                NodeDiff diff = NodeDiff.create(HttpResponseParser.getXML(response));
-                if(diff.added != null){
-                    Node node = diff.added.get(0);
-                    String label = node.label();
-                    if(!label.equals(body.getFilename())){
-                        body.setFilename(label);
+                try {
+                    NodeDiff diff = NodeDiff.create(HttpResponseParser.getXML(response));
+                    if (diff.added != null) {
+                        Node node = diff.added.get(0);
+                        String label = node.label();
+                        if (!label.equals(body.getFilename())) {
+                            body.setFilename(label);
+                        }
                     }
-                }
+                }catch (NullPointerException e){}
+
                 params.put(Pydio.PARAM_APPEND_TO_URLENCODED_PART, body.getFilename());
                 send(url, params, body);
             }
@@ -275,12 +256,12 @@ public class HttpClient {
             }
 
             SSLSocket sslSocket = (SSLSocket)socket;
-            SNIHostName serverName = new SNIHostName(host);
+            /*SNIHostName serverName = new SNIHostName(host);
             List<SNIServerName> serverNames = new ArrayList<>(1);
             serverNames.add(serverName);
             SSLParameters p = sslSocket.getSSLParameters();
             p.setServerNames(serverNames);
-            sslSocket.setSSLParameters(p);
+            sslSocket.setSSLParameters(p);*/
             sslSocket.startHandshake();
             //verify the certificate chains
             X509Certificate[] certChain = sslSocket.getSession().getPeerCertificateChain();
