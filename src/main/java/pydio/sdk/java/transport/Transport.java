@@ -5,6 +5,7 @@ import org.w3c.dom.Document;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Map;
 
 import pydio.sdk.java.http.ContentBody;
@@ -14,7 +15,7 @@ import pydio.sdk.java.model.ServerNode;
 /**
  * Created by pydio on 13/02/2015.
  */
-public interface Transport {
+public interface Transport extends Serializable{
 
     public static int MODE_SESSION = 1;
     public static int MODE_RESTFUL = 2;
