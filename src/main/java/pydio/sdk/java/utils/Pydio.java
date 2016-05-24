@@ -70,7 +70,6 @@ public class Pydio {
 
 
 
-    public static String SHARE_ELEMENT_TYPE_FILE                        = "file";
 
 
 	public final static String ACTION_LIST 						        = "ls";
@@ -115,8 +114,9 @@ public class Pydio {
 
 
 
+    public final static String PARAM_SHARE_ELEMENT_TYPE_FILE            = "file";
     public final static String PARAM_SHARED_ELEMENT_TYPE_MINISITE       = "minisite";
-    public final static String PARAM_SHARED_ELEMENT_TYPE_WORKSPACE      = "workspace";
+    public final static String PARAM_SHARED_ELEMENT_TYPE_WORKSPACE      = "repository";
 
 
 
@@ -144,6 +144,7 @@ public class Pydio {
     public final static String NODE_PROPERTY_IS_FILE 			        = "is_file";
     public final static String NODE_PROPERTY_IS_IMAGE 			        = "is_image";
     public final static String NODE_PROPERTY_SHARE_LINK 			    = "share_link";
+    public final static String NODE_PROPERTY_SHARE_LINK_DESCRIPTION     = "share_link_description";
     public final static String NODE_PROPERTY_SHARE_LINK_EXPIRED 		= "share_link_expired";
     public final static String NODE_PROPERTY_META_FIELDS 		        = "meta_fields";
     public final static String NODE_PROPERTY_META_LABELS 		        = "meta_labels";
@@ -181,6 +182,7 @@ public class Pydio {
     public final static String WORKSPACE_ACCESS_TYPE_HOME               = "ajxp_home";
     public final static String WORKSPACE_ACCESS_TYPE_ADMIN               = "ajxp_admin";
     public final static String WORKSPACE_ACCESS_TYPE_FS                 = "fs";
+    public final static String WORKSPACE_ACCESS_TYPE_INBOX              = "inbox";
 
 
     public final static String WORKSPACE_LABEL                          = "label";
