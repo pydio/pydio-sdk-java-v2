@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.HashMap;
@@ -59,8 +60,8 @@ import pydio.sdk.java.utils.WorkspaceNodeSaxHandler;
  * @author pydio
  *
  */
-public class PydioClient {
-
+public class PydioClient implements Serializable{
+    
 	public SessionTransport http;
     public ServerNode server;
     protected WorkspaceNode mWorkspace;
@@ -584,7 +585,6 @@ public class PydioClient {
         Log.info("PYDIO SDK : " + "[action=" + Pydio.ACTION_DOWNLOAD + Log.paramString(params) + "]");
         HttpResponse response = http.getResponse(Pydio.ACTION_DOWNLOAD, params);
 
-        int contentLength = response.getContentLength();
         InputStream stream = response.getEntity().getContent();
 
         if(responseStatus() != Pydio.OK) throw new IOException("failed to get stream");
@@ -1006,7 +1006,6 @@ public class PydioClient {
      */
     public JSONObject stats(String tempWorkspace, String path, boolean with_hash) throws UnexpectedResponseException, IOException {
         String text = "";
-
         Map<String, String> params = new HashMap<String , String>();
 
         if(tempWorkspace == null){
@@ -1041,7 +1040,6 @@ public class PydioClient {
             if(sb.length() == 0) return null;
             text  = sb.toString();
             return new JSONObject(text);
-
         }catch (ParseException e) {
             throw  new IOException(text);
         }
@@ -1196,4 +1194,7 @@ public class PydioClient {
         return http.requestStatus();
     }
 
+    public void getCaptcha() throws IOException {
+        http.loadCaptcha();
+    }
 }
