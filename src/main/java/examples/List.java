@@ -7,7 +7,6 @@ import java.util.Scanner;
 import pydio.sdk.java.PydioClient;
 import pydio.sdk.java.model.Node;
 import pydio.sdk.java.model.PydioMessage;
-import pydio.sdk.java.utils.AuthenticationHelper;
 import pydio.sdk.java.utils.MessageHandler;
 import pydio.sdk.java.utils.NodeHandler;
 
@@ -21,7 +20,7 @@ public class List {
 
         //Setting up the client
         PydioClient client = new PydioClient("http://54.154.218.27");
-        client.setAuthenticationHelper(new AuthenticationHelper() {
+        /*client.setAuthenticationHelper(new AuthenticationHelper() {
             public String[] getCredentials() {
                 String[] credentials = new String[2];
                 System.out.println("AUTHENTICATION:");
@@ -31,7 +30,7 @@ public class List {
                 credentials[1] = new Scanner(System.in).nextLine();
                 return credentials;
             }
-        });
+        });*/
         // the ID of the workspace you work on
         String workspaceID = "1";
 

@@ -18,10 +18,9 @@ import pydio.sdk.java.utils.Pydio;
  * Created by jabar on 05/04/2016.
  */
 public class SelfSignedCertificate {
-
     public static void main(String[] args) throws IOException{
 
-        PydioClient client = new PydioClient("https://192.168.0.91", "pydio", "pydiopassword");
+        /*PydioClient client = new PydioClient("https://192.168.0.91", "pydio", "pydiopassword");
         final X509Certificate[] acceptedCertificate = new X509Certificate[1];
 
         CertificateTrust.setHelper(new CertificateTrust.Helper(){
@@ -76,6 +75,6 @@ public class SelfSignedCertificate {
                     return;
                 }
             }
-        }
+        }*/
     }
 }

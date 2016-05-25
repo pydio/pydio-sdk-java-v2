@@ -1,5 +1,7 @@
 package examples;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import pydio.sdk.java.PydioClient;
 
@@ -10,6 +12,10 @@ public class Upload {
 
     public static void main(String[] args) throws IOException {
         final PydioClient client = new PydioClient("http://54.154.218.27", "jabar", "pydio@2015");
-        client.upload("1", "/", "Content of the file to upload".getBytes(), "file.txt", true, null, null);
+        client.login();
+        File file = new File("C:\\Users\\jabar\\Downloads\\file.txt");
+        FileInputStream in = new FileInputStream(file);
+        client.upload("1", "/", in, file.length(), "file.txt", true, null, null);
+        in.close();
     }
 }
