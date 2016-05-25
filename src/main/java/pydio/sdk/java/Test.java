@@ -20,7 +20,7 @@ import pydio.sdk.java.utils.UnexpectedResponseException;
 public class Test {
     public static void main(String[] arg) {
 
-        final PydioClient client = new PydioClient("http://sandbox.pydio.com/enterprise/", "jabar", "security");
+        final PydioClient client = new PydioClient("http://sandbox.pydio.com/enterprise/");
         NodeHandler handler = new NodeHandler() {
             @Override
             public void onNode(Node node) {
