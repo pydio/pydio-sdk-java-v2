@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.CookieManager;
 import java.net.HttpCookie;
+import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URI;
@@ -46,6 +47,9 @@ import pydio.sdk.java.utils.Pydio;
  * Created by jabar on 12/04/2016.
  */
 public class HttpClient {
+
+
+    private static Map<String, String> redirectedAddresses = new HashMap<String, String>();
 
     private String boundary;
     private static final String LINE_FEED = "\r\n";
@@ -98,8 +102,11 @@ public class HttpClient {
     CookieManager mCookieManager = new CookieManager();
 
     public HttpResponse send(String url, Map<String, String> params, ContentBody body) throws IOException {
-        if(rawMode){
-            return rawSend(URI.create(url), params, body);
+
+        URL urlObject = new URL(url);
+        String address = urlObject.getProtocol() + "://" + urlObject.getHost() + urlObject.getPath();
+        if(redirectedAddresses.containsKey(address)){
+            url = url.replace(address, redirectedAddresses.get(address));
         }
 
         HttpURLConnection con;
@@ -130,7 +137,6 @@ public class HttpClient {
             }
             con.setRequestProperty("Cookie", cookieString.substring(1));
         }
-
         con.setRequestProperty("User-Agent", "Pydio Android Client");
 
         if(body != null){
@@ -186,6 +192,14 @@ public class HttpClient {
             }
 
             int code = response.code();
+            if(code == 303 || code == 307 || code == 308){
+                String location = response.getHeaders("Location").get(0);
+                url = url.replace(address, location);
+                System.out.println("URL redirected to : " + location);
+                redirectedAddresses.put(address, location);
+                return send(url, params, body);
+            }
+
             if(code == 200 && !body.allChunksWritten()){
                 try {
                     NodeDiff diff = NodeDiff.create(HttpResponseParser.getXML(response));
