@@ -55,6 +55,8 @@ public class SessionTransport implements Transport{
     private String mAction;
     private boolean mRefreshingToken;
 
+    String mRedirectedUrl;
+
     public SessionTransport(ServerNode server){
         this.mServerNode= server;
     }
@@ -242,7 +244,7 @@ public class SessionTransport implements Transport{
         }
     }
 
-    private boolean isAuthenticationRequested(HttpResponse response) throws IOException {
+    private boolean isSpecialActionRequested(HttpResponse response) throws IOException {
         PartialRepeatableEntity entity = (PartialRepeatableEntity) response.getEntity();
         final boolean[] is_required = {false};
         try {
@@ -255,7 +257,8 @@ public class SessionTransport implements Transport{
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = factory.newSAXParser();
             DefaultHandler dh = new DefaultHandler() {
-                public boolean tag_repo = false, tag_auth = false, tag_msg = false, tag_auth_message = false;
+                //<meta http-equiv="refresh" content="5; URL=http://www.manouvelleadresse.com">
+                public boolean tag_repo = false, tag_auth = false, tag_msg = false, tag_meta = false, tag_auth_message = false;
                 public String content;
                 String xPath;
 
@@ -274,6 +277,8 @@ public class SessionTransport implements Transport{
                         return;
                     }else if (tag_msg){
                         return;
+                    } else if(tag_meta){
+
                     }
 
                     boolean registryPart = qName.equals("ajxp_registry_part") && attributes.getValue("xPath") != null;
@@ -287,12 +292,27 @@ public class SessionTransport implements Transport{
 
                     tag_auth = qName.equals("require_auth");
                     tag_msg = qName.equals("message");
+
+                    if(tag_meta = qName.equals("meta")){
+                        String equiv = attributes.getValue("http-equiv");
+                        String content = attributes.getValue("xPath");
+                        if("refresh".equals(equiv) && content != null){
+                            int start = content.toLowerCase().indexOf("url=") + 4, end=content.toLowerCase().lastIndexOf("\"");
+                            String newUrl = content.substring(start, end);
+                            throw new SAXException ("redirect="+newUrl);
+                        } else {
+
+                        }
+                    }
+
                 }
 
                 public void endElement(String uri, String localName, String qName) throws SAXException {
                     if(tag_repo && xPath != null || (tag_auth && qName.equals("require_auth"))){
                         is_required[0] = true;//SessionTransport.this.auth_step = "LOG-USER";
                         throw new SAXException("AUTH");
+                    } else if(tag_meta && qName.equals("meta")){
+
                     }
                 }
 
@@ -311,6 +331,7 @@ public class SessionTransport implements Transport{
             };
             parser.parse(new InputSource(new StringReader(xmlString)), dh);
 
+            //<meta http-equiv="refresh" content="5; URL=http://www.manouvelleadresse.com">
         } catch (IOException e) {
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
@@ -319,9 +340,14 @@ public class SessionTransport implements Transport{
             if("auth".equalsIgnoreCase(m)){
                 mLastRequestStatus = Pydio.ERROR_AUTHENTICATION;
                 mServerNode.setLastRequestResponseCode(mLastRequestStatus);
+                mRedirectedUrl = null;
             }else if ("token".equalsIgnoreCase(m)){
                 mLastRequestStatus = Pydio.ERROR_OLD_AUTHENTICATION_TOKEN;
                 mServerNode.setLastRequestResponseCode(mLastRequestStatus);
+                mRedirectedUrl = null;
+            } else if(m.startsWith("redirect=")){
+                mRedirectedUrl = m.substring(10);
+                return true;
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -352,8 +378,10 @@ public class SessionTransport implements Transport{
             try {
                 response = mHttpClient.send(uri.toString(), params, contentBody);
             } catch (IOException e){
-                e.printStackTrace();
+                //e.printStackTrace();
+
                 if(e instanceof SSLException){
+                    e.printStackTrace();
                     if(mServerNode.SSLUnverified()) {
                         mLastRequestStatus = Pydio.ERROR_UNVERIFIED_CERTIFICATE;
                         mServerNode.setLastRequestResponseCode(Pydio.ERROR_UNVERIFIED_CERTIFICATE);
@@ -378,7 +406,7 @@ public class SessionTransport implements Transport{
             if(Arrays.asList(Pydio.no_auth_required_actions).contains(mAction)) return response;
 
 
-            if(!isAuthenticationRequested(response)){
+            if(!isSpecialActionRequested(response)){
                 boolean isNotAuthAction = Arrays.asList(Pydio.no_auth_required_actions).contains(mAction);
                 if(! isNotAuthAction && mLastRequestStatus != Pydio.OK) {
                     mLastRequestStatus = Pydio.OK;
@@ -421,11 +449,19 @@ public class SessionTransport implements Transport{
                         throw new IOException();
                     }
 
+                    if(mLastRequestStatus == Pydio.ERROR_AUTHENTICATION){
+                        throw new IOException();
+                    }
+
                     params.put(Pydio.PARAM_SECURE_TOKEN, mSecureToken);
                     mLastRequestStatus = Pydio.OK;
                     mServerNode.setLastRequestResponseCode(mLastRequestStatus);
                     mAttemptedLogin = true;
                     continue;
+                }
+
+                if(mRedirectedUrl != null){
+
                 }
 
                 mLastRequestStatus = Pydio.ERROR_OTHER;
