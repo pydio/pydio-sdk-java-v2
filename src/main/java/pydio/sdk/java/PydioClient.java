@@ -1,5 +1,6 @@
 package pydio.sdk.java;
 
+
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -448,6 +449,16 @@ public class PydioClient implements Serializable{
      */
     public void upload(String tempWorkspace, String path, InputStream source, long length, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener, final MessageHandler handler) throws IOException {
         String action;
+        try {
+            JSONObject stats = stats(tempWorkspace, path, false);
+            if(stats == null || stats.length() == 0){
+                throw new IOException();
+            }
+        } catch (UnexpectedResponseException e) {
+            e.printStackTrace();
+            throw new IOException(e);
+        }
+
         Map<String, String> params = new HashMap<String , String>();
 
         if(tempWorkspace == null){
