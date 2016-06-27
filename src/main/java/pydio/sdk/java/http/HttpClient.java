@@ -39,8 +39,10 @@ import pydio.sdk.java.model.Node;
 import pydio.sdk.java.model.NodeDiff;
 import pydio.sdk.java.security.CertificateTrust;
 import pydio.sdk.java.security.CertificateTrustManager;
+import pydio.sdk.java.utils.ApplicationData;
 import pydio.sdk.java.utils.HttpChunkedResponseInputStream;
 import pydio.sdk.java.utils.HttpResponseParser;
+import pydio.sdk.java.utils.Log;
 import pydio.sdk.java.utils.Pydio;
 
 /**
@@ -102,6 +104,7 @@ public class HttpClient {
     CookieManager mCookieManager = new CookieManager();
 
     public HttpResponse send(String url, Map<String, String> params, ContentBody body) throws IOException {
+        System.out.println(url + "&" + Log.paramString(params));
 
         URL urlObject = new URL(url);
         String address = urlObject.getProtocol() + "://" + urlObject.getHost() + urlObject.getPath();
@@ -137,7 +140,7 @@ public class HttpClient {
             }
             con.setRequestProperty("Cookie", cookieString.substring(1));
         }
-        con.setRequestProperty("User-Agent", "Pydio Android Client");
+        con.setRequestProperty("User-Agent", "Pydio-Native-" + ApplicationData.name + " " + ApplicationData.version + "." + ApplicationData.versionCode);
 
         if(body != null){
             boundary = "----" + System.currentTimeMillis();
@@ -195,7 +198,6 @@ public class HttpClient {
             if(code == 303 || code == 307 || code == 308){
                 String location = response.getHeaders("Location").get(0);
                 url = url.replace(address, location);
-                System.out.println("URL redirected to : " + location);
                 redirectedAddresses.put(address, location);
                 return send(url, params, body);
             }
@@ -241,7 +243,17 @@ public class HttpClient {
                     mCookieManager.getCookieStore().add(null, HttpCookie.parse(cookie).get(0));
                 }
             }
-            return  new HttpResponse(con);
+
+            HttpResponse response = new HttpResponse(con);
+            int code = response.code();
+            if(code == 303 || code == 307 || code == 308){
+                String location = response.getHeaders("Location").get(0);
+                url = url.replace(address, location);
+                redirectedAddresses.put(address, location);
+                return send(url, params, body);
+            }
+
+            return response;
         }
     }
 
