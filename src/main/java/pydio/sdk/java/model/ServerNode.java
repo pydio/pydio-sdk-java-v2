@@ -40,7 +40,14 @@ public class ServerNode implements Node{
 	private boolean mRememberPassword;
 	private int mLastResponseCode = Pydio.OK;
 
-	
+
+	public static ServerNode create(Properties p){
+		ServerNode node = new ServerNode();
+		node.init(p.getProperty("url"));
+		node.setUser(p.getProperty("user"));
+		node.setProperties(p);
+		return node;
+	}
 
 	public void initFromProperties(Properties spec) {}
     @Override
@@ -49,6 +56,10 @@ public class ServerNode implements Node{
     public String getProperty(String key) {
 		if(mProperties == null) return null;
 		return mProperties.getProperty(key);
+	}
+
+    public void setProperties(Properties p) {
+		mProperties = p;
 	}
 	@Override
 	public void setProperty(String key, String value) {
@@ -88,11 +99,10 @@ public class ServerNode implements Node{
 
 				@Override
 				public X509Certificate[] getAcceptedIssuers() {
-					try {
+					if(mGivenTrustHelper != null){
 						return mGivenTrustHelper.getAcceptedIssuers();
-					}catch (NullPointerException e){
-						return new X509Certificate[0];
 					}
+					return new X509Certificate[0];
 				}
 			};
 		}
