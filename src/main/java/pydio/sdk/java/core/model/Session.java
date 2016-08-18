@@ -1,5 +1,9 @@
 package pydio.sdk.java.core.model;
 
+import java.util.Properties;
+
+import javax.swing.text.AbstractDocument;
+
 import pydio.sdk.java.core.utils.Pydio;
 
 /**
@@ -10,17 +14,21 @@ public class Session {
     public long id;
     public String user, name, serverAddress, legacyId, displayName;
     public byte[] logo;
+    public Properties properties;
 
-    public static Session parse(ContentValues values){
-        Session s = new Session();
-        s.serverAddress = values.getAsString(Pydio.ADDRESS);
-        s.id = values.getAsLong(Pydio.SESSION_ID);
-        s.user = values.getAsString(Pydio.LOGIN);
-        s.displayName = values.getAsString(Pydio.DISPLAYED_NAME);
-        s.legacyId = s.user + "@" + s.serverAddress.replace("://", "+").replace("/","&");
-        s.name = values.getAsString(Pydio.SESSION_NAME);
-        s.logo = values.getAsByteArray(Pydio.LOGO);
-        return s;
+    public Session(){
+        properties = new Properties();
+    }
+
+    public Session(ContentValues values){
+        serverAddress = values.getAsString(Pydio.ADDRESS);
+        id = values.getAsLong(Pydio.SESSION_ID);
+        user = values.getAsString(Pydio.LOGIN);
+        displayName = values.getAsString(Pydio.DISPLAYED_NAME);
+        legacyId = user + "@" + serverAddress.replace("://", "+").replace("/","&");
+        name = values.getAsString(Pydio.SESSION_NAME);
+        logo = values.getAsByteArray(Pydio.LOGO);
+        properties = new Properties();
     }
 
     public ContentValues values(){
