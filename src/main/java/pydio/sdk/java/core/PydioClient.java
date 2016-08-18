@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import pydio.sdk.java.core.http.HttpResponse;
 import pydio.sdk.java.core.model.Change;
 import pydio.sdk.java.core.model.Session;
 import pydio.sdk.java.core.security.CertificateTrust;
+import pydio.sdk.java.core.security.Passwords;
 import pydio.sdk.java.core.utils.ChangeHandler;
 import pydio.sdk.java.core.utils.HttpResponseParser;
 import pydio.sdk.java.core.utils.ChangeProcessor;
@@ -41,6 +43,7 @@ import pydio.sdk.java.core.utils.NodeHandler;
 import pydio.sdk.java.core.model.PydioMessage;
 import pydio.sdk.java.core.model.ServerNode;
 import pydio.sdk.java.core.model.FileNode;
+import pydio.sdk.java.core.utils.PasswordLoader;
 import pydio.sdk.java.core.utils.RegistryItemHandler;
 import pydio.sdk.java.core.utils.ServerGeneralRegistrySaxHandler;
 import pydio.sdk.java.core.utils.UnexpectedResponseException;
@@ -61,83 +64,15 @@ import pydio.sdk.java.core.utils.WorkspaceNodeSaxHandler;
  *
  */
 public class PydioClient implements Serializable{
-    
-	public SessionTransport http;
 
+    public SessionTransport http;
     public ServerNode server;
-
     protected WorkspaceNode mWorkspace;
-
-    Properties localConfigs = new Properties();
-
 
     //*****************************************
     //         INITIALIZATION METHODS
     //*****************************************
-    public PydioClient(ServerNode node){
-        server = node;
-        http = (SessionTransport) TransportFactory.getInstance(Transport.MODE_SESSION, node);
-        localConfigs = new Properties();
-        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
-    }
 
-    public PydioClient(ServerNode node, final String login, final String password){
-        server = node;
-        http = (SessionTransport) TransportFactory.getInstance(Transport.MODE_SESSION, node);
-        http.mUser = login;
-        localConfigs = new Properties();
-        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
-    }
-
-    public PydioClient(ServerNode node, int mode){
-        http = (SessionTransport) TransportFactory.getInstance(mode, node);
-        localConfigs = new Properties();
-        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
-    }
-
-    public PydioClient(String url, int mode, CertificateTrust.Helper h){
-        server = (ServerNode) NodeFactory.createNode(Node.TYPE_SERVER);
-        server.init(url, h);
-        http = (SessionTransport) TransportFactory.getInstance(mode, server);
-        localConfigs = new Properties();
-        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
-    }
-
-    public PydioClient(String url, int mode){
-        server = (ServerNode) NodeFactory.createNode(Node.TYPE_SERVER);
-        server.init(url);
-        http = (SessionTransport) TransportFactory.getInstance(mode, server);
-        localConfigs = new Properties();
-        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
-    }
-
-    public PydioClient(String url, int mode, final String login, final String password, CertificateTrust.Helper h){
-        this(url, mode, h);
-    }
-
-    public PydioClient(String url, int mode, final String login, final String password){
-        this(url, mode);
-    }
-
-    public PydioClient(String url, final String login, final String password, CertificateTrust.Helper h){
-        this(url, h);
-    }
-
-    public PydioClient(final String url, final String login, final String password){
-        this(url);
-        //server.setUser(login);
-    }
-
-    public PydioClient (String url, CertificateTrust.Helper h){
-        if(!url.endsWith("/")){
-            url += "/";
-        }
-        server = (ServerNode) NodeFactory.createNode(Node.TYPE_SERVER);
-        server.init(url, h);
-        http = (SessionTransport) TransportFactory.getInstance(Transport.MODE_SESSION, server);
-        localConfigs = new Properties();
-        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
-    }
 
     public PydioClient (String url){
         if(!url.endsWith("/")){
@@ -146,24 +81,51 @@ public class PydioClient implements Serializable{
         server = (ServerNode) NodeFactory.createNode(Node.TYPE_SERVER);
         server.init(url);
         http = (SessionTransport) TransportFactory.getInstance(Transport.MODE_SESSION, server);
-        localConfigs = new Properties();
-        localConfigs.setProperty(Pydio.LOCAL_CONFIG_BUFFER_SIZE, "" + Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE);
     }
 
-    public PydioClient (Session s){
-        this(s.serverAddress);
-        setUser(s.user);
+    public PydioClient(String url, final String login, final String password){
+
+        if(!url.endsWith("/")){
+            url += "/";
+        }
+        final String normalizedUrl = url;
+
+        server = (ServerNode) NodeFactory.createNode(Node.TYPE_SERVER);
+        server.init(url, new CertificateTrust.Helper() {
+            @Override
+            public boolean isServerTrusted(X509Certificate[] chain) {
+                return true;
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+        });
+        Passwords.Loader = new PasswordLoader() {
+            @Override
+            public String loadPassword(String server, String user) {
+                if(normalizedUrl.equals(server) && login.equals(user)){
+                    return password;
+                }
+                return null;
+            }
+        };
+        http = (SessionTransport) TransportFactory.getInstance(Transport.MODE_SESSION, server);
+        http.mUser = login;
     }
+
+    public PydioClient(ServerNode node){
+        server = node;
+        http = (SessionTransport) TransportFactory.getInstance(Transport.MODE_SESSION, node);
+    }
+
+
 
     public void setUser(String user){
         http.mUser = user;
     }
 
-
-
-    public void setCertificateTrustHelper(CertificateTrust.Helper h){
-        server.setCertificateTrustHelper(h);
-    }
     //*****************************************
     //         REMOTE ACTION METHODS
     //*****************************************
@@ -176,7 +138,6 @@ public class PydioClient implements Serializable{
         http.login();
         return http.requestStatus() == Pydio.OK;
     }
-
     /**
      * UnAuthenticates the user
      * @return      true if the login() succeeded or false if the authen
@@ -286,10 +247,19 @@ public class PydioClient implements Serializable{
         Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_GET_REGISTRY+ "]");
         InputStream in = http.getResponseStream(Pydio.ACTION_GET_REGISTRY, null);
         SAXParserFactory factory = SAXParserFactory.newInstance();
+        /*FileOutputStream stream = new FileOutputStream("C:\\Users\\jabar\\Desktop\\Putty\\registry.xml");
+
+        byte[] bytes = new byte[16384];
+        for(int read; (read = in.read(bytes)) != -1;){
+            stream.write(bytes, 0, read);
+        }
+        stream.close();
+        in.close();*/
 
         try {
             SAXParser parser = factory.newSAXParser();
             parser.parse(in, new ServerGeneralRegistrySaxHandler(itemHandler));
+
             in.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -429,10 +399,10 @@ public class PydioClient implements Serializable{
             }
         }
     }
-	/**
-	 * Upload a file on the pydio server
-	 * @param   path    The directory to upload in
-	 * @param   source  The file to be uploaded
+    /**
+     * Upload a file on the pydio server
+     * @param   path    The directory to upload in
+     * @param   source  The file to be uploaded
      * @param   name    The name of the uploaded file
      * @param   autoRename  if set to true the file will be renamed if there is a file with the same name
      * @param   progressListener    A delegate to listen to progress
@@ -440,7 +410,7 @@ public class PydioClient implements Serializable{
      */
     public void upload(String tempWorkspace, String path, File source, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener, final MessageHandler handler)throws IOException {
         String action;
-		Map<String, String> params = new HashMap<String , String>();
+        Map<String, String> params = new HashMap<String , String>();
 
         if(tempWorkspace == null){
             tempWorkspace = mWorkspace.getId();
@@ -449,7 +419,7 @@ public class PydioClient implements Serializable{
 
         action =  Pydio.ACTION_UPLOAD;
         params.put(Pydio.PARAM_DIR, path);
-		params.put(Pydio.PARAM_XHR_UPLOADER, "true");
+        params.put(Pydio.PARAM_XHR_UPLOADER, "true");
 
         if(name == null){
             name = source.getName();
@@ -487,7 +457,7 @@ public class PydioClient implements Serializable{
         if(handler != null) {
             handler.onMessage(PydioMessage.create(doc));
         }
-	}
+    }
     /**
      * Upload a file on the pydio server
      * @param   path    The directory to upload in
@@ -664,7 +634,10 @@ public class PydioClient implements Serializable{
         }
 
         Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
-        ContentBody cb = new ContentBody(source, name, length, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
+        long size = Long.parseLong(server.getProperty("UPLOAD_MAX_SIZE"));
+        ContentBody cb = new ContentBody(source, name, length, size);
+        //ContentBody cb = new ContentBody(source, name, length, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
+
         if(progressListener != null) {
             cb.setListener(new ContentBody.ProgressListener() {
                 @Override
@@ -744,17 +717,17 @@ public class PydioClient implements Serializable{
             handler.onMessage(PydioMessage.create(doc));
         }
     }
-	/**
-	 * Downloads content from the server.
-	 * @param paths     Paths of remote nodes to be downloaded
-	 * @param target    Where to write downloaded data
-	 * @param progressListener A delegate to read download progress
-	 * @return The size of downloaded data
-	 */
+    /**
+     * Downloads content from the server.
+     * @param paths     Paths of remote nodes to be downloaded
+     * @param target    Where to write downloaded data
+     * @param progressListener A delegate to read download progress
+     * @return The size of downloaded data
+     */
     public long download(String tempWorkspace, String[] paths, OutputStream target, ProgressListener progressListener) throws IOException{
 
         Map<String, String> params = new HashMap<String , String>();
-		fillParams(params, paths);
+        fillParams(params, paths);
 
         if(tempWorkspace == null){
             tempWorkspace = mWorkspace.getId();
@@ -770,8 +743,8 @@ public class PydioClient implements Serializable{
 
 
         long total_read = 0;
-		int read = 0, buffer_size = Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE;
-		byte[] buffer = new byte[buffer_size];
+        int read = 0, buffer_size = Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE;
+        byte[] buffer = new byte[buffer_size];
 
         for(;;){
             try {
@@ -799,16 +772,16 @@ public class PydioClient implements Serializable{
             throw  new IOException("C");
         }
         return total_read;
-	}
-	/**
-	 * Downloads content from the server
-	 * @param paths Paths of remote nodes to be downloaded
-	 * @param target    File that contains the downloaded data
+    }
+    /**
+     * Downloads content from the server
+     * @param paths Paths of remote nodes to be downloaded
+     * @param target    File that contains the downloaded data
      * @param progressListener A delegate to read download progress
      * @return The size of downloaded data
-	 * @throws IOException on network error
-	 * @throws FileNotFoundException if target file does not exist
-	 */
+     * @throws IOException on network error
+     * @throws FileNotFoundException if target file does not exist
+     */
     public long download(String tempWorkspace, String[] paths, File target, ProgressListener progressListener) throws IllegalStateException, IOException {
         OutputStream out = new FileOutputStream(target);
         long read = download(tempWorkspace, paths, out, progressListener);
@@ -851,12 +824,12 @@ public class PydioClient implements Serializable{
             }
         }
     }
-	/**
-	 * Rename the node specified by path with the newName
+    /**
+     * Rename the node specified by path with the newName
      * @param tempWorkspace   the target workspace ID
-	 * @param path Path of the node to be renamed
-	 * @param newName The new name
-	 */
+     * @param path Path of the node to be renamed
+     * @param newName The new name
+     */
     public void rename(String tempWorkspace, String path, String newName, MessageHandler handler)throws IOException {
         Map<String, String> params = new HashMap<String , String>();
 
@@ -875,28 +848,28 @@ public class PydioClient implements Serializable{
         if(handler != null) {
             handler.onMessage(PydioMessage.create(doc));
         }
-	}
-	/**
-	 * Copy nodes at specified paths into a folder
+    }
+    /**
+     * Copy nodes at specified paths into a folder
      * @param tempWorkspace   the target workspace ID
-	 * @param paths paths of nodes to be copied
-	 * @param targetFolder Directory node to copy nodes in
-	 */
+     * @param paths paths of nodes to be copied
+     * @param targetFolder Directory node to copy nodes in
+     */
     public void copy(String tempWorkspace, String[] paths, String targetFolder, MessageHandler handler)throws IOException {
-		Map<String, String> params = new HashMap<String , String>();
+        Map<String, String> params = new HashMap<String , String>();
 
         if(tempWorkspace == null){
             tempWorkspace = mWorkspace.getId();
         }
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         fillParams(params, paths);
-		params.put(Pydio.PARAM_DEST, targetFolder);
+        params.put(Pydio.PARAM_DEST, targetFolder);
         Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_COPY + Log.paramString(params) + "]");
-		Document doc = http.getXmlContent(Pydio.ACTION_COPY, params);
+        Document doc = http.getXmlContent(Pydio.ACTION_COPY, params);
         if(handler != null) {
             handler.onMessage(PydioMessage.create(doc));
         }
-	}
+    }
     /**
      * Move nodes at specified paths into a folder
      * @param tempWorkspace   the target workspace ID
@@ -912,24 +885,24 @@ public class PydioClient implements Serializable{
         }
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         params.put(Pydio.PARAM_ACTION, Pydio.ACTION_MOVE);
-		fillParams(params, paths);
-		params.put(Pydio.PARAM_DEST, targetFolder);
-		if(force_del){
-			params.put(Pydio.PARAM_FORCE_COPY_DELETE, "true");
-		}
+        fillParams(params, paths);
+        params.put(Pydio.PARAM_DEST, targetFolder);
+        if(force_del){
+            params.put(Pydio.PARAM_FORCE_COPY_DELETE, "true");
+        }
         Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_MOVE + Log.paramString(params) + "]");
-		Document doc = http.getXmlContent(Pydio.ACTION_MOVE, params);
+        Document doc = http.getXmlContent(Pydio.ACTION_MOVE, params);
         if(handler != null) {
             handler.onMessage(PydioMessage.create(doc));
         }
-	}
-	/**
+    }
+    /**
      * Creates a directory at specified path with specified name
      * @param tempWorkspace   the target workspace ID
-	 * @param targetFolder Directory to create directory in
-	 * @param dirname Directory name
+     * @param targetFolder Directory to create directory in
+     * @param dirname Directory name
      * @param handler Delegate to process response
-	 */
+     */
     public void mkdir(String tempWorkspace, String targetFolder, String dirname, MessageHandler handler)throws IOException {
         Map<String, String> params = new HashMap<String , String>();
 
@@ -938,13 +911,13 @@ public class PydioClient implements Serializable{
         }
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         params.put(Pydio.PARAM_DIR, targetFolder);
-		params.put(Pydio.PARAM_DIRNAME, dirname);
+        params.put(Pydio.PARAM_DIRNAME, dirname);
         Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_MKDIR + Log.paramString(params) + "]");
-		Document doc = http.getXmlContent(Pydio.ACTION_MKDIR, params);
+        Document doc = http.getXmlContent(Pydio.ACTION_MKDIR, params);
         if(handler != null) {
             handler.onMessage(PydioMessage.create(doc));
         }
-	}
+    }
     /**
      * Creates a file at specified path with specified name
      * @param tempWorkspace   the target workspace ID
@@ -958,11 +931,11 @@ public class PydioClient implements Serializable{
             tempWorkspace = mWorkspace.getId();
         }
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
-		params.put(Pydio.PARAM_NODE, path);
+        params.put(Pydio.PARAM_NODE, path);
         Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_MKFILE + Log.paramString(params) + "]");
-		Document doc = http.getXmlContent(Pydio.ACTION_MKFILE, params);
+        Document doc = http.getXmlContent(Pydio.ACTION_MKFILE, params);
         handler.onMessage(PydioMessage.create(doc));
-	}
+    }
     /**
      * Move a file from the recycle bin from its older place
      * @param tempWorkspace   the target workspace ID
@@ -1196,7 +1169,7 @@ public class PydioClient implements Serializable{
 
             if(file.isDirectory()){
                 try {
-                   messages.add(mkdir(tempWorkspace, filePath));
+                    messages.add(mkdir(tempWorkspace, filePath));
                 }catch (IOException ignored){}
 
             } else {
@@ -1597,7 +1570,6 @@ public class PydioClient implements Serializable{
 
         try {
             InputStream is = r.getEntity().getContent();
-
             BufferedReader br = new BufferedReader(new InputStreamReader(is, "utf-8"));
             StringBuilder sb = new StringBuilder();
             String line;
@@ -1751,11 +1723,6 @@ public class PydioClient implements Serializable{
 
     public void setServer(ServerNode server){
         this.server = server;
-    }
-
-
-    public void setConfig(String key, String value){
-        localConfigs.setProperty(key, value);
     }
 
     /**
