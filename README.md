@@ -3,40 +3,11 @@ The pydio java sdk provides a Java implementation of features for communicating 
 
 ## <em>PydioClient</em> instantiation:
 
-### 1 - Quick instantiation
 
 Here is the simple way to instantiate a <em>PydioClient</em>
 ``` java
     PydioClient client = new PydioClient("serverAddress", "username", "password");    
 ```
-
-
-### 2 - Advanced instantiation:
-
-When a <em>PydioClient</em> is instantiated like it's done above, an <em>AuthenticationHelper</em> object is created to carry the user credentials. An Authentication helper is a delegate with a method that return the user credentials. 
-``` java 
-    public abstract String[] getCredentials();
-```
-
-So when performing a login operation, the PydioClient calls that method to get the user credentials. You can set your own helper as the following example shows:
-``` java    
-    PydioClient client = new PydioClient("serverAddress");    
-    client.setAuthenticationHelper(new AuthenticationHelper(){
-        public String[] getCredentials(){        
-            String[] credentials = new String[2];            
-            System.out.println("AUTHENTICATION:");            
-            System.out.print("username : ");
-            credentials[0] = new Scanner(System.in).nextString();
-            System.out.print("password : ");
-            credentials[1] = new Scanner(System.in).nextString();
-            return credentials;
-        }
-    });
-```
-With this helper the user is prompted every time the users credentials are needed.
-
-Now we know how to configure a client we can manage files on the servers.
-
 
 ## Calling PydioClient methods:
 
