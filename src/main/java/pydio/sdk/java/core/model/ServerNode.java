@@ -26,7 +26,6 @@ public class ServerNode implements Node {
 	private String mPath = null;
 	private int mPort = 80;
 	private boolean mSSLUnverified = false;
-	//private String mUser;
 	private String mLabel = null;
 	private String mUrl = null;
 	private Properties mProperties = null;
@@ -34,29 +33,25 @@ public class ServerNode implements Node {
 	private X509Certificate[] mLastUnverifiedCertificateChain;
 	private CertificateTrust.Helper mGivenTrustHelper, mTrustHelper;
 	private String mCaptcha;
-	private boolean mRememberPassword;
 	private int mLastResponseCode = Pydio.OK;
 
+	protected ServerNode(){}
 
-	public static ServerNode create(Properties p){
-		ServerNode node = new ServerNode();
-		node.init(p.getProperty("url"));
-		//node.setUser(p.getProperty("user"));
-		node.setProperties(p);
-		return node;
+	public void initFromProperties(Properties spec) {
+		this.mUrl = spec.getProperty("url");
+		URI uri = URI.create(this.mUrl);
+		this.mHost  = uri.getHost();
+		this.mPath = uri.getPath();
+		this.mScheme = uri.getScheme();
+		this.mPort = uri.getPort();
+		this.setProperties(spec);
 	}
-
-	public void initFromProperties(Properties spec) {}
     @Override
     public void initFromFile(File file) {}
     @Override
     public String getProperty(String key) {
 		if(mProperties == null) return null;
 		return mProperties.getProperty(key);
-	}
-
-    public void setProperties(Properties p) {
-		mProperties = p;
 	}
 	@Override
 	public void setProperty(String key, String value) {
@@ -84,6 +79,11 @@ public class ServerNode implements Node {
 
 
 
+
+	public ServerNode setProperties(Properties p) {
+		mProperties = p;
+		return this;
+	}
 
 	public CertificateTrust.Helper getTrustHelper(){
 		if(mTrustHelper == null) {
@@ -228,11 +228,6 @@ public class ServerNode implements Node {
 
 	public ServerNode setLastRequestResponseCode(int code){
 		mLastResponseCode = code;
-		return this;
-	}
-
-	public ServerNode setRememberPassword(boolean rememberPassword){
-		mRememberPassword = rememberPassword;
 		return this;
 	}
 
