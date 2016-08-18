@@ -168,7 +168,7 @@ public class SessionTransport implements Transport {
     }
 
     private void getSeed() throws IOException{
-        int status = mLastRequestStatus;
+        int savedStatus = mLastRequestStatus;
         try {
             Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_GET_SEED + "]");
             mAction = Pydio.ACTION_GET_SEED;
@@ -179,9 +179,7 @@ public class SessionTransport implements Transport {
                 return;
             }
 
-            String seed = mSeed;
-            seed = seed.trim();
-
+            String seed = mSeed.trim();
             if (seed.contains("\"seed\":-1")) {
                 mSeed = "-1";
             }
@@ -195,29 +193,23 @@ public class SessionTransport implements Transport {
                 return;
             }
 
-            boolean seemsToBePydio = false;
-            List<String> headers = resp.getHeaders("Content-Type");
+            String contentType = resp.getHeaders("Content-Type").get(0);
+            boolean seemsToBePydio = (contentType != null) && (
+              (contentType.toLowerCase().contains("text/plain"))
+            | (contentType.toLowerCase().contains("text/xml"))
+            | (contentType.toLowerCase().contains("text/json"))
+            | (contentType.toLowerCase().contains("application/json")));
 
-            for (int i = 0; i < headers.size(); i++) {
-                String h = headers.get(i);
-                seemsToBePydio |= (h.toLowerCase().contains("text/plain"));
-                seemsToBePydio |= (h.toLowerCase().contains("text/xml"));
-                seemsToBePydio |= (h.toLowerCase().contains("text/json"));
-                seemsToBePydio |= (h.toLowerCase().contains("application/json"));
-            }
-
-            if (seed == null || !seemsToBePydio) {
-                //System.out.println(seed);
+            if (!seemsToBePydio) {
                 mLastRequestStatus = Pydio.ERROR_NOT_A_SERVER;
                 throw new IOException();
             }
             mSeed = "-1";
-            mLastRequestStatus = status;
+            mLastRequestStatus = savedStatus;
         }catch (IOException e){
-            mLastRequestStatus = status;
+            mLastRequestStatus = savedStatus;
             throw e;
         }
-
     }
 
     public void loadCaptcha() throws IOException {
