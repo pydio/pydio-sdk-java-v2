@@ -27,6 +27,11 @@ import java.util.Scanner;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import pydio.sdk.java.core.http.ContentBody;
 import pydio.sdk.java.core.http.HttpResponse;
@@ -34,6 +39,7 @@ import pydio.sdk.java.core.model.Change;
 import pydio.sdk.java.core.model.Session;
 import pydio.sdk.java.core.security.CertificateTrust;
 import pydio.sdk.java.core.security.Passwords;
+import pydio.sdk.java.core.utils.BucketUploadListener;
 import pydio.sdk.java.core.utils.ChangeHandler;
 import pydio.sdk.java.core.utils.HttpResponseParser;
 import pydio.sdk.java.core.utils.ChangeProcessor;
@@ -72,8 +78,6 @@ public class PydioClient implements Serializable{
     //*****************************************
     //         INITIALIZATION METHODS
     //*****************************************
-
-
     public PydioClient (String url){
         if(!url.endsWith("/")){
             url += "/";
@@ -125,7 +129,6 @@ public class PydioClient implements Serializable{
     public void setUser(String user){
         http.mUser = user;
     }
-
     //*****************************************
     //         REMOTE ACTION METHODS
     //*****************************************
@@ -463,10 +466,10 @@ public class PydioClient implements Serializable{
      * @param   path    The directory to upload in
      * @param   files  The list of paths where are located files to upload
      * @param   totalSize  The total size of the bulk
-     * @param   progressListener    A delegate to listen to progress
+     * @param   listener    A delegate to listen to progress
      * @param   handler A delegate to handle the response message
      */
-    public void uploadBucket(String tempWorkspace, String path, ArrayList<String> files, Long totalSize, final UploadStopNotifierProgressListener progressListener, final MessageHandler handler)throws IOException {
+    public void uploadBucket(String tempWorkspace, String path, final ArrayList<String> files, Long totalSize, final BucketUploadListener listener, final MessageHandler handler)throws IOException {
         String action;
         Map<String, String> params = new HashMap<String , String>();
 
@@ -487,34 +490,43 @@ public class PydioClient implements Serializable{
             }
         }
 
-        for(int i = 0; i < files.size(); i++){
-            File file = new File(files.get(i));
-            String name = file.getName();
+
+
+        final int size = files.size();
+        for(int i = 0; i < size; i++){
+            if(listener != null){
+                listener.onNext(i, size);
+            }
+            final File file = new File(files.get(i));
+            final String name = file.getName();
             try {
                 String urlEncodedName = java.net.URLEncoder.encode(name, "utf-8");
                 params.put(Pydio.PARAM_URL_ENCODED_FILENAME, urlEncodedName);
             } catch (UnsupportedEncodingException e) {}
             Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
 
-            ContentBody cb = new ContentBody(file, name, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
-            if(progressListener != null) {
-                final long finalTotalProcessed = totalProcessed;
-                cb.setListener(new ContentBody.ProgressListener() {
+            if(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE) == null){
+                serverGeneralRegistry(new RegistryItemHandler() {
                     @Override
-                    public void transferred(long num) throws IOException {
-                        if (progressListener.onProgress(num + finalTotalProcessed)) {
-                            throw new IOException("");
-                        }
-                    }
-
-                    @Override
-                    public void partTransferred(int part, int currentTotal) throws IOException {
-                        if (progressListener.onProgress(finalTotalProcessed)) {
-                            throw new IOException("");
-                        }
+                    protected void onPref(String name, String value) {
+                        server.setProperty(name, value);
                     }
                 });
             }
+
+            ContentBody cb = new ContentBody(file, name, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
+            final int finalI = i;
+            cb.setListener(new ContentBody.ProgressListener() {
+                @Override
+                public void transferred(long num) throws IOException {
+                    if(listener != null && listener.onProgress(name, num, file.length())){
+                        throw new IOException("");
+                    }
+                }
+                @Override
+                public void partTransferred(int part, int currentTotal) throws IOException {}
+            });
+
 
             final Document doc = http.putContent(action, params, cb);
             totalProcessed += file.length();
@@ -523,26 +535,29 @@ public class PydioClient implements Serializable{
                 handler.onMessage(PydioMessage.create(doc));
             }
         }
-
     }
 
-    public void uploadTree(String tempWorkspace, String remoteRoot, String localRoot, ArrayList<String> files, long totalSize, final UploadStopNotifierProgressListener progressListener, final MessageHandler handler) throws IOException {
+    public void uploadTree(String tempWorkspace, String remoteRoot, String localRoot, ArrayList<String> files, long totalSize, final BucketUploadListener listener, final MessageHandler handler) throws IOException {
         String action;
 
         if(tempWorkspace == null){
             tempWorkspace = mWorkspace.getId();
         }
 
-        long totalProcessed = 0;
         if(totalSize == 0){
             for(int i = 0; i < files.size(); i++){
                 totalSize += new File(files.get(i)).length();
             }
         }
 
-        for(int i = 0; i < files.size(); i++){
+        int size = files.size();
+        for(int i = 0; i < size; i++){
+
+            if(listener != null){
+                listener.onNext(i, size);
+            }
             String filePath = files.get(i);
-            File file = new File(filePath);
+            final File file = new File(filePath);
             String currentRemoteRoot = file.getParentFile().getAbsolutePath().replace(localRoot, remoteRoot);
 
             if(file.isDirectory()){
@@ -554,36 +569,40 @@ public class PydioClient implements Serializable{
                 action =  Pydio.ACTION_UPLOAD;
                 params.put(Pydio.PARAM_XHR_UPLOADER, "true");
                 params.put(Pydio.PARAM_DIR, currentRemoteRoot);
-                String name = file.getName();
+                final String name = file.getName();
 
                 try {
                     String urlEncodedName = java.net.URLEncoder.encode(name, "utf-8");
                     params.put(Pydio.PARAM_URL_ENCODED_FILENAME, urlEncodedName);
                 } catch (UnsupportedEncodingException ignored) {}
 
+
+
+                if(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE) == null){
+                    serverGeneralRegistry(new RegistryItemHandler() {
+                        @Override
+                        protected void onPref(String name, String value) {
+                            server.setProperty(name, value);
+                        }
+                    });
+                }
                 Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
                 ContentBody cb = new ContentBody(file, name, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
 
-                if(progressListener != null) {
-                    final long finalTotalProcessed = totalProcessed;
+                if(listener != null) {
                     cb.setListener(new ContentBody.ProgressListener() {
                         @Override
                         public void transferred(long num) throws IOException {
-                            if (progressListener.onProgress(num + finalTotalProcessed)) {
+                            if (listener.onProgress(name, num, file.length())) {
                                 throw new IOException("");
                             }
                         }
                         @Override
-                        public void partTransferred(int part, int currentTotal) throws IOException {
-                            if (progressListener.onProgress(finalTotalProcessed)) {
-                                throw new IOException("");
-                            }
-                        }
+                        public void partTransferred(int part, int currentTotal) throws IOException {}
                     });
                 }
 
                 final Document doc = http.putContent(action, params, cb);
-                totalProcessed += file.length();
 
                 if(handler != null) {
                     handler.onMessage(PydioMessage.create(doc));
@@ -978,9 +997,6 @@ public class PydioClient implements Serializable{
         handler.onMessage(PydioMessage.create(http.getXmlContent(Pydio.ACTION_COMPRESS, params)));
     }
 
-
-
-
     public PydioMessage mkdir(String tempWorkspace, String path)throws IOException {
 
         Map<String, String> params = new HashMap<String , String>();
@@ -1316,10 +1332,6 @@ public class PydioClient implements Serializable{
         final Document doc = http.putContent(action, params, cb);
         return PydioMessage.create(doc);
     }
-
-
-
-
 
     public InputStream previewData(String tempWorkspace, String path)throws IOException, UnexpectedResponseException{
         Map<String, String> params = new HashMap<String , String>();
