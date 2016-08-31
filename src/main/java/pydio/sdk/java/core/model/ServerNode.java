@@ -35,8 +35,6 @@ public class ServerNode implements Node {
 	private String mCaptcha;
 	private int mLastResponseCode = Pydio.OK;
 
-	protected ServerNode(){}
-
 	public void initFromProperties(Properties spec) {
 		this.mUrl = spec.getProperty("url");
 		URI uri = URI.create(this.mUrl);
