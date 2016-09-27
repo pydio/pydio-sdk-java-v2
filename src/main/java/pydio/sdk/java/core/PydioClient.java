@@ -225,6 +225,8 @@ public class PydioClient implements Serializable{
      * @deprecated  use {@link #selectWorkspace(String)}
      */
     public void downloadRegistry(String tempWorkspace, OutputStream out, boolean workspace) throws IOException {
+
+
         Map<String, String> params = new HashMap<String, String>();
         if(workspace){
             selectWorkspace(tempWorkspace);
@@ -437,6 +439,15 @@ public class PydioClient implements Serializable{
         }
 
         Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        if(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE) == null){
+            serverGeneralRegistry(new RegistryItemHandler() {
+                @Override
+                protected void onPref(String name, String value) {
+                    super.onPref(name, value);
+                    server.setProperty(name, value);
+                }
+            });
+        }
         ContentBody cb = new ContentBody(source, name, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
         if(progressListener != null) {
             cb.setListener(new ContentBody.ProgressListener() {
@@ -587,6 +598,15 @@ public class PydioClient implements Serializable{
                     });
                 }
                 Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+                if(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE) == null){
+                    serverGeneralRegistry(new RegistryItemHandler() {
+                        @Override
+                        protected void onPref(String name, String value) {
+                            super.onPref(name, value);
+                            server.setProperty(name, value);
+                        }
+                    });
+                }
                 ContentBody cb = new ContentBody(file, name, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
 
                 if(listener != null) {
@@ -653,7 +673,16 @@ public class PydioClient implements Serializable{
         }
 
         Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
-        long size = Long.parseLong(server.getProperty("UPLOAD_MAX_SIZE"));
+        if(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE) == null){
+            serverGeneralRegistry(new RegistryItemHandler() {
+                @Override
+                protected void onPref(String name, String value) {
+                    super.onPref(name, value);
+                    server.setProperty(name, value);
+                }
+            });
+        }
+        long size = Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE));
         ContentBody cb = new ContentBody(source, name, length, size);
         //ContentBody cb = new ContentBody(source, name, length, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
 
@@ -712,6 +741,15 @@ public class PydioClient implements Serializable{
         }
 
         Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        if(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE) == null){
+            serverGeneralRegistry(new RegistryItemHandler() {
+                @Override
+                protected void onPref(String name, String value) {
+                    super.onPref(name, value);
+                    server.setProperty(name, value);
+                }
+            });
+        }
         ContentBody cb = new ContentBody(source, name, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
         if(progressListener != null) {
             cb.setListener(new ContentBody.ProgressListener() {

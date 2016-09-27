@@ -185,6 +185,15 @@ public class Pydio {
     public final static String WORKSPACE_ACCESS_TYPE_INBOX              = "inbox";
 
 
+    public static final String FEAT_DO_NOT_SAVE_PASS                    = "MOBILE_SECURITY_FORCE_DONTSAVEPASS";
+    public static final String FEAT_FORCE_PIN_CODE                      = "MOBILE_SECURITY_FORCE_PIN_CODE";
+    public static final String FEAT_RE_AUTH_INTER                       = "MOBILE_SECURITY_FORCE_REAUTH";
+    public static final String FEAT_DISABLE_SHARE                       = "MOBILE_SECURITY_OUTSIDE_SHARE";
+    public static final String FEAT_DISABLE_OFFLINE                     = "MOBILE_SECURITY_DISABLE_OFFLINE";
+    public static final String FEAT_DISABLE_BACKUP                      = "MOBILE_SECURITY_DISABLE_BACKUP";
+
+
+
     public final static String WORKSPACE_LABEL                          = "label";
     public final static String NODE_DIFF_ADD 					        = "add";
     public final static String NODE_DIFF_UPDATE 				        = "update";
