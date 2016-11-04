@@ -1383,19 +1383,19 @@ public class PydioClient implements Serializable{
         params.put(Pydio.PARAM_GET_THUMB, "true");
         //params.put(Pydio.PARAM_DIMENSION, dim+"");
 
-        String action = path.endsWith(".pdf") ? Pydio.ACTION_IMAGICK_DATA_PROXY: Pydio.ACTION_PREVIEW_DATA_PROXY;
+        String action;
+        if(path.endsWith(".pdf")){
+            action = Pydio.ACTION_IMAGICK_DATA_PROXY;
+        } else {
+            action = Pydio.ACTION_PREVIEW_DATA_PROXY;
+        }
 
         Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
         HttpResponse response = http.getResponse(action, params);
-        //Log.info(HttpResponseParser.getString(response));
 
         if(response != null) {
             String h = response.getHeaders("Content-Type").get(0);
             if (!h.toLowerCase().contains("image")) {
-                /*System.err.println("PYDIO - SDK : " + "Preview Data content-type:" + h.getValue());
-                System.err.println("PYDIO - SDK : " + "Parameters are [path=" + path + ", " + Pydio.PARAM_GET_THUMB + "=" + String.valueOf(force_redim) + "," + Pydio.PARAM_DIMENSION + "=" + String.valueOf(dim) + "]");
-                String content = HttpResponseParser.getString(response);
-                System.err.println("PYDIO - SDK : " + "Preview Data content:" + content);*/
                 throw new UnexpectedResponseException("");
             }
             try {
