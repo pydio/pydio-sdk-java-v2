@@ -93,7 +93,7 @@ public class SessionTransport implements Transport {
     public void login() throws IOException {
 
         String captcha_code = mServerNode.getAuthenticationChallengeResponse();
-        if(captcha_code == null) {
+        if(captcha_code == null || mSeed == null) {
             getSeed();
         }
 

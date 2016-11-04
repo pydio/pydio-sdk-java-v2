@@ -22,6 +22,9 @@ public class LegacyPasswordManager {
     };
 
     public static String encrypt(String property) throws GeneralSecurityException {
+        if(property.startsWith("$AJXP_ENC$")){
+            return property;
+        }
         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
         SecretKey key = keyFactory.generateSecret(new PBEKeySpec(PASSWORD));
         Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES");
