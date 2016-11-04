@@ -68,11 +68,11 @@ public class Log {
     }
     public static String paramString(Map<String, String> params){
         Set<String> keys = params.keySet();
-        String s = "";
+        String s = " ";
         Iterator<String> it = keys.iterator();
         while(it.hasNext()){
             String k = it.next();
-            s += "&" + k + "=" +params.get(k);
+            s += " " + k + "=" +params.get(k);
         }
         if(s.length() > 0){
             s = s.substring(1);
