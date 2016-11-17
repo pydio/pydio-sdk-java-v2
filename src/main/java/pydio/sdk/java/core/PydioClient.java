@@ -21,47 +21,41 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Scanner;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import pydio.sdk.java.core.http.ContentBody;
 import pydio.sdk.java.core.http.HttpResponse;
 import pydio.sdk.java.core.model.Change;
-import pydio.sdk.java.core.model.Session;
-import pydio.sdk.java.core.security.CertificateTrust;
-import pydio.sdk.java.core.security.Passwords;
-import pydio.sdk.java.core.utils.BucketUploadListener;
-import pydio.sdk.java.core.utils.ChangeHandler;
-import pydio.sdk.java.core.utils.HttpResponseParser;
-import pydio.sdk.java.core.utils.ChangeProcessor;
+import pydio.sdk.java.core.model.FileNode;
 import pydio.sdk.java.core.model.Node;
 import pydio.sdk.java.core.model.NodeFactory;
-import pydio.sdk.java.core.utils.NodeHandler;
 import pydio.sdk.java.core.model.PydioMessage;
 import pydio.sdk.java.core.model.ServerNode;
-import pydio.sdk.java.core.model.FileNode;
-import pydio.sdk.java.core.utils.PasswordLoader;
-import pydio.sdk.java.core.utils.RegistryItemHandler;
-import pydio.sdk.java.core.utils.ServerGeneralRegistrySaxHandler;
-import pydio.sdk.java.core.utils.UnexpectedResponseException;
 import pydio.sdk.java.core.model.WorkspaceNode;
+import pydio.sdk.java.core.security.CertificateTrust;
+import pydio.sdk.java.core.security.Passwords;
 import pydio.sdk.java.core.transport.SessionTransport;
 import pydio.sdk.java.core.transport.Transport;
 import pydio.sdk.java.core.transport.TransportFactory;
-import pydio.sdk.java.core.utils.TreeNodeSaxHandler;
+import pydio.sdk.java.core.utils.BucketUploadListener;
+import pydio.sdk.java.core.utils.ChangeHandler;
+import pydio.sdk.java.core.utils.ChangeProcessor;
+import pydio.sdk.java.core.utils.Filter;
+import pydio.sdk.java.core.utils.HttpResponseParser;
 import pydio.sdk.java.core.utils.Log;
 import pydio.sdk.java.core.utils.MessageHandler;
+import pydio.sdk.java.core.utils.NodeHandler;
+import pydio.sdk.java.core.utils.PasswordLoader;
 import pydio.sdk.java.core.utils.ProgressListener;
 import pydio.sdk.java.core.utils.Pydio;
+import pydio.sdk.java.core.utils.RegistryItemHandler;
+import pydio.sdk.java.core.utils.ServerGeneralRegistrySaxHandler;
+import pydio.sdk.java.core.utils.TreeNodeSaxHandler;
+import pydio.sdk.java.core.utils.UnexpectedResponseException;
 import pydio.sdk.java.core.utils.UploadStopNotifierProgressListener;
 import pydio.sdk.java.core.utils.WorkspaceNodeSaxHandler;
 
@@ -480,7 +474,7 @@ public class PydioClient implements Serializable{
      * @param   listener    A delegate to listen to progress
      * @param   handler A delegate to handle the response message
      */
-    public void uploadBucket(String tempWorkspace, String path, final ArrayList<String> files, Long totalSize, final BucketUploadListener listener, final MessageHandler handler)throws IOException {
+    public void uploadBucket(String tempWorkspace, String path, final ArrayList<String> files, Long totalSize, Filter<File> filter, final BucketUploadListener listener, final MessageHandler handler)throws IOException {
         String action;
         Map<String, String> params = new HashMap<String , String>();
 
@@ -494,7 +488,6 @@ public class PydioClient implements Serializable{
         params.put(Pydio.PARAM_XHR_UPLOADER, "true");
         params.put(Pydio.PARAM_AUTO_RENAME, "true");
 
-        long totalProcessed = 0;
         if(totalSize == 0){
             for(int i = 0; i < files.size(); i++){
                 totalSize += new File(files.get(i)).length();
@@ -508,7 +501,12 @@ public class PydioClient implements Serializable{
             if(listener != null){
                 listener.onNext(i, size);
             }
+
             final File file = new File(files.get(i));
+            if(filter != null && filter.isExcluded(file)){
+                continue;
+            }
+
             final String name = file.getName();
             try {
                 String urlEncodedName = java.net.URLEncoder.encode(name, "utf-8");
@@ -540,7 +538,6 @@ public class PydioClient implements Serializable{
 
 
             final Document doc = http.putContent(action, params, cb);
-            totalProcessed += file.length();
 
             if(handler != null) {
                 handler.onMessage(PydioMessage.create(doc));
@@ -548,7 +545,7 @@ public class PydioClient implements Serializable{
         }
     }
 
-    public void uploadTree(String tempWorkspace, String remoteRoot, String localRoot, ArrayList<String> files, long totalSize, final BucketUploadListener listener, final MessageHandler handler) throws IOException {
+    public void uploadTree(String tempWorkspace, String remoteRoot, String localRoot, ArrayList<String> files, long totalSize, Filter<File> filter, final BucketUploadListener listener, final MessageHandler handler) throws IOException {
         String action;
 
         if(tempWorkspace == null){
@@ -569,6 +566,10 @@ public class PydioClient implements Serializable{
             }
             String filePath = files.get(i);
             final File file = new File(filePath);
+            if(filter != null && filter.isExcluded(file)){
+                continue;
+            }
+
             String currentRemoteRoot = file.getParentFile().getAbsolutePath().replace(localRoot, remoteRoot);
 
             if(file.isDirectory()){
