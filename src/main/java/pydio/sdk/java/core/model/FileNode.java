@@ -90,7 +90,9 @@ public class FileNode implements Node {
 	}
 
 	public long size(){
-		return Long.parseLong(properties.getProperty(Pydio.NODE_PROPERTY_BYTESIZE));
+		String strSize = properties.getProperty(Pydio.NODE_PROPERTY_BYTESIZE);
+		if(strSize == null) return 0;
+		return Long.parseLong(strSize);
 	}
 
 	public String icon(){
