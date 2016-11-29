@@ -11,11 +11,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.HttpCookie;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -25,15 +28,15 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import pydio.sdk.java.core.http.ContentBody;
-import pydio.sdk.java.core.http.PartialRepeatableEntity;
 import pydio.sdk.java.core.http.HttpClient;
 import pydio.sdk.java.core.http.HttpEntity;
 import pydio.sdk.java.core.http.HttpResponse;
+import pydio.sdk.java.core.http.PartialRepeatableEntity;
 import pydio.sdk.java.core.model.ResolutionServer;
-import pydio.sdk.java.core.security.Passwords;
-import pydio.sdk.java.core.utils.HttpResponseParser;
 import pydio.sdk.java.core.model.ServerNode;
 import pydio.sdk.java.core.security.Crypto;
+import pydio.sdk.java.core.security.Passwords;
+import pydio.sdk.java.core.utils.HttpResponseParser;
 import pydio.sdk.java.core.utils.Log;
 import pydio.sdk.java.core.utils.Pydio;
 import pydio.sdk.java.core.utils.ServerResolution;
@@ -44,26 +47,23 @@ import pydio.sdk.java.core.utils.ServerResolution;
  *
  */
 public class SessionTransport implements Transport {
-    public String mIndex = "index.php?";
     public String mSecureToken = null;
     public String mUser;
 
-    int mLastRequestStatus = Pydio.OK;
-    boolean mAttemptedLogin, mAccessRefused, mLoggedIn = false;
-    HttpClient mHttpClient;
+    private int mLastRequestStatus = Pydio.OK;
+    private boolean mAccessRefused, mLoggedIn = false, ssIdRefreshed = false;
+    private HttpClient mHttpClient;
 
-    String mSeed;
+    private String mSeed;
     private ServerNode mServerNode;
     private String mAction;
-    private boolean mRefreshingToken;
+    private String mRedirectedUrl;
 
-    String mRedirectedUrl;
-
-    public SessionTransport(ServerNode server){
+    SessionTransport(ServerNode server){
         this.mServerNode= server;
     }
 
-    public SessionTransport(){}
+    SessionTransport(){}
 
     private URI getActionURI(String action){
         if(mServerNode instanceof ResolutionServer){
@@ -78,6 +78,7 @@ public class SessionTransport implements Transport {
         if(action != null && action.startsWith(Pydio.ACTION_CONF_PREFIX)){
             url += action;
         }else{
+            String mIndex = "index.php?";
             url += mIndex;
             if(action != null && !"".equals(action)){
                 url += Pydio.PARAM_GET_ACTION+"="+action;
@@ -88,6 +89,27 @@ public class SessionTransport implements Transport {
         }catch(Exception e){
             return null;
         }
+    }
+
+    public String getGETUrl(String action, Map<String, String> params) throws IOException {
+        String url = mServerNode.url() + "index.php?";
+        url += Pydio.PARAM_GET_ACTION+"="+action;
+
+        Iterator<Map.Entry<String, String>> it = params.entrySet().iterator();
+        url += "&";
+        while (it.hasNext()) {
+            Map.Entry<String, String> entry = it.next();
+            String name = entry.getKey(), value = entry.getValue();
+            url += name +"="+ URLEncoder.encode(value, "utf-8");
+                url += "&";
+        }
+
+        List<HttpCookie> cookies = mHttpClient.mCookieManager.getCookieStore().getCookies();
+        for(HttpCookie c : cookies){
+            url += "ajxp_sessid=" + URLEncoder.encode(c.getValue(), "utf-8");
+        }
+        System.out.println(url);
+        return url;
     }
 
     public void login() throws IOException {
@@ -152,19 +174,16 @@ public class SessionTransport implements Transport {
     }
 
     private void refreshSecureToken() throws IOException {
-        mRefreshingToken = true;
         Log.i("PYDIO SDK", "[action=" + Pydio.ACTION_GET_TOKEN + "]");
         try {
             HttpResponse resp = request(this.getActionURI(Pydio.ACTION_GET_TOKEN), null, null);
             mSecureToken = "";
             String stringResponse = HttpResponseParser.getString(resp);
-            //System.out.println(stringResponse);
             JSONObject jObject = new JSONObject(stringResponse);
             mSecureToken = jObject.getString(Pydio.PARAM_SECURE_TOKEN.toUpperCase());
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        mRefreshingToken = false;
     }
 
     private void getSeed() throws IOException{
@@ -418,8 +437,38 @@ public class SessionTransport implements Transport {
 
             }else{
                 if(mLoggedIn && mAccessRefused){
-                    mLastRequestStatus = Pydio.ERROR_ACCESS_REFUSED;
-                    throw new IOException("access refused");
+                    if(ssIdRefreshed) {
+                        mLastRequestStatus = Pydio.ERROR_ACCESS_REFUSED;
+                        throw new IOException("access refused");
+                    } else {
+                        ssIdRefreshed = true;
+                        mLoggedIn = mAccessRefused = false;
+                        mHttpClient.mCookieManager.getCookieStore().removeAll();
+
+                        getSeed();
+                        if(mLastRequestStatus == Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA){
+                            int status = mLastRequestStatus;
+                            loadCaptcha();
+                            mLastRequestStatus = status;
+                            throw new IOException();
+                        }
+
+                        login();
+
+                        if(mLastRequestStatus == Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA){
+                            loadCaptcha();
+                            throw new IOException();
+                        }
+
+                        if(mLastRequestStatus == Pydio.ERROR_AUTHENTICATION){
+                            throw new IOException();
+                        }
+
+                        params.put(Pydio.PARAM_SECURE_TOKEN, mSecureToken);
+                        mLastRequestStatus = Pydio.OK;
+                        mServerNode.setLastRequestResponseCode(mLastRequestStatus);
+                        continue;
+                    }
                 }
 
                 if (mLastRequestStatus == Pydio.ERROR_OLD_AUTHENTICATION_TOKEN) {
@@ -429,7 +478,6 @@ public class SessionTransport implements Transport {
                         throw new IOException("authentication required");
                     }
                     params.put(Pydio.PARAM_SECURE_TOKEN, mSecureToken);
-                    mAttemptedLogin = true;
                     continue;
                 }
 
@@ -457,12 +505,7 @@ public class SessionTransport implements Transport {
                     params.put(Pydio.PARAM_SECURE_TOKEN, mSecureToken);
                     mLastRequestStatus = Pydio.OK;
                     mServerNode.setLastRequestResponseCode(mLastRequestStatus);
-                    mAttemptedLogin = true;
                     continue;
-                }
-
-                if(mRedirectedUrl != null){
-
                 }
 
                 mLastRequestStatus = Pydio.ERROR_OTHER;
@@ -475,18 +518,18 @@ public class SessionTransport implements Transport {
     }
     @Override
     public HttpResponse getResponse(String action, Map<String, String> params) throws IOException {
-        mAccessRefused = false;
+        /*mAccessRefused = false;
         mLoggedIn = false;
-        mAttemptedLogin = false;
+        ssIdRefreshed = false;*/
         mAction = action;
         mLastRequestStatus = Pydio.OK;
         return request(getActionURI(action), params, null);
     }
     @Override
     public String getStringContent(String action, Map<String, String> params) throws IOException {
-        mAccessRefused = false;
+        /*mAccessRefused = false;
         mLoggedIn = false;
-        mAttemptedLogin = false;
+        ssIdRefreshed = false;*/
         mAction = action;
         mLastRequestStatus = Pydio.OK;
         HttpResponse response  = this.request(this.getActionURI(action), params, null);
@@ -498,9 +541,9 @@ public class SessionTransport implements Transport {
     }
     @Override
     public Document getXmlContent(String action, Map<String, String> params) throws IOException {
-        mAccessRefused = false;
+        /*mAccessRefused = false;
         mLoggedIn = false;
-        mAttemptedLogin = false;
+        ssIdRefreshed = false;*/
         mAction = action;
         mLastRequestStatus = Pydio.OK;
 
@@ -509,18 +552,18 @@ public class SessionTransport implements Transport {
     }
     @Override
     public JSONObject getJsonContent(String action, Map<String, String> params) {
-        mAccessRefused = false;
+        /*mAccessRefused = false;
         mLoggedIn = false;
-        mAttemptedLogin = false;
+        ssIdRefreshed = false;*/
         mAction = action;
         mLastRequestStatus = Pydio.OK;
         return null;
     }
     @Override
     public InputStream getResponseStream(String action, Map<String, String> params) throws IOException {
-        mAccessRefused = false;
+        /*mAccessRefused = false;
         mLoggedIn = false;
-        mAttemptedLogin = false;
+        ssIdRefreshed = false;*/
         mAction = action;
         mLastRequestStatus = Pydio.OK;
         HttpResponse response = request(getActionURI(action), params, null);
@@ -528,16 +571,15 @@ public class SessionTransport implements Transport {
     }
     @Override
     public Document putContent( String action, Map<String, String> params, ContentBody contentBody) throws IOException {
-        mAccessRefused = false;
+        /*mAccessRefused = false;
         mLoggedIn = false;
-        mAttemptedLogin = false;
+        ssIdRefreshed = false;*/
         mAction = action;
         mLastRequestStatus = Pydio.OK;
         try {
             HttpResponse response = request(getActionURI(action), params, contentBody);
             return HttpResponseParser.getXML(response);
-        }catch (Exception e){
-        }
+        }catch (Exception e){}
         return null;
     }
     @Override
