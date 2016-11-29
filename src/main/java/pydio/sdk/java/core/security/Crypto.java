@@ -1,5 +1,6 @@
 package pydio.sdk.java.core.security;
 
+import java.util.Base64;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.KeySpec;
@@ -10,8 +11,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-
-import static java.util.Base64.getEncoder;
 
 /**
  * Created by jabar on 29/03/2016.
@@ -64,7 +63,7 @@ public class Crypto {
             Cipher cipher = Cipher.getInstance(AES_CBC_PADDING);
             IvParameterSpec ivParameterSpec = new IvParameterSpec(key.getEncoded());
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
-            return new String(getEncoder().encode(cipher.doFinal(data)));
+            return new String(Base64.getEncoder().encode(cipher.doFinal(data)));
 
         } catch (Exception e) {
             e.printStackTrace();
