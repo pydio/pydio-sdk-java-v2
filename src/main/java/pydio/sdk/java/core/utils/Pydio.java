@@ -111,6 +111,8 @@ public class Pydio {
     public final static String ACTION_CHANGES                           = "changes";
     public final static String ACTION_LOAD_SHARED_ELEMENT_DATA          = "load_shared_element_data";
     public final static String ACTION_GET_BINARY_PARAM                  = "get_binary_param";
+    public final static String ACTION_READ_VIDEO_DATA                   = "read_video_data";
+    public final static String ACTION_AUDIO_PROXY                       = "audio_proxy";
 
 
 
