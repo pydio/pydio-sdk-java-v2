@@ -29,7 +29,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
-
 import javax.security.cert.X509Certificate;
 
 import pydio.sdk.java.core.model.Node;
@@ -38,7 +37,6 @@ import pydio.sdk.java.core.security.CertificateTrust;
 import pydio.sdk.java.core.utils.ApplicationData;
 import pydio.sdk.java.core.utils.HttpChunkedResponseInputStream;
 import pydio.sdk.java.core.utils.HttpResponseParser;
-import pydio.sdk.java.core.utils.Log;
 import pydio.sdk.java.core.utils.Pydio;
 
 /**
@@ -97,7 +95,7 @@ public class HttpClient {
         throw new IOException("NO TLS");
     }
 
-    CookieManager mCookieManager = new CookieManager();
+    public CookieManager mCookieManager = new CookieManager();
 
     public HttpResponse send(String url, Map<String, String> params, ContentBody body) throws IOException {
 
