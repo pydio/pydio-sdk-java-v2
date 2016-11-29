@@ -135,6 +135,11 @@ public class PydioClient implements Serializable{
         http.login();
         return http.requestStatus() == Pydio.OK;
     }
+
+
+    public void loginIfNecessary() throws IOException {
+        http.getResponse("blablacar", null);
+    }
     /**
      * UnAuthenticates the user
      * @return      true if the login() succeeded or false if the authen
@@ -1437,6 +1442,31 @@ public class PydioClient implements Serializable{
                 try{out.close();}catch (IOException e){}
             }
         }
+    }
+
+    public String streamingVideoURL(String tempWorkspace, String path) throws IOException {
+        Map<String, String> params = new HashMap<String , String>();
+        if(tempWorkspace == null){
+            tempWorkspace = mWorkspace.getId();
+        }
+        loginIfNecessary();
+        params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
+        params.put(Pydio.PARAM_SECURE_TOKEN, http.mSecureToken);
+        params.put(Pydio.PARAM_FILE, path);
+        return http.getGETUrl(Pydio.ACTION_READ_VIDEO_DATA, params);
+    }
+
+    public String streamingAudioURL(String tempWorkspace, String path) throws IOException {
+        Map<String, String> params = new HashMap<String , String>();
+        if(tempWorkspace == null){
+            tempWorkspace = mWorkspace.getId();
+        }
+        loginIfNecessary();
+        params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
+        params.put(Pydio.PARAM_SECURE_TOKEN, http.mSecureToken);
+        params.put(Pydio.PARAM_FILE, path);
+        params.put("rich_preview", "true");
+        return http.getGETUrl(Pydio.ACTION_AUDIO_PROXY, params);
     }
 
     public String listUsers()throws IOException{
