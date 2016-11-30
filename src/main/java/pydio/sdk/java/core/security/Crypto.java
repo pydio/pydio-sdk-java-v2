@@ -1,16 +1,7 @@
 package pydio.sdk.java.core.security;
 
-import java.util.Base64;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.spec.KeySpec;
-
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Created by jabar on 29/03/2016.
@@ -36,7 +27,7 @@ public class Crypto {
         return hexify(hash(algo, bytes));
     }
 
-    public static String aesDerivedKeyDecrypt(String keyPassword, String salt, byte[] data){
+    /*public static String aesDerivedKeyDecrypt(String keyPassword, String salt, byte[] data){
         try {
             SecretKeyFactory factory = SecretKeyFactory.getInstance(DERIVATION_KEY_ALGO);
             KeySpec spec = new PBEKeySpec(keyPassword.toCharArray(), salt.getBytes(), DERIVATION_ITERATION, DERIVED_KEY_SIZE);
@@ -63,13 +54,14 @@ public class Crypto {
             Cipher cipher = Cipher.getInstance(AES_CBC_PADDING);
             IvParameterSpec ivParameterSpec = new IvParameterSpec(key.getEncoded());
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
-            return new String(Base64.getEncoder().encode(cipher.doFinal(data)));
+            String enc_password = new String(Base64.getEncoder().encodeToString(cipher.doFinal(data)));
+            return  enc_password;
 
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
-    }
+    }*/
 
     public static String hexify(byte bytes[]) {
         char[] hexDigits = {'0', '1', '2', '3', '4', '5', '6', '7',
