@@ -97,9 +97,7 @@ public class SessionTransport implements Transport {
         if(mServerNode instanceof ResolutionServer){
             try {
                 ServerResolution.resolve((ResolutionServer) mServerNode);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            } catch (IOException e) {}
         }
 
         String url = mServerNode.url();
@@ -130,7 +128,7 @@ public class SessionTransport implements Transport {
             try {
                 password = Crypto.hexHash(Crypto.HASH_MD5, (Crypto.hexHash(Crypto.HASH_MD5, password.getBytes()) + mSeed).getBytes());
             } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
+                Log.e("CRYPTO", e.getMessage());
             }
         }
 
@@ -188,7 +186,7 @@ public class SessionTransport implements Transport {
             JSONObject jObject = new JSONObject(stringResponse);
             mSecureToken = jObject.getString(Pydio.PARAM_SECURE_TOKEN.toUpperCase());
         } catch (ParseException e) {
-            e.printStackTrace();
+            Log.e("Incoherent state", e.getMessage());
         }
     }
 
@@ -361,7 +359,7 @@ public class SessionTransport implements Transport {
             //<meta http-equiv="refresh" content="5; URL=http://www.manouvelleadresse.com">
         } catch (IOException e) {
         } catch (ParserConfigurationException e) {
-            e.printStackTrace();
+            Log.w("Warning", e.getMessage());
         } catch (SAXException e) {
             String m = e.getMessage();
             if("auth".equalsIgnoreCase(m)){
@@ -377,7 +375,7 @@ public class SessionTransport implements Transport {
                 return true;
             }
         }catch (Exception e){
-            e.printStackTrace();
+            Log.w("Warning", e.getMessage());
         }
 
         if(!is_required[0]){
@@ -405,11 +403,9 @@ public class SessionTransport implements Transport {
             try {
                 response = mHttpClient.send(uri.toString(), params, contentBody);
             } catch (IOException e){
-                //e.printStackTrace();
-
                 if(e instanceof SSLException){
-                    e.printStackTrace();
                     if(mServerNode.SSLUnverified()) {
+                        Log.w("SSL", e.getMessage());
                         mLastRequestStatus = Pydio.ERROR_UNVERIFIED_CERTIFICATE;
                         mServerNode.setLastRequestResponseCode(Pydio.ERROR_UNVERIFIED_CERTIFICATE);
                         throw e;
@@ -417,12 +413,14 @@ public class SessionTransport implements Transport {
                     mHttpClient.enableUnverifiedMode(mServerNode.setSSLUnverified(true).getTrustHelper());
                     continue;
                 }
+
+                Log.e("CONNECTION", e.getMessage());
                 mLastRequestStatus = Pydio.ERROR_CON_FAILED;
                 mServerNode.setLastRequestResponseCode(mLastRequestStatus);
                 throw e;
             }catch (Exception e){
-                e.printStackTrace();
                 if(e instanceof IllegalArgumentException && e.getMessage().toLowerCase().contains("unreachable")){
+                    Log.e("CONNECTION", "Unreachable host");
                     mLastRequestStatus = Pydio.ERROR_UNREACHABLE_HOST;
                     mServerNode.setLastRequestResponseCode(mLastRequestStatus);
                 }
