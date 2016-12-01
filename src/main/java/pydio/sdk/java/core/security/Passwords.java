@@ -10,7 +10,6 @@ public class Passwords {
 
     public static String load(String url, String login){
         if(Loader == null) return null;
-        String password = Loader.loadPassword(url, login);
-        return password;
+        return Loader.loadPassword(url, login);
     }
 }

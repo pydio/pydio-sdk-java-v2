@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.net.CookieManager;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -118,10 +119,12 @@ public class PydioClient implements Serializable{
         http = (SessionTransport) TransportFactory.getInstance(Transport.MODE_SESSION, node);
     }
 
-
-
     public void setUser(String user){
         http.mUser = user;
+    }
+
+    public void setCookieManager(CookieManager cm){
+        http.setCookieManager(cm);
     }
     //*****************************************
     //         REMOTE ACTION METHODS
@@ -135,7 +138,6 @@ public class PydioClient implements Serializable{
         http.login();
         return http.requestStatus() == Pydio.OK;
     }
-
 
     public void loginIfNecessary() throws IOException {
         http.getResponse("blablacar", null);
@@ -1816,5 +1818,15 @@ public class PydioClient implements Serializable{
 
     public void getCaptcha() throws IOException {
         http.loadCaptcha();
+    }
+
+    public String action(String action, Map<String, String> params){
+        try{
+            String content = http.getStringContent(action, params);
+            Log.i("", content);
+        }catch (Exception e){
+            Log.e("ERROR", e.getMessage());
+        }
+        return action;
     }
 }

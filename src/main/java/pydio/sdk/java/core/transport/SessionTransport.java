@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.CookieManager;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -54,6 +55,8 @@ public class SessionTransport implements Transport {
     private boolean mAccessRefused, mLoggedIn = false, ssIdRefreshed = false;
     private HttpClient mHttpClient;
 
+    CookieManager mCookieManager;
+
     private String mSeed;
     private ServerNode mServerNode;
     private String mAction;
@@ -64,6 +67,31 @@ public class SessionTransport implements Transport {
     }
 
     SessionTransport(){}
+
+
+    public String getGETUrl(String action, Map<String, String> params) throws IOException {
+        String url = mServerNode.url() + "index.php?";
+        url += Pydio.PARAM_GET_ACTION+"="+action;
+
+        Iterator<Map.Entry<String, String>> it = params.entrySet().iterator();
+        url += "&";
+        while (it.hasNext()) {
+            Map.Entry<String, String> entry = it.next();
+            String name = entry.getKey(), value = entry.getValue();
+            url += name +"="+ URLEncoder.encode(value, "utf-8");
+            url += "&";
+        }
+
+        List<HttpCookie> cookies = mHttpClient.mCookieManager.getCookieStore().getCookies();
+        for(HttpCookie c : cookies){
+            url += "ajxp_sessid=" + URLEncoder.encode(c.getValue(), "utf-8");
+        }
+        return url;
+    }
+
+    public void setCookieManager(CookieManager m){
+        mCookieManager = m;
+    }
 
     private URI getActionURI(String action){
         if(mServerNode instanceof ResolutionServer){
@@ -91,29 +119,7 @@ public class SessionTransport implements Transport {
         }
     }
 
-    public String getGETUrl(String action, Map<String, String> params) throws IOException {
-        String url = mServerNode.url() + "index.php?";
-        url += Pydio.PARAM_GET_ACTION+"="+action;
-
-        Iterator<Map.Entry<String, String>> it = params.entrySet().iterator();
-        url += "&";
-        while (it.hasNext()) {
-            Map.Entry<String, String> entry = it.next();
-            String name = entry.getKey(), value = entry.getValue();
-            url += name +"="+ URLEncoder.encode(value, "utf-8");
-                url += "&";
-        }
-
-        List<HttpCookie> cookies = mHttpClient.mCookieManager.getCookieStore().getCookies();
-        for(HttpCookie c : cookies){
-            url += "ajxp_sessid=" + URLEncoder.encode(c.getValue(), "utf-8");
-        }
-        System.out.println(url);
-        return url;
-    }
-
     public void login() throws IOException {
-
         String captcha_code = mServerNode.getAuthenticationChallengeResponse();
         if(captcha_code == null || mSeed == null) {
             getSeed();
@@ -382,7 +388,7 @@ public class SessionTransport implements Transport {
 
     private HttpResponse request(URI uri, Map<String, String> params, ContentBody contentBody) throws IOException {
         if(mHttpClient == null){
-            mHttpClient = new HttpClient(mServerNode.SSLUnverified());
+            mHttpClient = new HttpClient(mServerNode.SSLUnverified(), mCookieManager);
         }
 
         if(params == null){
