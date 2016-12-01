@@ -8,7 +8,6 @@ import pydio.sdk.java.core.PydioClient;
  * Created by jabar on 07/04/2016.
  */
 public class MinisiteShare {
-
     public static void main(String[] args) throws Exception{
 
         final PydioClient client = new PydioClient("http://54.154.218.27", "jabar", "pydio@2015");
