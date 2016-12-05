@@ -1,9 +1,8 @@
 package pydio.sdk.java.core.utils;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
-
-import pydio.sdk.java.core.model.ResolutionServer;
 
 /**
  * Created by pydio on 12/03/2015.
@@ -21,9 +20,14 @@ public class ServerResolution {
         resolvers.remove(name);
     }
 
-    public static void resolve(ResolutionServer server) throws IOException {
-        if(resolvers.containsKey(server.host())){
-            resolvers.get(server.host()).resolve(server);
+    public static String resolve(String url) throws IOException {
+        URI uri = URI.create(url);
+        String scheme = uri.getScheme();
+        String id = url.substring(scheme.length() + 3).replace("/", "");
+
+        if(!resolvers.containsKey(scheme)){
+            throw new IOException("Unable to resolve server " + url);
         }
+        return resolvers.get(scheme).resolve(id);
     }
 }

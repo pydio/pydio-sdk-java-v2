@@ -2,7 +2,6 @@ package pydio.sdk.java.core.utils;
 
 
 import java.io.IOException;
-import pydio.sdk.java.core.model.ResolutionServer;
 
 /**
  * Interface describing class to resolve server adress
@@ -10,5 +9,5 @@ import pydio.sdk.java.core.model.ResolutionServer;
  *
  */
 public interface ServerResolver {
-	void resolve(ResolutionServer server) throws IOException;
+	String resolve(String id) throws IOException;
 }

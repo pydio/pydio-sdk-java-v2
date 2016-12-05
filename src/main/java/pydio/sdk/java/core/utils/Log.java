@@ -108,7 +108,7 @@ public class Log {
         return File.separator.equals("/");
     }
 
-    interface Logger {
+    public static interface Logger {
         public void e(String tag, String text);
         public void i(String tag, String text);
         public void v(String tag, String text);

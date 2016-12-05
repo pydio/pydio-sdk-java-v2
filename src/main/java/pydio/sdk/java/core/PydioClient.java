@@ -150,7 +150,6 @@ public class PydioClient implements Serializable{
     public boolean logout() throws IOException {
         String action = Pydio.ACTION_LOGOUT;
         String response = http.getStringContent(action, null);
-        Log.i("PYDIO SDK", "[action=" + action + "]");
         boolean result = response != null && response.contains("logging_result value=\"2\"");
 
         if(result){
@@ -169,7 +168,7 @@ public class PydioClient implements Serializable{
 
         DefaultHandler saxHandler = new WorkspaceNodeSaxHandler(handler, 0, -1);
 
-        Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        Log.i("Request",  "[action=" + action + Log.paramString(params) + "]");
         HttpResponse r = http.getResponse(action, params);
         try {
             SAXParserFactory
@@ -189,7 +188,7 @@ public class PydioClient implements Serializable{
     public boolean selectWorkspace(final String id) throws IOException {
         Map<String, String> params = new HashMap<String, String>();
         params.put(Pydio.PARAM_WORKSPACE, id);
-        Log.i("PYDIO SDK", "[action=" + Pydio.ACTION_SWITCH_REPO + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_SWITCH_REPO + Log.paramString(params) + "]");
         http.getResponse(Pydio.ACTION_SWITCH_REPO, params);
         int status = http.requestStatus();
         if(status == Pydio.OK){
@@ -197,7 +196,7 @@ public class PydioClient implements Serializable{
             String action = Pydio.ACTION_GET_REGISTRY;
             params.put(Pydio.PARAM_XPATH, Pydio.XPATH_USER_ACTIVE_WORKSPACE);
 
-            Log.i("PYDIO SDK", "[action=" + action + Log.paramString(params) + "]");
+            Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
             String content = http.getStringContent(action, params);
             return content != null && content.contains("<active_repo id=\"" + id + "\"");
         }
@@ -211,7 +210,7 @@ public class PydioClient implements Serializable{
     public void switchWorkspace(final String id) throws IOException {
         Map<String, String> params = new HashMap<String, String>();
         params.put(Pydio.PARAM_WORKSPACE, id);
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_SWITCH_REPO + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_SWITCH_REPO + Log.paramString(params) + "]");
         http.getResponse(Pydio.ACTION_SWITCH_REPO, params);
         int status = http.requestStatus();
         if(status != Pydio.OK){
@@ -236,7 +235,7 @@ public class PydioClient implements Serializable{
             params.put(Pydio.PARAM_XPATH, "user");
         }
         try {
-            Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_GET_REGISTRY + Log.paramString(params) + "]");
+            Log.i("Request", "[action=" + Pydio.ACTION_GET_REGISTRY + Log.paramString(params) + "]");
             InputStream in = http.getResponseStream(Pydio.ACTION_GET_REGISTRY, params);
             byte[] buffer = new byte[Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE];
             int read;
@@ -250,7 +249,7 @@ public class PydioClient implements Serializable{
     }
 
     public void serverGeneralRegistry(RegistryItemHandler itemHandler) throws IOException{
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_GET_REGISTRY+ "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_GET_REGISTRY+ "]");
         InputStream in = http.getResponseStream(Pydio.ACTION_GET_REGISTRY, null);
         SAXParserFactory factory = SAXParserFactory.newInstance();
         /*FileOutputStream stream = new FileOutputStream("C:\\Users\\jabar\\Desktop\\Putty\\registry.xml");
@@ -278,7 +277,7 @@ public class PydioClient implements Serializable{
         Map<String, String> params = new HashMap<String, String>();
         params.put(Pydio.PARAM_XPATH, "user");
         try {
-            Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_GET_REGISTRY + Log.paramString(params) + "]");
+            Log.i("Request", "[action=" + Pydio.ACTION_GET_REGISTRY + Log.paramString(params) + "]");
             InputStream in = http.getResponseStream(Pydio.ACTION_GET_REGISTRY, params);
             byte[] buffer = new byte[Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE];
             int read;
@@ -297,7 +296,7 @@ public class PydioClient implements Serializable{
         params.put(Pydio.PARAM_TEMP_WORKSPACE, workspace);
 
         try {
-            Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_GET_REGISTRY + Log.paramString(params) + "]");
+            Log.i("Request", "[action=" + Pydio.ACTION_GET_REGISTRY + Log.paramString(params) + "]");
             InputStream in = http.getResponseStream(Pydio.ACTION_GET_REGISTRY, params);
             byte[] buffer = new byte[Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE];
             int read;
@@ -333,7 +332,7 @@ public class PydioClient implements Serializable{
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
 
         try {
-            Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+            Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
             HttpResponse r = http.getResponse(action, params);
             InputStream in = r.getEntity().getContent();
             SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -372,7 +371,7 @@ public class PydioClient implements Serializable{
         }
 
         while(true) {
-            Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+            Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
             HttpResponse r = http.getResponse(action, params);
             InputStream in = r.getEntity().getContent();
             SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -439,7 +438,7 @@ public class PydioClient implements Serializable{
             params.put(Pydio.PARAM_AUTO_RENAME, "true");
         }
 
-        Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
         if(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE) == null){
             serverGeneralRegistry(new RegistryItemHandler() {
                 @Override
@@ -519,7 +518,7 @@ public class PydioClient implements Serializable{
                 String urlEncodedName = java.net.URLEncoder.encode(name, "utf-8");
                 params.put(Pydio.PARAM_URL_ENCODED_FILENAME, urlEncodedName);
             } catch (UnsupportedEncodingException e) {}
-            Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+            Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
 
             if(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE) == null){
                 serverGeneralRegistry(new RegistryItemHandler() {
@@ -605,7 +604,7 @@ public class PydioClient implements Serializable{
                         }
                     });
                 }
-                Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+                Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
                 if(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE) == null){
                     serverGeneralRegistry(new RegistryItemHandler() {
                         @Override
@@ -680,7 +679,7 @@ public class PydioClient implements Serializable{
             params.put(Pydio.PARAM_AUTO_RENAME, "true");
         }
 
-        Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
         if(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE) == null){
             serverGeneralRegistry(new RegistryItemHandler() {
                 @Override
@@ -748,7 +747,7 @@ public class PydioClient implements Serializable{
             params.put(Pydio.PARAM_AUTO_RENAME, "true");
         }
 
-        Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
         if(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE) == null){
             serverGeneralRegistry(new RegistryItemHandler() {
                 @Override
@@ -799,7 +798,7 @@ public class PydioClient implements Serializable{
         }
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
 
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_DOWNLOAD + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_DOWNLOAD + Log.paramString(params) + "]");
         HttpResponse response = http.getResponse(Pydio.ACTION_DOWNLOAD, params);
 
         InputStream stream = response.getEntity().getContent();
@@ -822,7 +821,7 @@ public class PydioClient implements Serializable{
             try {
                 target.write(buffer, 0, read);
             } catch (IOException e){
-                Log.i("PYDIO SDK",  "[error=" + e.getMessage() + "]");
+                Log.e("Download",  e.getMessage());
                 throw  new IOException("W");
             }
 
@@ -833,7 +832,7 @@ public class PydioClient implements Serializable{
 
         try { stream.close(); }
         catch (IOException e){
-            Log.e("PYDIO SDK", "[error=" + e.getMessage() + "]");
+            Log.e("Download", e.getMessage());
             throw  new IOException("C");
         }
         return total_read;
@@ -879,7 +878,7 @@ public class PydioClient implements Serializable{
             params.put(Pydio.PARAM_DIR, dir);
         }
         fillParams(params, paths);
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_DELETE + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_DELETE + Log.paramString(params) + "]");
         Document doc = http.getXmlContent(Pydio.ACTION_DELETE, params);
         if(handler != null) {
             try {
@@ -908,7 +907,7 @@ public class PydioClient implements Serializable{
         }else{
             params.put(Pydio.PARAM_FILENAME_NEW, newName);
         }
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_RENAME + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_RENAME + Log.paramString(params) + "]");
         Document doc = http.getXmlContent(Pydio.ACTION_RENAME, params);
         if(handler != null) {
             handler.onMessage(PydioMessage.create(doc));
@@ -929,7 +928,7 @@ public class PydioClient implements Serializable{
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         fillParams(params, paths);
         params.put(Pydio.PARAM_DEST, targetFolder);
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_COPY + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_COPY + Log.paramString(params) + "]");
         Document doc = http.getXmlContent(Pydio.ACTION_COPY, params);
         if(handler != null) {
             handler.onMessage(PydioMessage.create(doc));
@@ -955,7 +954,7 @@ public class PydioClient implements Serializable{
         if(force_del){
             params.put(Pydio.PARAM_FORCE_COPY_DELETE, "true");
         }
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_MOVE + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_MOVE + Log.paramString(params) + "]");
         Document doc = http.getXmlContent(Pydio.ACTION_MOVE, params);
         if(handler != null) {
             handler.onMessage(PydioMessage.create(doc));
@@ -977,7 +976,7 @@ public class PydioClient implements Serializable{
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         params.put(Pydio.PARAM_DIR, targetFolder);
         params.put(Pydio.PARAM_DIRNAME, dirname);
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_MKDIR + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_MKDIR + Log.paramString(params) + "]");
         Document doc = http.getXmlContent(Pydio.ACTION_MKDIR, params);
         if(handler != null) {
             handler.onMessage(PydioMessage.create(doc));
@@ -997,7 +996,7 @@ public class PydioClient implements Serializable{
         }
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         params.put(Pydio.PARAM_NODE, path);
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_MKFILE + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_MKFILE + Log.paramString(params) + "]");
         Document doc = http.getXmlContent(Pydio.ACTION_MKFILE, params);
         handler.onMessage(PydioMessage.create(doc));
     }
@@ -1017,7 +1016,7 @@ public class PydioClient implements Serializable{
         params.put(Pydio.PARAM_FILE, path);
         params.put(Pydio.PARAM_DIR, "/recycle_bin");
 
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_RESTORE + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_RESTORE + Log.paramString(params) + "]");
         Document doc = http.getXmlContent(Pydio.ACTION_RESTORE, params);
         handler.onMessage(PydioMessage.create(doc));
     }
@@ -1039,7 +1038,7 @@ public class PydioClient implements Serializable{
         params.put(Pydio.PARAM_ARCHIVE_NAME, name);
         params.put(Pydio.PARAM_COMPRESS_FLAT, Boolean.toString(compressFlat).toLowerCase());
         fillParams(params, paths);
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_COMPRESS + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_COMPRESS + Log.paramString(params) + "]");
         handler.onMessage(PydioMessage.create(http.getXmlContent(Pydio.ACTION_COMPRESS, params)));
     }
 
@@ -1054,7 +1053,7 @@ public class PydioClient implements Serializable{
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         params.put(Pydio.PARAM_DIR, file.getParent());
         params.put(Pydio.PARAM_DIRNAME, file.getName());
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_MKDIR + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_MKDIR + Log.paramString(params) + "]");
         return PydioMessage.create(http.getXmlContent(Pydio.ACTION_MKDIR, params));
     }
 
@@ -1071,7 +1070,7 @@ public class PydioClient implements Serializable{
         if(force_del){
             params.put(Pydio.PARAM_FORCE_COPY_DELETE, "true");
         }
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_MOVE + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_MOVE + Log.paramString(params) + "]");
         Document doc = http.getXmlContent(Pydio.ACTION_MOVE, params);
         return PydioMessage.create(doc);
     }
@@ -1083,7 +1082,7 @@ public class PydioClient implements Serializable{
         }
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         fillParams(params, paths);
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_DELETE + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_DELETE + Log.paramString(params) + "]");
         Document doc = http.getXmlContent(Pydio.ACTION_DELETE, params);
         return PydioMessage.create(doc);
     }
@@ -1097,7 +1096,7 @@ public class PydioClient implements Serializable{
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         fillParams(params, paths);
         params.put(Pydio.PARAM_DEST, targetFolder);
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_COPY + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_COPY + Log.paramString(params) + "]");
         Document doc = http.getXmlContent(Pydio.ACTION_COPY, params);
         return PydioMessage.create(doc);
     }
@@ -1127,7 +1126,7 @@ public class PydioClient implements Serializable{
             params.put(Pydio.PARAM_AUTO_RENAME, "true");
         }
 
-        Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
         ContentBody cb = new ContentBody(source, name, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
         if(progressListener != null) {
             cb.setListener(new ContentBody.ProgressListener() {
@@ -1180,7 +1179,7 @@ public class PydioClient implements Serializable{
                 String urlEncodedName = java.net.URLEncoder.encode(name, "utf-8");
                 params.put(Pydio.PARAM_URL_ENCODED_FILENAME, urlEncodedName);
             } catch (UnsupportedEncodingException e) {}
-            Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+            Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
 
             ContentBody cb = new ContentBody(file, name, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
             if(progressListener != null) {
@@ -1247,7 +1246,7 @@ public class PydioClient implements Serializable{
                     params.put(Pydio.PARAM_URL_ENCODED_FILENAME, urlEncodedName);
                 } catch (UnsupportedEncodingException ignored) {}
 
-                Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+                Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
                 ContentBody cb = new ContentBody(file, name, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
 
                 if(progressListener != null) {
@@ -1308,7 +1307,7 @@ public class PydioClient implements Serializable{
             params.put(Pydio.PARAM_AUTO_RENAME, "true");
         }
 
-        Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
         ContentBody cb = new ContentBody(source, name, length, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
         if(progressListener != null) {
             cb.setListener(new ContentBody.ProgressListener() {
@@ -1355,7 +1354,7 @@ public class PydioClient implements Serializable{
             params.put(Pydio.PARAM_AUTO_RENAME, "true");
         }
 
-        Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
         ContentBody cb = new ContentBody(source, name, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
         if(progressListener != null) {
             cb.setListener(new ContentBody.ProgressListener() {
@@ -1398,7 +1397,7 @@ public class PydioClient implements Serializable{
             action = Pydio.ACTION_PREVIEW_DATA_PROXY;
         }
 
-        Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
         HttpResponse response = http.getResponse(action, params);
 
         if(response != null) {
@@ -1427,7 +1426,7 @@ public class PydioClient implements Serializable{
 
         String action = path.endsWith(".pdf") ? Pydio.ACTION_IMAGICK_DATA_PROXY: Pydio.ACTION_PREVIEW_DATA_PROXY;
 
-        Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
         HttpResponse response = http.getResponse(action, params);
         //Log.info(HttpResponseParser.getString(response));
 
@@ -1472,12 +1471,12 @@ public class PydioClient implements Serializable{
     }
 
     public String listUsers()throws IOException{
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_LIST_USERS + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_LIST_USERS + "]");
         return http.getStringContent(Pydio.ACTION_LIST_USERS, null);
     }
 
     public String createUser(String login, String password)throws IOException{
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_CREATE_USER + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_CREATE_USER + "]");
         return http.getStringContent(Pydio.ACTION_CREATE_USER + login + "/" + password, null);
     }
     /**
@@ -1506,7 +1505,7 @@ public class PydioClient implements Serializable{
         params.put(Pydio.PARAM_CHANGE_STREAM, "true");
         String action = Pydio.ACTION_CHANGES;
         try {
-            Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+            Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
             HttpResponse r = http.getResponse(action, params);
             String h = r.getHeaders("Content-Type").get(0);
 
@@ -1576,7 +1575,7 @@ public class PydioClient implements Serializable{
         String action = Pydio.ACTION_CHANGES;
 
         try {
-            Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+            Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
             HttpResponse r = http.getResponse(action, params);
             String h = r.getHeaders("Content-Type").get(0);
 
@@ -1642,7 +1641,7 @@ public class PydioClient implements Serializable{
         }
 
         params.put(Pydio.PARAM_FILE, path);
-        Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
         HttpResponse r = http.getResponse(action, params);
         if(r == null) return null;
 
@@ -1683,7 +1682,7 @@ public class PydioClient implements Serializable{
         String action = Pydio.ACTION_LOAD_SHARED_ELEMENT_DATA;
         params.put(Pydio.PARAM_FILE, path);
         //params.put(Pydio.PARAM_SHARE_ELEMENT_TYPE, Pydio.SHARE_ELEMENT_TYPE_FILE);
-        Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
         String res = http.getStringContent(action, params);
         try {
             return new JSONObject(res);
@@ -1701,7 +1700,7 @@ public class PydioClient implements Serializable{
         Map<String, String> params = new HashMap<String, String>();
         params.put(Pydio.PARAM_USER_ID, user);
         params.put(Pydio.PARAM_BINARY_ID, binary);
-        Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_GET_BINARY_PARAM + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + Pydio.ACTION_GET_BINARY_PARAM + Log.paramString(params) + "]");
         return http.getResponseStream(Pydio.ACTION_GET_BINARY_PARAM, params);
     }
 
@@ -1743,7 +1742,7 @@ public class PydioClient implements Serializable{
         params.put(Pydio.PARAM_SHARE_WORKSPACE_DESCRIPTION, ws_description);
         params.put(Pydio.PARAM_SHARE_WORKSPACE_LABEL, ws_label);
 
-        Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
         return http.getStringContent(action, params);
     }
 
@@ -1761,7 +1760,7 @@ public class PydioClient implements Serializable{
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         String action = Pydio.ACTION_UNSHARE;
         params.put(Pydio.PARAM_FILE, path);
-        Log.i("PYDIO SDK",  "[action=" + action + Log.paramString(params) + "]");
+        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
         http.getResponse(action, params);
     }
 
@@ -1780,7 +1779,7 @@ public class PydioClient implements Serializable{
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
         params.put(Pydio.PARAM_SEARCH_QUERY, query);
         try {
-            Log.i("PYDIO SDK",  "[action=" + Pydio.ACTION_SEARCH + Log.paramString(params) + "]");
+            Log.i("Request", "[action=" + Pydio.ACTION_SEARCH + Log.paramString(params) + "]");
             HttpResponse response = http.getResponse(Pydio.ACTION_SEARCH, params);
             InputStream in  = response.getEntity().getContent();
             SAXParserFactory factory = SAXParserFactory.newInstance();
