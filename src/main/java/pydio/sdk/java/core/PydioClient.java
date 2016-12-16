@@ -414,6 +414,7 @@ public class PydioClient implements Serializable{
      * @param   handler A delegate to handle the response message
      */
     public void upload(String tempWorkspace, String path, File source, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener, final MessageHandler handler)throws IOException {
+        loginIfNecessary();
         String action;
         Map<String, String> params = new HashMap<String , String>();
 
@@ -481,6 +482,7 @@ public class PydioClient implements Serializable{
      * @param   handler A delegate to handle the response message
      */
     public void uploadBucket(String tempWorkspace, String path, final ArrayList<String> files, Long totalSize, Filter<File> filter, final BucketUploadListener listener, final MessageHandler handler)throws IOException {
+        loginIfNecessary();
         String action;
         Map<String, String> params = new HashMap<String , String>();
 
@@ -552,6 +554,7 @@ public class PydioClient implements Serializable{
     }
 
     public void uploadTree(String tempWorkspace, String remoteRoot, String localRoot, ArrayList<String> files, long totalSize, Filter<File> filter, final BucketUploadListener listener, final MessageHandler handler) throws IOException {
+        loginIfNecessary();
         String action;
 
         if(tempWorkspace == null){
@@ -648,6 +651,7 @@ public class PydioClient implements Serializable{
      * @param   handler A delegate to handle the response message
      */
     public void upload(String tempWorkspace, String path, InputStream source, long length, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener, final MessageHandler handler) throws IOException {
+        loginIfNecessary();
         String action;
         try {
             JSONObject stats = stats(tempWorkspace, path, false);
@@ -726,6 +730,7 @@ public class PydioClient implements Serializable{
      * @param   handler A delegate to handle the response message
      */
     public void upload(String tempWorkspace, String path, byte[] source, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener, final MessageHandler handler) throws IOException {
+        loginIfNecessary();
         String action;
         Map<String, String> params = new HashMap<String , String>();
 
