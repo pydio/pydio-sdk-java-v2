@@ -12,8 +12,8 @@ import java.util.Map;
 
 import pydio.sdk.java.core.http.ContentBody;
 import pydio.sdk.java.core.http.HttpResponse;
-import pydio.sdk.java.core.utils.HttpResponseParser;
 import pydio.sdk.java.core.model.ServerNode;
+import pydio.sdk.java.core.utils.HttpResponseParser;
 
 /**
  * Class that generates rest requests
@@ -57,7 +57,7 @@ public class RestTransport implements Transport {
 			return HttpResponseParser.getString(response);
 	}
 	
-	public Document getXmlContent(String action, Map<String, String> params) {
+	public Document getXmlContent(String action, Map<String, String> params) throws IOException {
 			HttpResponse response = request(getActionURI(action), params);
 			return HttpResponseParser.getXML(response);
 	}
@@ -90,7 +90,7 @@ public class RestTransport implements Transport {
 	}
 
 	@Override
-	public Document putContent(String action, Map<String, String> params, ContentBody contentBody) throws IOException {
+	public HttpResponse putContent(String action, Map<String, String> params, ContentBody contentBody) throws IOException {
 		return null;
 	}
 

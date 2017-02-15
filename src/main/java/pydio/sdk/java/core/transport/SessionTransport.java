@@ -71,7 +71,7 @@ public class SessionTransport implements Transport {
     public String getGETUrl(String action, Map<String, String> params) throws IOException {
         String url = mServerNode.url();
         if(!url.startsWith("http")){
-            url = mResolvedServerAddress = ServerResolution.resolve(url);
+            url = mResolvedServerAddress = ServerResolution.resolve(url, false);
         }
 
         url += "index.php?";
@@ -101,7 +101,7 @@ public class SessionTransport implements Transport {
         String url = mServerNode.url();
 
         if(!url.startsWith("http")){
-            url = mResolvedServerAddress = ServerResolution.resolve(url);
+            url = mResolvedServerAddress = ServerResolution.resolve(url, false);
         }
 
         if(action != null && action.startsWith(Pydio.ACTION_CONF_PREFIX)){
@@ -570,17 +570,14 @@ public class SessionTransport implements Transport {
         return response.getEntity().getContent();
     }
     @Override
-    public Document putContent( String action, Map<String, String> params, ContentBody contentBody) throws IOException {
+    public HttpResponse putContent( String action, Map<String, String> params, ContentBody contentBody) throws IOException {
         /*mAccessRefused = false;
         mLoggedIn = false;
         ssIdRefreshed = false;*/
         mAction = action;
         mLastRequestStatus = Pydio.OK;
-        try {
-            HttpResponse response = request(getActionURI(action), params, contentBody);
-            return HttpResponseParser.getXML(response);
-        }catch (Exception e){}
-        return null;
+        URI uriAction = getActionURI(action);
+        return request(uriAction, params, contentBody);
     }
     @Override
     public void setServer(ServerNode server){

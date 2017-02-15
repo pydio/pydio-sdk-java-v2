@@ -33,6 +33,7 @@ import pydio.sdk.java.core.http.HttpResponse;
 import pydio.sdk.java.core.model.Change;
 import pydio.sdk.java.core.model.FileNode;
 import pydio.sdk.java.core.model.Node;
+import pydio.sdk.java.core.model.NodeDiff;
 import pydio.sdk.java.core.model.NodeFactory;
 import pydio.sdk.java.core.model.PydioMessage;
 import pydio.sdk.java.core.model.ServerNode;
@@ -49,6 +50,7 @@ import pydio.sdk.java.core.utils.Filter;
 import pydio.sdk.java.core.utils.HttpResponseParser;
 import pydio.sdk.java.core.utils.Log;
 import pydio.sdk.java.core.utils.MessageHandler;
+import pydio.sdk.java.core.utils.NodeDiffHandler;
 import pydio.sdk.java.core.utils.NodeHandler;
 import pydio.sdk.java.core.utils.PasswordLoader;
 import pydio.sdk.java.core.utils.ProgressListener;
@@ -404,6 +406,7 @@ public class PydioClient implements Serializable{
             }
         }
     }
+
     /**
      * Upload a file on the pydio server
      * @param   path    The directory to upload in
@@ -413,7 +416,7 @@ public class PydioClient implements Serializable{
      * @param   progressListener    A delegate to listen to progress
      * @param   handler A delegate to handle the response message
      */
-    public void upload(String tempWorkspace, String path, File source, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener, final MessageHandler handler)throws IOException {
+    public PydioMessage upload(String tempWorkspace, String path, File source, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener, final NodeDiffHandler handler)throws IOException {
         loginIfNecessary();
         String action;
         Map<String, String> params = new HashMap<String , String>();
@@ -458,7 +461,6 @@ public class PydioClient implements Serializable{
                         throw new IOException("");
                     }
                 }
-
                 @Override
                 public void partTransferred(int part, int total) throws IOException {
                     if (total == 0) total = 1;
@@ -468,10 +470,36 @@ public class PydioClient implements Serializable{
                 }
             });
         }
-        final Document doc = http.putContent(action, params, cb);
-        if(handler != null) {
-            handler.onMessage(PydioMessage.create(doc));
+
+        HttpResponse response = http.putContent(action, params, cb);
+        if(response == null){
+            return PydioMessage.create(PydioMessage.EMPTY, "");
         }
+
+        while(response.code() == 200 && !cb.allChunksWritten()){
+            try {
+                NodeDiff diff = NodeDiff.create(HttpResponseParser.getXML(response));
+                if (diff.added != null) {
+                    Node node = diff.added.get(0);
+                    String label = node.label();
+                    if (!label.equals(cb.getFilename())) {
+                        cb.setFilename(label);
+                    }
+                }
+                if(handler != null){
+                    handler.onNodeDiff(diff);
+                }
+            }catch (NullPointerException ignored){}
+            params.put(Pydio.PARAM_APPEND_TO_URLENCODED_PART, cb.getFilename());
+            response = http.putContent(action, params, cb);
+            if(response == null){
+                return PydioMessage.create(PydioMessage.EMPTY, "");
+            }
+        }
+        if(response.code() != 200 || !cb.allChunksWritten()){
+            return PydioMessage.create(PydioMessage.ERROR, "");
+        }
+        return PydioMessage.create(PydioMessage.SUCCESS, "");
     }
     /**
      * Upload a file on the pydio server
@@ -481,7 +509,7 @@ public class PydioClient implements Serializable{
      * @param   listener    A delegate to listen to progress
      * @param   handler A delegate to handle the response message
      */
-    public void uploadBucket(String tempWorkspace, String path, final ArrayList<String> files, Long totalSize, Filter<File> filter, final BucketUploadListener listener, final MessageHandler handler)throws IOException {
+    public PydioMessage uploadBucket(String tempWorkspace, String path, final ArrayList<String> files, Long totalSize, Filter<File> filter, final BucketUploadListener listener, final NodeDiffHandler handler)throws IOException {
         loginIfNecessary();
         String action;
         Map<String, String> params = new HashMap<String , String>();
@@ -544,16 +572,39 @@ public class PydioClient implements Serializable{
                 public void partTransferred(int part, int currentTotal) throws IOException {}
             });
 
+            HttpResponse response = http.putContent(action, params, cb);
+            if(response == null){
+                return PydioMessage.create(PydioMessage.EMPTY, "");
+            }
 
-            final Document doc = http.putContent(action, params, cb);
-
-            if(handler != null) {
-                handler.onMessage(PydioMessage.create(doc));
+            while(response.code() == 200 && !cb.allChunksWritten()){
+                try {
+                    NodeDiff diff = NodeDiff.create(HttpResponseParser.getXML(response));
+                    if (diff.added != null) {
+                        Node node = diff.added.get(0);
+                        String label = node.label();
+                        if (!label.equals(cb.getFilename())) {
+                            cb.setFilename(label);
+                        }
+                    }
+                    if(handler != null){
+                        handler.onNodeDiff(diff);
+                    }
+                }catch (NullPointerException ignored){}
+                params.put(Pydio.PARAM_APPEND_TO_URLENCODED_PART, cb.getFilename());
+                response = http.putContent(action, params, cb);
+                if(response == null){
+                    return PydioMessage.create(PydioMessage.EMPTY, "");
+                }
+            }
+            if(response.code() != 200 || !cb.allChunksWritten()){
+                return PydioMessage.create(PydioMessage.ERROR, "");
             }
         }
+        return PydioMessage.create(PydioMessage.SUCCESS, "");
     }
 
-    public void uploadTree(String tempWorkspace, String remoteRoot, String localRoot, ArrayList<String> files, long totalSize, Filter<File> filter, final BucketUploadListener listener, final MessageHandler handler) throws IOException {
+    public PydioMessage uploadTree(String tempWorkspace, String remoteRoot, String localRoot, ArrayList<String> files, long totalSize, Filter<File> filter, final BucketUploadListener listener, final NodeDiffHandler handler) throws IOException {
         loginIfNecessary();
         String action;
 
@@ -582,7 +633,9 @@ public class PydioClient implements Serializable{
             String currentRemoteRoot = file.getParentFile().getAbsolutePath().replace(localRoot, remoteRoot);
 
             if(file.isDirectory()){
-                try {mkdir(tempWorkspace, currentRemoteRoot, file.getName(), handler);}catch (IOException ignored){}
+                try {
+                    mkdir(tempWorkspace, currentRemoteRoot, file.getName(), null);
+                }catch (IOException ignored){}
 
             } else {
                 Map<String, String> params = new HashMap<String , String>();
@@ -597,8 +650,6 @@ public class PydioClient implements Serializable{
                     params.put(Pydio.PARAM_URL_ENCODED_FILENAME, urlEncodedName);
                 } catch (UnsupportedEncodingException ignored) {}
 
-
-
                 if(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE) == null){
                     serverGeneralRegistry(new RegistryItemHandler() {
                         @Override
@@ -607,6 +658,7 @@ public class PydioClient implements Serializable{
                         }
                     });
                 }
+
                 Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
                 if(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE) == null){
                     serverGeneralRegistry(new RegistryItemHandler() {
@@ -632,13 +684,37 @@ public class PydioClient implements Serializable{
                     });
                 }
 
-                final Document doc = http.putContent(action, params, cb);
+                HttpResponse response = http.putContent(action, params, cb);
+                if(response == null){
+                    return PydioMessage.create(PydioMessage.EMPTY, "");
+                }
 
-                if(handler != null) {
-                    handler.onMessage(PydioMessage.create(doc));
+                while(response.code() == 200 && !cb.allChunksWritten()){
+                    try {
+                        NodeDiff diff = NodeDiff.create(HttpResponseParser.getXML(response));
+                        if (diff.added != null) {
+                            Node node = diff.added.get(0);
+                            String label = node.label();
+                            if (!label.equals(cb.getFilename())) {
+                                cb.setFilename(label);
+                            }
+                        }
+                        if(handler != null){
+                            handler.onNodeDiff(diff);
+                        }
+                    }catch (NullPointerException ignored){}
+                    params.put(Pydio.PARAM_APPEND_TO_URLENCODED_PART, cb.getFilename());
+                    response = http.putContent(action, params, cb);
+                    if(response == null){
+                        return PydioMessage.create(PydioMessage.EMPTY, "");
+                    }
+                }
+                if(response.code() != 200 || !cb.allChunksWritten()){
+                    return PydioMessage.create(PydioMessage.ERROR, "");
                 }
             }
         }
+        return PydioMessage.create(PydioMessage.SUCCESS, "");
     }
     /**
      * Upload data in a file at the specified directory
@@ -650,7 +726,7 @@ public class PydioClient implements Serializable{
      * @param   progressListener    A delegate to listen to progress
      * @param   handler A delegate to handle the response message
      */
-    public void upload(String tempWorkspace, String path, InputStream source, long length, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener, final MessageHandler handler) throws IOException {
+    public PydioMessage upload(String tempWorkspace, String path, InputStream source, long length, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener, final NodeDiffHandler handler) throws IOException {
         loginIfNecessary();
         String action;
         try {
@@ -715,10 +791,37 @@ public class PydioClient implements Serializable{
             });
         }
 
-        final Document doc = http.putContent(action, params, cb);
-        if(handler != null) {
-            handler.onMessage(PydioMessage.create(doc));
+        HttpResponse response = http.putContent(action, params, cb);
+        if(response == null){
+            return PydioMessage.create(PydioMessage.EMPTY, "");
         }
+
+        while(response.code() == 200 && !cb.allChunksWritten()){
+            try {
+                NodeDiff diff = NodeDiff.create(HttpResponseParser.getXML(response));
+                if (diff.added != null) {
+                    Node node = diff.added.get(0);
+                    String label = node.label();
+                    if (!label.equals(cb.getFilename())) {
+                        cb.setFilename(label);
+                    }
+                }
+                if(handler != null){
+                    handler.onNodeDiff(diff);
+                }
+            }catch (NullPointerException ignored){}
+            params.put(Pydio.PARAM_APPEND_TO_URLENCODED_PART, cb.getFilename());
+            response = http.putContent(action, params, cb);
+            if(response == null){
+                return PydioMessage.create(PydioMessage.EMPTY, "");
+            }
+        }
+
+        if(response.code() != 200 || !cb.allChunksWritten()){
+            return PydioMessage.create(PydioMessage.ERROR, "");
+        }
+
+        return PydioMessage.create(PydioMessage.SUCCESS, "");
     }
     /**
      * Upload data in a file at the specified directory
@@ -729,7 +832,7 @@ public class PydioClient implements Serializable{
      * @param   progressListener    A delegate to listen to progress
      * @param   handler A delegate to handle the response message
      */
-    public void upload(String tempWorkspace, String path, byte[] source, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener, final MessageHandler handler) throws IOException {
+    public PydioMessage upload(String tempWorkspace, String path, byte[] source, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener, final NodeDiffHandler handler) throws IOException {
         loginIfNecessary();
         String action;
         Map<String, String> params = new HashMap<String , String>();
@@ -746,7 +849,10 @@ public class PydioClient implements Serializable{
         try {
             String urlEncodedName = java.net.URLEncoder.encode(name, "utf-8");
             params.put(Pydio.PARAM_URL_ENCODED_FILENAME, urlEncodedName);
-        } catch (UnsupportedEncodingException e) {}
+        } catch (UnsupportedEncodingException e) {
+            Log.e("URL Encoding", e.getMessage());
+            return PydioMessage.create(PydioMessage.ERROR, e.getMessage());
+        }
 
         if(autoRename) {
             params.put(Pydio.PARAM_AUTO_RENAME, "true");
@@ -771,7 +877,6 @@ public class PydioClient implements Serializable{
                         throw new IOException("");
                     }
                 }
-
                 @Override
                 public void partTransferred(int part, int total) throws IOException {
                     if (total == 0) total = 1;
@@ -781,11 +886,41 @@ public class PydioClient implements Serializable{
                 }
             });
         }
-        final Document doc = http.putContent(action, params, cb);
-        if(handler != null) {
-            handler.onMessage(PydioMessage.create(doc));
+
+        HttpResponse response = http.putContent(action, params, cb);
+        if(response == null){
+            return PydioMessage.create(PydioMessage.EMPTY, "");
         }
+
+        while(response.code() == 200 && !cb.allChunksWritten()){
+            try {
+                NodeDiff diff = NodeDiff.create(HttpResponseParser.getXML(response));
+                if (diff.added != null) {
+                    Node node = diff.added.get(0);
+                    String label = node.label();
+                    if (!label.equals(cb.getFilename())) {
+                        cb.setFilename(label);
+                    }
+                }
+                if(handler != null){
+                    handler.onNodeDiff(diff);
+                }
+            }catch (NullPointerException ignored){}
+            params.put(Pydio.PARAM_APPEND_TO_URLENCODED_PART, cb.getFilename());
+            response = http.putContent(action, params, cb);
+            if(response == null){
+                return PydioMessage.create(PydioMessage.EMPTY, "");
+            }
+        }
+
+        if(response.code() != 200 || !cb.allChunksWritten()){
+            return PydioMessage.create(PydioMessage.ERROR, "");
+        }
+
+        return PydioMessage.create(PydioMessage.SUCCESS, "");
     }
+
+
     /**
      * Downloads content from the server.
      * @param paths     Paths of remote nodes to be downloaded
@@ -1106,283 +1241,6 @@ public class PydioClient implements Serializable{
         return PydioMessage.create(doc);
     }
 
-    public PydioMessage upload(String tempWorkspace, String path, File source, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener)throws IOException {
-        String action;
-        Map<String, String> params = new HashMap<String , String>();
-
-        if(tempWorkspace == null){
-            tempWorkspace = mWorkspace.getId();
-        }
-        params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
-
-        action =  Pydio.ACTION_UPLOAD;
-        params.put(Pydio.PARAM_DIR, path);
-        params.put(Pydio.PARAM_XHR_UPLOADER, "true");
-
-        if(name == null){
-            name = source.getName();
-        }
-        try {
-            String urlEncodedName = java.net.URLEncoder.encode(name, "utf-8");
-            params.put(Pydio.PARAM_URL_ENCODED_FILENAME, urlEncodedName);
-        } catch (UnsupportedEncodingException e) {}
-
-        if(autoRename) {
-            params.put(Pydio.PARAM_AUTO_RENAME, "true");
-        }
-
-        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
-        ContentBody cb = new ContentBody(source, name, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
-        if(progressListener != null) {
-            cb.setListener(new ContentBody.ProgressListener() {
-                @Override
-                public void transferred(long num) throws IOException {
-                    if (progressListener.onProgress(num)) {
-                        throw new IOException("");
-                    }
-                }
-
-                @Override
-                public void partTransferred(int part, int total) throws IOException {
-                    if (total == 0) total = 1;
-                    if (progressListener.onProgress(part * 100 / total)) {
-                        throw new IOException("");
-                    }
-                }
-            });
-        }
-        final Document doc = http.putContent(action, params, cb);
-        return PydioMessage.create(doc);
-    }
-
-    public ArrayList<PydioMessage> uploadBucket(String tempWorkspace, String path, ArrayList<String> files, Long totalSize, final UploadStopNotifierProgressListener progressListener)throws IOException {
-        String action;
-        Map<String, String> params = new HashMap<String , String>();
-
-        if(tempWorkspace == null){
-            tempWorkspace = mWorkspace.getId();
-        }
-
-        params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
-        action =  Pydio.ACTION_UPLOAD;
-        params.put(Pydio.PARAM_DIR, path);
-        params.put(Pydio.PARAM_XHR_UPLOADER, "true");
-        params.put(Pydio.PARAM_AUTO_RENAME, "true");
-
-        long totalProcessed = 0;
-        if(totalSize == 0){
-            for(int i = 0; i < files.size(); i++){
-                totalSize += new File(files.get(i)).length();
-            }
-        }
-
-        ArrayList<PydioMessage> messages = new ArrayList<PydioMessage>();
-        for(int i = 0; i < files.size(); i++){
-            File file = new File(files.get(i));
-            String name = file.getName();
-            try {
-                String urlEncodedName = java.net.URLEncoder.encode(name, "utf-8");
-                params.put(Pydio.PARAM_URL_ENCODED_FILENAME, urlEncodedName);
-            } catch (UnsupportedEncodingException e) {}
-            Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
-
-            ContentBody cb = new ContentBody(file, name, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
-            if(progressListener != null) {
-                final long finalTotalProcessed = totalProcessed;
-                cb.setListener(new ContentBody.ProgressListener() {
-                    @Override
-                    public void transferred(long num) throws IOException {
-                        if (progressListener.onProgress(num + finalTotalProcessed)) {
-                            throw new IOException("");
-                        }
-                    }
-
-                    @Override
-                    public void partTransferred(int part, int currentTotal) throws IOException {
-                        if (progressListener.onProgress(finalTotalProcessed)) {
-                            throw new IOException("");
-                        }
-                    }
-                });
-            }
-
-            final Document doc = http.putContent(action, params, cb);
-            totalProcessed += file.length();
-            messages.add(PydioMessage.create(doc));
-        }
-        return messages;
-    }
-
-    public ArrayList<PydioMessage> uploadTree(String tempWorkspace, String remoteRoot, String localRoot, ArrayList<String> files, long totalSize, final UploadStopNotifierProgressListener progressListener) throws IOException {
-        String action;
-
-        if(tempWorkspace == null){
-            tempWorkspace = mWorkspace.getId();
-        }
-
-        long totalProcessed = 0;
-        if(totalSize == 0){
-            for(int i = 0; i < files.size(); i++){
-                totalSize += new File(files.get(i)).length();
-            }
-        }
-
-        ArrayList<PydioMessage> messages = new ArrayList<PydioMessage>();
-        for(int i = 0; i < files.size(); i++){
-            String filePath = files.get(i);
-            File file = new File(filePath);
-            String currentRemoteRoot = file.getParentFile().getAbsolutePath().replace(localRoot, remoteRoot);
-
-            if(file.isDirectory()){
-                try {
-                    messages.add(mkdir(tempWorkspace, filePath));
-                }catch (IOException ignored){}
-
-            } else {
-                Map<String, String> params = new HashMap<String , String>();
-                params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
-                action =  Pydio.ACTION_UPLOAD;
-                params.put(Pydio.PARAM_XHR_UPLOADER, "true");
-                params.put(Pydio.PARAM_DIR, currentRemoteRoot);
-                String name = file.getName();
-
-                try {
-                    String urlEncodedName = java.net.URLEncoder.encode(name, "utf-8");
-                    params.put(Pydio.PARAM_URL_ENCODED_FILENAME, urlEncodedName);
-                } catch (UnsupportedEncodingException ignored) {}
-
-                Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
-                ContentBody cb = new ContentBody(file, name, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
-
-                if(progressListener != null) {
-                    final long finalTotalProcessed = totalProcessed;
-                    cb.setListener(new ContentBody.ProgressListener() {
-                        @Override
-                        public void transferred(long num) throws IOException {
-                            if (progressListener.onProgress(num + finalTotalProcessed)) {
-                                throw new IOException("");
-                            }
-                        }
-                        @Override
-                        public void partTransferred(int part, int currentTotal) throws IOException {
-                            if (progressListener.onProgress(finalTotalProcessed)) {
-                                throw new IOException("");
-                            }
-                        }
-                    });
-                }
-
-                final Document doc = http.putContent(action, params, cb);
-                totalProcessed += file.length();
-                messages.add(PydioMessage.create(doc));
-            }
-        }
-        return messages;
-    }
-
-    public PydioMessage upload(String tempWorkspace, String path, InputStream source, long length, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener) throws IOException {
-        String action;
-        try {
-            JSONObject stats = stats(tempWorkspace, path, false);
-            if(stats == null || stats.length() == 0){
-                throw new IOException();
-            }
-        } catch (UnexpectedResponseException e) {
-            e.printStackTrace();
-            throw new IOException(e);
-        }
-
-        Map<String, String> params = new HashMap<String , String>();
-
-        if(tempWorkspace == null){
-            tempWorkspace = mWorkspace.getId();
-        }
-        params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
-
-        action =  Pydio.ACTION_UPLOAD;
-        params.put(Pydio.PARAM_DIR, path);
-        params.put(Pydio.PARAM_XHR_UPLOADER, "true");
-
-        try {
-            String urlEncodedName = java.net.URLEncoder.encode(name, "utf-8");
-            params.put(Pydio.PARAM_URL_ENCODED_FILENAME, urlEncodedName);
-        } catch (UnsupportedEncodingException e) {}
-
-        if(autoRename) {
-            params.put(Pydio.PARAM_AUTO_RENAME, "true");
-        }
-
-        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
-        ContentBody cb = new ContentBody(source, name, length, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
-        if(progressListener != null) {
-            cb.setListener(new ContentBody.ProgressListener() {
-                @Override
-                public void transferred(long num) throws IOException {
-                    if (progressListener.onProgress(num)) {
-                        throw new IOException("");
-                    }
-                }
-                @Override
-                public void partTransferred(int part, int total) throws IOException {
-                    if (total == 0) total = 1;
-                    if (progressListener.onProgress(part * 100 / total)) {
-                        throw new IOException("");
-                    }
-                }
-            });
-        }
-
-        final Document doc = http.putContent(action, params, cb);
-
-        return PydioMessage.create(doc);
-    }
-
-    public PydioMessage upload(String tempWorkspace, String path, byte[] source, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener) throws IOException {
-        String action;
-        Map<String, String> params = new HashMap<String , String>();
-
-        if(tempWorkspace == null){
-            tempWorkspace = mWorkspace.getId();
-        }
-        params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
-
-        action =  Pydio.ACTION_UPLOAD;
-        params.put(Pydio.PARAM_DIR, path);
-        params.put(Pydio.PARAM_XHR_UPLOADER, "true");
-
-        try {
-            String urlEncodedName = java.net.URLEncoder.encode(name, "utf-8");
-            params.put(Pydio.PARAM_URL_ENCODED_FILENAME, urlEncodedName);
-        } catch (UnsupportedEncodingException e) {}
-
-        if(autoRename) {
-            params.put(Pydio.PARAM_AUTO_RENAME, "true");
-        }
-
-        Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
-        ContentBody cb = new ContentBody(source, name, Long.parseLong(server.getProperty(Pydio.REMOTE_CONFIG_UPLOAD_SIZE)));
-        if(progressListener != null) {
-            cb.setListener(new ContentBody.ProgressListener() {
-                @Override
-                public void transferred(long num) throws IOException {
-                    if (progressListener.onProgress(num)) {
-                        throw new IOException("");
-                    }
-                }
-
-                @Override
-                public void partTransferred(int part, int total) throws IOException {
-                    if (total == 0) total = 1;
-                    if (progressListener.onProgress(part * 100 / total)) {
-                        throw new IOException("");
-                    }
-                }
-            });
-        }
-        final Document doc = http.putContent(action, params, cb);
-        return PydioMessage.create(doc);
-    }
-
     public InputStream previewData(String tempWorkspace, String path)throws IOException, UnexpectedResponseException{
         Map<String, String> params = new HashMap<String , String>();
 
@@ -1623,7 +1481,6 @@ public class PydioClient implements Serializable{
 
         return Math.max(seq, result_seq);
     }
-
     /**
      * Gets stats of a node
      * @param tempWorkspace   the target workspace ID
@@ -1670,7 +1527,6 @@ public class PydioClient implements Serializable{
             throw  new IOException(text);
         }
     }
-
     /**
      * Gets share info of a node
      * @param tempWorkspace   the target workspace ID
@@ -1694,7 +1550,6 @@ public class PydioClient implements Serializable{
         } catch (Exception e) {}
         return null;
     }
-
     /**
      * Gets data relative to the user
      * @param user The name of the user
@@ -1708,7 +1563,6 @@ public class PydioClient implements Serializable{
         Log.i("Request", "[action=" + Pydio.ACTION_GET_BINARY_PARAM + Log.paramString(params) + "]");
         return http.getResponseStream(Pydio.ACTION_GET_BINARY_PARAM, params);
     }
-
     /**
      * Generates a share link for node
      * @param tempWorkspace   the target workspace ID
@@ -1717,40 +1571,51 @@ public class PydioClient implements Serializable{
      * @param ws_description A String description of the share link
      * @param password A String password to access the content of the share link
      * @param expiration An integer that tells the number of day the share link is active
-     * @param canRead A boolean when set to true allow view when viewing shared node
+     * @param canPreview A boolean when set to true allow view when viewing shared node
      * @param canDownload A boolean when set to true allow download when viewing shared node
      * @return the link as a string
      */
-    public String minisiteShare(String tempWorkspace, String path, String ws_label, String ws_description, String password, int expiration, int downloads, boolean canRead, boolean canDownload)throws IOException{
-        Map<String, String> params = new HashMap<String , String>();
+    public String minisiteShare(String tempWorkspace, String path, String ws_label, boolean isFolder, String ws_description, String password, int expiration, int downloads, boolean canPreview, boolean canDownload)throws IOException{
 
+        Map<String, String> params = new HashMap<String , String>();
         if(tempWorkspace == null){
             tempWorkspace = mWorkspace.getId();
         }
         params.put(Pydio.PARAM_TEMP_WORKSPACE, tempWorkspace);
-
         String action = Pydio.ACTION_SHARE;
         params.put(Pydio.PARAM_SUB_ACTION, Pydio.ACTION_CREATE_MINISITE);
         params.put(Pydio.PARAM_FILE, path);
+        params.put(Pydio.PARAM_SHARE_ELEMENT_TYPE, isFolder ? "folder" : "file");
+        params.put(Pydio.PARAM_CREATE_GUEST_USER, "true");
+
+        //params.put("simple_right_download", canDownload ? "on" : "off");
+        //params.put("simple_right_read", canPreview? "on" : "off");
+        //params.put(Pydio.PARAM_SUB_ACTION, Pydio.ACTION_SHARE_NODE);
+        //params.put(Pydio.PARAM_ENABLE_PUBLIC_LINK, "true");
+        //params.put("share_type", "on");
 
         if(password != null && !"".equals(password)) {
             params.put(Pydio.PARAM_SHARE_GUEST_USER_PASSWORD, password);
         }
-
-        params.put("create_guest_user", "true");
-        if(canRead) params.put("simple_right_read", "on");
-        if(canDownload) params.put("simple_right_download", "on");
-        params.put("share_type", "on");
-
+        if(canPreview){
+            params.put(Pydio.PARAM_RIGHT_PREVIEW, "on");
+        } else {
+            params.put(Pydio.PARAM_MINISITE_LAYOUT, "ajxp_unique_dl");
+        }
+        if(canDownload) {
+            params.put(Pydio.PARAM_RIGHT_DOWNLOAD, "on");
+        } else {
+            params.put(Pydio.PARAM_MINISITE_LAYOUT, "ajxp_unique_strip");
+        }
         params.put(Pydio.PARAM_SHARE_EXPIRATION, String.valueOf(expiration));
         params.put(Pydio.PARAM_SHARE_DOWNLOAD, String.valueOf(downloads));
-        params.put(Pydio.PARAM_SHARE_WORKSPACE_DESCRIPTION, ws_description);
+        if(ws_description != null) {
+            params.put(Pydio.PARAM_SHARE_WORKSPACE_DESCRIPTION, ws_description);
+        }
         params.put(Pydio.PARAM_SHARE_WORKSPACE_LABEL, ws_label);
-
         Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
         return http.getStringContent(action, params);
     }
-
     /**
      * Deleted generated share link for a node
      * @param tempWorkspace the target workspace ID
@@ -1768,7 +1633,6 @@ public class PydioClient implements Serializable{
         Log.i("Request", "[action=" + action + Log.paramString(params) + "]");
         http.getResponse(action, params);
     }
-
     /**
      * Search for nodes along the name
      * @param   tempWorkspace   the target workspace ID
@@ -1793,7 +1657,6 @@ public class PydioClient implements Serializable{
         } catch (SAXException e) {} catch (ParserConfigurationException e) {}
     }
 
-
     private void fillParams(Map<String, String> params, String[] paths) {
         if(paths != null){
             if(paths.length == 1){
@@ -1807,11 +1670,9 @@ public class PydioClient implements Serializable{
         }
     }
 
-
     public void setServer(ServerNode server){
         this.server = server;
     }
-
     /**
      * @return An integer value of the last request status
      * @see Pydio

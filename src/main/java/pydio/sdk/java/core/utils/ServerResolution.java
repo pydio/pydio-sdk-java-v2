@@ -20,7 +20,7 @@ public class ServerResolution {
         resolvers.remove(name);
     }
 
-    public static String resolve(String url) throws IOException {
+    public static String resolve(String url, boolean refresh) throws IOException {
         URI uri = URI.create(url);
         String scheme = uri.getScheme();
         String id = url.substring(scheme.length() + 3).replace("/", "");
@@ -28,6 +28,6 @@ public class ServerResolution {
         if(!resolvers.containsKey(scheme)){
             throw new IOException("Unable to resolve server " + url);
         }
-        return resolvers.get(scheme).resolve(id);
+        return resolvers.get(scheme).resolve(id, refresh);
     }
 }

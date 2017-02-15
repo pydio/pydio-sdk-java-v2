@@ -21,13 +21,9 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 
-import pydio.sdk.java.core.model.Node;
-import pydio.sdk.java.core.model.NodeDiff;
 import pydio.sdk.java.core.security.CertificateTrust;
 import pydio.sdk.java.core.utils.ApplicationData;
-import pydio.sdk.java.core.utils.HttpResponseParser;
 import pydio.sdk.java.core.utils.Log;
-import pydio.sdk.java.core.utils.Pydio;
 
 /**
  * Created by jabar on 12/04/2016.
@@ -176,22 +172,6 @@ public class HttpClient {
                 url = url.replace(address, location);
                 redirectedAddresses.put(address, location);
                 return send(url, params, body);
-            }
-
-            if(code == 200 && !body.allChunksWritten()){
-                try {
-                    NodeDiff diff = NodeDiff.create(HttpResponseParser.getXML(response));
-                    if (diff.added != null) {
-                        Node node = diff.added.get(0);
-                        String label = node.label();
-                        if (!label.equals(body.getFilename())) {
-                            body.setFilename(label);
-                        }
-                    }
-                }catch (NullPointerException ignored){}
-
-                params.put(Pydio.PARAM_APPEND_TO_URLENCODED_PART, body.getFilename());
-                send(url, params, body);
             }
             return response;
 

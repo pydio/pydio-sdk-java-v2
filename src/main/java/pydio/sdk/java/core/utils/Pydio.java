@@ -58,6 +58,11 @@ public class Pydio {
     public static final String PARAM_SHARE_DOWNLOAD                     = "downloadlimit";
     public static final String PARAM_SHARE_WORKSPACE_LABEL              = "repo_label";
     public static final String PARAM_SHARE_WORKSPACE_DESCRIPTION        = "repo_description";
+    public static final String PARAM_CREATE_GUEST_USER                  = "create_guest_user";
+    public static final String PARAM_ENABLE_PUBLIC_LINK                 = "enable_public_link";
+    public static final String PARAM_MINISITE_LAYOUT                    = "minisite_layout";
+    public static final String PARAM_RIGHT_PREVIEW                      = "simple_right_read";
+    public static final String PARAM_RIGHT_DOWNLOAD                     = "simple_right_download";
     public static final String PARAM_SEARCH_QUERY                       = "query";
     public static final String PARAM_SEARCH_LIMIT                       = "limit";
     public static final String PARAM_BINARY_ID                          = "binary_id";
@@ -91,6 +96,7 @@ public class Pydio {
 	public final static String ACTION_MOVE 						        = "move";
 	public final static String ACTION_DELETE 					        = "delete";
 	public final static String ACTION_CREATE_MINISITE 					= "create_minisite";
+    public final static String ACTION_SHARE_NODE 					    = "share_node";
 	public final static String ACTION_SHARE 					        = "share";
 	public final static String ACTION_SEARCH 					        = "search";
 	public final static String ACTION_UNSHARE 					        = "unshare";

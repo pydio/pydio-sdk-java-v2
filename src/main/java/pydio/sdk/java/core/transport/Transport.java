@@ -32,7 +32,7 @@ public interface Transport extends Serializable{
 
     public InputStream getResponseStream(String action, Map<String, String> params) throws IOException;
 
-    public Document putContent( String action, Map<String, String> params, ContentBody contentBody) throws IOException;
+    public HttpResponse putContent( String action, Map<String, String> params, ContentBody contentBody) throws IOException;
 
     public void setServer(ServerNode server);
 }

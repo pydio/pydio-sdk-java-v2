@@ -9,5 +9,5 @@ import java.io.IOException;
  *
  */
 public interface ServerResolver {
-	String resolve(String id) throws IOException;
+	String resolve(String id, boolean refresh) throws IOException;
 }

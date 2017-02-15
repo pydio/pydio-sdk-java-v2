@@ -24,17 +24,17 @@ public class HttpResponseParser {
 	 * @param response an HttpResposne object
 	 * @return a XML document object
 	 */
-	public static Document getXML(HttpResponse response){
-		
+	public static Document getXML(HttpResponse response) throws IOException {
 		if(response == null) return null;
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();		
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			HttpEntity entity = response.getEntity();
 			InputStream in = entity.getContent();
 			return db.parse(in);
-		} catch (Exception e) {}
-		return null;	
+		}catch (Exception e){
+			throw new IOException(e.getMessage(), e);
+		}
 	}
 	
 	/**
