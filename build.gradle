@@ -5,6 +5,5 @@ repositories{
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.metaparadigm:json-rpc:1.0'
 }
