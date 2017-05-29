@@ -5,17 +5,20 @@ import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+import pydio.sdk.java.core.http.ContentBody;
+import pydio.sdk.java.core.http.HttpResponse;
+import pydio.sdk.java.core.model.*;
+import pydio.sdk.java.core.security.CertificateTrust;
+import pydio.sdk.java.core.security.Passwords;
+import pydio.sdk.java.core.transport.SessionTransport;
+import pydio.sdk.java.core.transport.Transport;
+import pydio.sdk.java.core.transport.TransportFactory;
+import pydio.sdk.java.core.utils.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.*;
 import java.net.CookieManager;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
@@ -23,44 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import pydio.sdk.java.core.http.ContentBody;
-import pydio.sdk.java.core.http.HttpResponse;
-import pydio.sdk.java.core.model.Change;
-import pydio.sdk.java.core.model.FileNode;
-import pydio.sdk.java.core.model.Node;
-import pydio.sdk.java.core.model.NodeDiff;
-import pydio.sdk.java.core.model.NodeFactory;
-import pydio.sdk.java.core.model.PydioMessage;
-import pydio.sdk.java.core.model.ServerNode;
-import pydio.sdk.java.core.model.WorkspaceNode;
-import pydio.sdk.java.core.security.CertificateTrust;
-import pydio.sdk.java.core.security.Passwords;
-import pydio.sdk.java.core.transport.SessionTransport;
-import pydio.sdk.java.core.transport.Transport;
-import pydio.sdk.java.core.transport.TransportFactory;
-import pydio.sdk.java.core.utils.BucketUploadListener;
-import pydio.sdk.java.core.utils.ChangeHandler;
-import pydio.sdk.java.core.utils.ChangeProcessor;
-import pydio.sdk.java.core.utils.Filter;
-import pydio.sdk.java.core.utils.HttpResponseParser;
-import pydio.sdk.java.core.utils.Log;
-import pydio.sdk.java.core.utils.MessageHandler;
-import pydio.sdk.java.core.utils.NodeDiffHandler;
-import pydio.sdk.java.core.utils.NodeHandler;
-import pydio.sdk.java.core.utils.PasswordLoader;
-import pydio.sdk.java.core.utils.ProgressListener;
-import pydio.sdk.java.core.utils.Pydio;
-import pydio.sdk.java.core.utils.RegistryItemHandler;
-import pydio.sdk.java.core.utils.ServerGeneralRegistrySaxHandler;
-import pydio.sdk.java.core.utils.TreeNodeSaxHandler;
-import pydio.sdk.java.core.utils.UnexpectedResponseException;
-import pydio.sdk.java.core.utils.UploadStopNotifierProgressListener;
-import pydio.sdk.java.core.utils.WorkspaceNodeSaxHandler;
 
 /**
  * @author pydio
@@ -414,9 +379,8 @@ public class PydioClient implements Serializable{
      * @param   name    The name of the uploaded file
      * @param   autoRename  if set to true the file will be renamed if there is a file with the same name
      * @param   progressListener    A delegate to listen to progress
-     * @param   handler A delegate to handle the response message
      */
-    public PydioMessage upload(String tempWorkspace, String path, File source, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener, final NodeDiffHandler handler)throws IOException {
+    public PydioMessage upload(String tempWorkspace, String path, File source, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener)throws IOException {
         loginIfNecessary();
         String action;
         Map<String, String> params = new HashMap<String , String>();
@@ -486,9 +450,9 @@ public class PydioClient implements Serializable{
                         cb.setFilename(label);
                     }
                 }
-                if(handler != null){
-                    handler.onNodeDiff(diff);
-                }
+                //if(handler != null){
+                //    handler.onNodeDiff(diff);
+                //}
             }catch (NullPointerException ignored){}
             params.put(Pydio.PARAM_APPEND_TO_URLENCODED_PART, cb.getFilename());
             response = http.putContent(action, params, cb);
@@ -507,9 +471,8 @@ public class PydioClient implements Serializable{
      * @param   files  The list of paths where are located files to upload
      * @param   totalSize  The total size of the bulk
      * @param   listener    A delegate to listen to progress
-     * @param   handler A delegate to handle the response message
      */
-    public PydioMessage uploadBucket(String tempWorkspace, String path, final ArrayList<String> files, Long totalSize, Filter<File> filter, final BucketUploadListener listener, final NodeDiffHandler handler)throws IOException {
+    public PydioMessage uploadBucket(String tempWorkspace, String path, final ArrayList<String> files, Long totalSize, Filter<File> filter, final BucketUploadListener listener)throws IOException {
         loginIfNecessary();
         String action;
         Map<String, String> params = new HashMap<String , String>();
@@ -587,9 +550,9 @@ public class PydioClient implements Serializable{
                             cb.setFilename(label);
                         }
                     }
-                    if(handler != null){
-                        handler.onNodeDiff(diff);
-                    }
+                    //if(handler != null){
+                    //    handler.onNodeDiff(diff);
+                    //}
                 }catch (NullPointerException ignored){}
                 params.put(Pydio.PARAM_APPEND_TO_URLENCODED_PART, cb.getFilename());
                 response = http.putContent(action, params, cb);
@@ -604,7 +567,7 @@ public class PydioClient implements Serializable{
         return PydioMessage.create(PydioMessage.SUCCESS, "");
     }
 
-    public PydioMessage uploadTree(String tempWorkspace, String remoteRoot, String localRoot, ArrayList<String> files, long totalSize, Filter<File> filter, final BucketUploadListener listener, final NodeDiffHandler handler) throws IOException {
+    public PydioMessage uploadTree(String tempWorkspace, String remoteRoot, String localRoot, ArrayList<String> files, long totalSize, Filter<File> filter, final BucketUploadListener listener) throws IOException {
         loginIfNecessary();
         String action;
 
@@ -699,9 +662,9 @@ public class PydioClient implements Serializable{
                                 cb.setFilename(label);
                             }
                         }
-                        if(handler != null){
-                            handler.onNodeDiff(diff);
-                        }
+                        //if(handler != null){
+                        //    handler.onNodeDiff(diff);
+                        //}
                     }catch (NullPointerException ignored){}
                     params.put(Pydio.PARAM_APPEND_TO_URLENCODED_PART, cb.getFilename());
                     response = http.putContent(action, params, cb);
@@ -724,9 +687,8 @@ public class PydioClient implements Serializable{
      * @param   name    The name of the uploaded file
      * @param   autoRename  if set to true the file will be renamed if there is a file with the same name
      * @param   progressListener    A delegate to listen to progress
-     * @param   handler A delegate to handle the response message
      */
-    public PydioMessage upload(String tempWorkspace, String path, InputStream source, long length, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener, final NodeDiffHandler handler) throws IOException {
+    public PydioMessage upload(String tempWorkspace, String path, InputStream source, long length, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener) throws IOException {
         loginIfNecessary();
         String action;
         try {
@@ -806,9 +768,9 @@ public class PydioClient implements Serializable{
                         cb.setFilename(label);
                     }
                 }
-                if(handler != null){
-                    handler.onNodeDiff(diff);
-                }
+                //if(handler != null){
+                //    handler.onNodeDiff(diff);
+                //}
             }catch (NullPointerException ignored){}
             params.put(Pydio.PARAM_APPEND_TO_URLENCODED_PART, cb.getFilename());
             response = http.putContent(action, params, cb);
@@ -830,9 +792,8 @@ public class PydioClient implements Serializable{
      * @param   name    The name of the uploaded file
      * @param   autoRename  if set to true the file will be renamed if there is a file with the same name
      * @param   progressListener    A delegate to listen to progress
-     * @param   handler A delegate to handle the response message
      */
-    public PydioMessage upload(String tempWorkspace, String path, byte[] source, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener, final NodeDiffHandler handler) throws IOException {
+    public PydioMessage upload(String tempWorkspace, String path, byte[] source, String name, boolean autoRename, final UploadStopNotifierProgressListener progressListener) throws IOException {
         loginIfNecessary();
         String action;
         Map<String, String> params = new HashMap<String , String>();
@@ -902,9 +863,9 @@ public class PydioClient implements Serializable{
                         cb.setFilename(label);
                     }
                 }
-                if(handler != null){
-                    handler.onNodeDiff(diff);
-                }
+//                if(handler != null){
+//                    handler.onNodeDiff(diff);
+//                }
             }catch (NullPointerException ignored){}
             params.put(Pydio.PARAM_APPEND_TO_URLENCODED_PART, cb.getFilename());
             response = http.putContent(action, params, cb);
