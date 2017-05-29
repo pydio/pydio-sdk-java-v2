@@ -1,11 +1,9 @@
 package pydio.sdk.java.core.utils;
 
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
+import pydio.sdk.java.core.model.ResolutionServer;
 
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,20 +13,15 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
 import java.util.UUID;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import pydio.sdk.java.core.model.ResolutionServer;
-
 /**
  * Created by jabar on 27/07/2016.
  */
-public class PydioServerResolver implements ServerResolver {
+public class PydioServerResolver {
     private int api_version = 1;
     private String databaseAddress = "https://api.pyd.io/endpoints/index.php";
     private String apikey = "zPyDirgrg48ZEFdf424e2dW";
     private String apisecret = "gsOPydo13sfDRPOKE448769";
 
-    @Override
     public void resolve(ResolutionServer server) throws IOException {
         try{
             String uuid = UUID.randomUUID().toString();
