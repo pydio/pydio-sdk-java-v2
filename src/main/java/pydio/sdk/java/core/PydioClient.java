@@ -32,7 +32,6 @@ import java.util.Scanner;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.xml.parsers.ParserConfigurationException;
@@ -49,7 +48,6 @@ import io.swagger.client.model.RestShareLink;
 import io.swagger.client.model.RestShareLinkAccessType;
 import io.swagger.client.model.TreeNode;
 import pydio.sdk.java.core.http.ContentBody;
-import pydio.sdk.java.core.http.HttpClient;
 import pydio.sdk.java.core.http.HttpResponse;
 import pydio.sdk.java.core.model.Change;
 import pydio.sdk.java.core.model.FileNode;
@@ -61,7 +59,6 @@ import pydio.sdk.java.core.model.ServerNode;
 import pydio.sdk.java.core.model.WorkspaceNode;
 import pydio.sdk.java.core.security.CertificateTrust;
 import pydio.sdk.java.core.security.Passwords;
-import pydio.sdk.java.core.transport.APITransport;
 import pydio.sdk.java.core.transport.SessionTransport;
 import pydio.sdk.java.core.transport.Transport;
 import pydio.sdk.java.core.transport.TransportFactory;
@@ -70,7 +67,6 @@ import pydio.sdk.java.core.utils.ChangeHandler;
 import pydio.sdk.java.core.utils.ChangeProcessor;
 import pydio.sdk.java.core.utils.Filter;
 import pydio.sdk.java.core.utils.HttpResponseParser;
-import pydio.sdk.java.core.utils.Log;
 import pydio.sdk.java.core.utils.MessageHandler;
 import pydio.sdk.java.core.utils.NodeDiffHandler;
 import pydio.sdk.java.core.utils.NodeHandler;
@@ -83,7 +79,6 @@ import pydio.sdk.java.core.utils.TreeNodeSaxHandler;
 import pydio.sdk.java.core.utils.UnexpectedResponseException;
 import pydio.sdk.java.core.utils.UploadStopNotifierProgressListener;
 import pydio.sdk.java.core.utils.WorkspaceNodeSaxHandler;
-import sun.security.provider.PolicyParser;
 
 /**
  * @author pydio
@@ -198,7 +193,7 @@ public class PydioClient implements Serializable {
      * @see #responseStatus()#logout()
      */
     public boolean login() throws IOException {
-        //getBootConfig();
+        getBootConfig();
         sessionTransport.login();
         return sessionTransport.requestStatus() == Pydio.OK;
     }
