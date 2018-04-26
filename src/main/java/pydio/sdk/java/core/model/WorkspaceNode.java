@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
+import pydio.sdk.java.core.utils.Log;
 import pydio.sdk.java.core.utils.Pydio;
 
 public class WorkspaceNode implements Node {
@@ -126,7 +127,7 @@ public class WorkspaceNode implements Node {
                     properties.load(in);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                //Log.e("Pydio", e.getMessage());
             }
         }
     }

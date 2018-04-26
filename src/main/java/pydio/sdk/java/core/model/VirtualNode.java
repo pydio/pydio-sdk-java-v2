@@ -72,7 +72,7 @@ public class VirtualNode implements Node {
     }
 
     public int type() {
-		return Node.TYPE_VIRTUAL;
+		return Node.TYPE_LOCAL_FILE;
 	}
 
 	public String path() {

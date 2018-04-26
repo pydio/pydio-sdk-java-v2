@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 
+import pydio.sdk.java.core.utils.Log;
 import pydio.sdk.java.core.utils.ProgressListener;
 import pydio.sdk.java.core.utils.Pydio;
 
@@ -25,7 +26,7 @@ public class HttpResponseEntity implements HttpEntity {
         try {
             mSource = con.getInputStream();
         } catch (IOException e) {
-            e.printStackTrace();
+            //Log.e("IO", e.getMessage());
             mLength = -1;
         }
     }

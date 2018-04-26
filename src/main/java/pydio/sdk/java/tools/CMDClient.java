@@ -47,7 +47,7 @@ public class CMDClient {
                                     out.write(c.toString().getBytes());
                                     out.close();
                                 } catch (IOException e) {
-                                    e.printStackTrace();
+                                    //Log.e("IO", e.getMessage());
                                 }
                             }
 
@@ -61,7 +61,7 @@ public class CMDClient {
                                     in.read(content);
                                     return HttpCookie.parse(new String(content));
                                 } catch (IOException e) {
-                                    e.printStackTrace();
+                                    //Log.e("IO", e.getMessage());
                                 }
                                 return new ArrayList<HttpCookie>();
                             }
@@ -76,7 +76,7 @@ public class CMDClient {
                                     in.read(content);
                                     return HttpCookie.parse(new String(content));
                                 } catch (IOException e) {
-                                    e.printStackTrace();
+                                    //Log.e("IO", e.getMessage());
                                 }
                                 return new ArrayList<HttpCookie>();
                             }
@@ -114,7 +114,7 @@ public class CMDClient {
         for (final String a : args) {
             if (a.charAt(0) == '-') {
                 if (a.length() < 2) {
-                    Log.e("Error", "at argument " + a);
+                    //Log.e("Error", "at argument " + a);
                     return;
                 }
                 optionName = a.substring(1);
@@ -127,7 +127,7 @@ public class CMDClient {
                 optionName = null;
 
             } else {
-                Log.e("Arguments", "Illegal parameter usage");
+                //Log.e("Arguments", "Illegal parameter usage");
                 return;
             }
         }
@@ -153,9 +153,9 @@ public class CMDClient {
 
         try{
             String content = client.action(action, params);
-            Log.i("", content);
+            //Log.i("", content);
         }catch (Exception e){
-            Log.e("ERROR", e.getMessage());
+            //Log.e("ERROR", e.getMessage());
         }
     }
 }

@@ -1,5 +1,6 @@
 package pydio.sdk.java.core.model;
 
+
 import org.json.JSONObject;
 
 import java.io.File;
@@ -9,11 +10,12 @@ import java.util.Properties;
 
 public interface Node extends Serializable {
 	
-	int TYPE_TREE = 1;
-	int TYPE_WORKSPACE = 2;
-	int TYPE_SERVER = 3;
-	int TYPE_VIRTUAL = 4;
-	int TYPE_SEARCH = 5;
+	int TYPE_REMOTE_FILE 	= 1;
+	int TYPE_WORKSPACE 		= 2;
+	int TYPE_SERVER 		= 3;
+	int TYPE_LOCAL_FILE 	= 4;
+	int TYPE_OTHER 			= 5;
+	int TYPE_SEARCH 		= 6;
 
 	int type();
 

@@ -57,13 +57,19 @@ public class HttpResponseParser {
 			}
 			return sb.toString();
 		} catch (IllegalStateException e) {
-			e.printStackTrace();
+            //Log.e("Pydio", e.getMessage());
 			return null;
 		} catch (IOException e) {
-			e.printStackTrace();
+            //Log.e("IO", e.getMessage());
 			return null;
 		} finally {
-			try {in.close();} catch (IOException e) {}
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    //Log.e("FS", e.getMessage());
+                }
+            }
 		}
 	}
 

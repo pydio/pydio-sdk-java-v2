@@ -39,7 +39,7 @@ public class NodeFactory {
 		if("repo".equals(nodename)) {
 			return createNode(pydio.sdk.java.core.model.Node.TYPE_WORKSPACE, xml);
 		}else if("tree".equals(nodename)){
-			return createNode(pydio.sdk.java.core.model.Node.TYPE_TREE, xml);
+			return createNode(pydio.sdk.java.core.model.Node.TYPE_REMOTE_FILE, xml);
 		}
 		return null;
 	}
@@ -52,7 +52,7 @@ public class NodeFactory {
 
 	private static pydio.sdk.java.core.model.Node newNode(int type){
 		switch (type) {			
-			case pydio.sdk.java.core.model.Node.TYPE_TREE:
+			case pydio.sdk.java.core.model.Node.TYPE_REMOTE_FILE:
 				return new FileNode();
 				
 			case pydio.sdk.java.core.model.Node.TYPE_WORKSPACE:
@@ -61,7 +61,7 @@ public class NodeFactory {
 			case pydio.sdk.java.core.model.Node.TYPE_SERVER:
 				return new pydio.sdk.java.core.model.ServerNode();
 				
-			case pydio.sdk.java.core.model.Node.TYPE_VIRTUAL:
+			case pydio.sdk.java.core.model.Node.TYPE_LOCAL_FILE:
 				return new VirtualNode();
 			default:
 				return null;	

@@ -7,7 +7,7 @@ package pydio.sdk.java.core.utils;
  *
  */
 public class Pydio {
-	
+
 	public final static String PARAM_GET_ACTION					        = "get_action";
 	public final static String PARAM_SUB_ACTION					        = "sub_action";
 
@@ -73,11 +73,14 @@ public class Pydio {
     public static final String PARAM_CHANGE_STREAM                      = "stream";
     public static final String PARAM_CHANGE_FILTER                      = "filter";
 
+    public static final String PARAM_CLIENT_TIME                      = "filter";
+
 
 
 
 
 	public final static String ACTION_LIST 						        = "ls";
+	public final static String ACTION_JWT 						        = "jwt";
 	public final static String ACTION_GET_BOOT_CONF 					= "get_boot_conf";
 	public final static String ACTION_LOGOUT 						    = "logout";
 	public final static String ACTION_UPLOAD 					        = "upload";
@@ -188,8 +191,11 @@ public class Pydio {
     public final static String WORKSPACE_ACCESS_TYPE_JSAPI              = "jsapi";
     public final static String WORKSPACE_ACCESS_TYPE_USER               = "ajxp_user";
     public final static String WORKSPACE_ACCESS_TYPE_HOME               = "ajxp_home";
-    public final static String WORKSPACE_ACCESS_TYPE_ADMIN               = "ajxp_admin";
+    public final static String WORKSPACE_ACCESS_TYPE_HOMEPAGE           = "homepage";
+    public final static String WORKSPACE_ACCESS_TYPE_ADMIN              = "ajxp_admin";
     public final static String WORKSPACE_ACCESS_TYPE_FS                 = "fs";
+    public final static String WORKSPACE_ACCESS_TYPE_GATEWAY            = "gateway";
+    public final static String WORKSPACE_ACCESS_TYPE_SETTINGS           = "settings";
     public final static String WORKSPACE_ACCESS_TYPE_INBOX              = "inbox";
 
 
@@ -282,6 +288,11 @@ public class Pydio {
     public final static String REGISTRY_PREF_AVATAR                     = "avatar";
     public final static String REGISTRY_PREF_USER_DISPLAY_NAME          = "USER_DISPLAY_NAME";
     public final static String REGISTRY_PREF_DEFAULT_WS                 = "DEFAULT_START_REPOSITORY";
+
+
+    public final static String VERSION_NUMBER                            = "ajxpVersion";
+
+    public final static String VERSION_CELLS                            = "cells";
 
 
     public final static String AUTH_CHALLENGE_TYPE_CAPTCHA              = "CHALLENGE_CAPTCHA";

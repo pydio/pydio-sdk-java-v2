@@ -14,15 +14,15 @@ import pydio.sdk.java.core.model.NodeFactory;
  */
 public class WorkspaceNodeSaxHandler extends DefaultHandler {
 
-    boolean inside_repo = false, inside_label = false, inside_description = false;
-    String inner_element = "";
-    NodeHandler handler;
-    Properties p = null;
+    private boolean inside_repo = false, inside_label = false, inside_description = false;
+    private String inner_element = "";
+    private NodeHandler handler;
+    private Properties p = null;
     //String tabs = "";
 
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         /*tabs += "\t";
-        Log.info(tabs + qName);*/
+        //Log.info(tabs + qName);*/
 
         if("repo".equals(qName)){
             inside_repo = true;
@@ -43,13 +43,13 @@ public class WorkspaceNodeSaxHandler extends DefaultHandler {
     }
 
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        /*Log.info(tabs + qName);
+        /*//Log.info(tabs + qName);
         tabs = tabs.substring(0, tabs.length() - 1);*/
 
         if(inside_repo && (inside_label || inside_description)){
             if(inside_label){
                 inside_label = false;
-            } else if(inside_description){
+            } else {
                 inside_description = false;
             }
             return;
@@ -59,7 +59,6 @@ public class WorkspaceNodeSaxHandler extends DefaultHandler {
             handler.onNode(NodeFactory.createNode(Node.TYPE_WORKSPACE, p));
             p = null;
             inside_repo = false;
-            return;
         }
     }
 

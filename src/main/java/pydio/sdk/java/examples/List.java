@@ -11,7 +11,7 @@ import pydio.sdk.java.core.utils.NodeHandler;
  */
 public class List {
     public static void main(String[] arg) throws IOException {
-        PydioClient c = new PydioClient("pyd://pyd_demo", "jabar", "security");
+        PydioClient c = new PydioClient("https://mon-nuage.iut-tlse3.fr/", "supportpydio", "PydioTran");
         c.workspaceList(new NodeHandler() {
             @Override
             public void onNode(Node node) {

@@ -13,7 +13,7 @@ public class TransportFactory {
 	public static pydio.sdk.java.core.transport.Transport getInstance(int mode){
 		
 		if(mode == pydio.sdk.java.core.transport.Transport.MODE_RESTFUL){
-			return new RestTransport();
+			return new APITransport();
 		}else if(mode == pydio.sdk.java.core.transport.Transport.MODE_SESSION){
 			return new pydio.sdk.java.core.transport.SessionTransport();
 		}
@@ -23,7 +23,7 @@ public class TransportFactory {
     public static pydio.sdk.java.core.transport.Transport getInstance(int mode, ServerNode server){
 
         if(mode == pydio.sdk.java.core.transport.Transport.MODE_RESTFUL){
-            return new RestTransport();
+            return new APITransport();
         }else if(mode == pydio.sdk.java.core.transport.Transport.MODE_SESSION){
             return new pydio.sdk.java.core.transport.SessionTransport(server);
         }

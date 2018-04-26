@@ -38,8 +38,13 @@ public class ContentBody implements HttpEntity {
         mFilename = filename;
         mLength = length;
 
-        //we remove 1 Mb just to make sure we do not exceed the client_upload_max_size
-        maxPartSize = mMaxChunckSize = Math.min(maxPartSize, pydio.sdk.java.core.http.HttpClient.HTTP_DATA_BUFFER_MAX_SIZE) - 1024;
+        //we remove 1 Kb just to make sure we do not exceed the client_upload_max_size
+        if (maxPartSize == 0) {
+            maxPartSize = mLength;
+        } else {
+            maxPartSize = mMaxChunckSize = Math.min(maxPartSize, pydio.sdk.java.core.http.HttpClient.HTTP_DATA_BUFFER_MAX_SIZE) - 1024;
+        }
+
         if(maxPartSize >= length){
             mChunkCount = 1;
         } else {

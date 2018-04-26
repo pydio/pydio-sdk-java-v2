@@ -14,11 +14,11 @@ public class MinisiteShare {
         client.login();
         client.upload("1", "/", "Text content of the shared file".getBytes(), "share_file.txt", false, null, null);
 
-        JSONObject info = client.shareInfo("1", "/share_file.txt");
+        JSONObject info = client.shareInfo("1", "/share_file.txt", "");
 
         if(info == null){
-            client.minisiteShare("1", "/share_file.txt", "Share", "Example", "password", 1, 1, true, true);
-            info = client.shareInfo("1", "/share_file.txt");
+            client.minisiteShare("1", "/share_file.txt", "none", "Share", false, "Example", "password", 1, 1, true, true);
+            info = client.shareInfo("1", "/share_file.txt", "");
         }
 
         String link = info.getJSONObject("minisite").getString("public_link");

@@ -263,11 +263,11 @@ public final class ContentValues {
                 try {
                     return Long.valueOf(value.toString());
                 } catch (NumberFormatException e2) {
-                    //Log.e(TAG, "Cannot parse Long value for " + value + " at key " + key);
+                    ////Log.e(TAG, "Cannot parse Long value for " + value + " at key " + key);
                     return null;
                 }
             } else {
-                //Log.e(TAG, "Cannot cast value for " + key + " to a Long: " + value, e);
+                ////Log.e(TAG, "Cannot cast value for " + key + " to a Long: " + value, e);
                 return null;
             }
         }
@@ -288,11 +288,11 @@ public final class ContentValues {
                 try {
                     return Integer.valueOf(value.toString());
                 } catch (NumberFormatException e2) {
-                    //Log.e(TAG, "Cannot parse Integer value for " + value + " at key " + key);
+                    ////Log.e(TAG, "Cannot parse Integer value for " + value + " at key " + key);
                     return null;
                 }
             } else {
-                //Log.e(TAG, "Cannot cast value for " + key + " to a Integer: " + value, e);
+                ////Log.e(TAG, "Cannot cast value for " + key + " to a Integer: " + value, e);
                 return null;
             }
         }
@@ -313,11 +313,11 @@ public final class ContentValues {
                 try {
                     return Short.valueOf(value.toString());
                 } catch (NumberFormatException e2) {
-                    //Log.e(TAG, "Cannot parse Short value for " + value + " at key " + key);
+                    ////Log.e(TAG, "Cannot parse Short value for " + value + " at key " + key);
                     return null;
                 }
             } else {
-                //Log.e(TAG, "Cannot cast value for " + key + " to a Short: " + value, e);
+                ////Log.e(TAG, "Cannot cast value for " + key + " to a Short: " + value, e);
                 return null;
             }
         }
@@ -338,11 +338,11 @@ public final class ContentValues {
                 try {
                     return Byte.valueOf(value.toString());
                 } catch (NumberFormatException e2) {
-                    //Log.e(TAG, "Cannot parse Byte value for " + value + " at key " + key);
+                    ////Log.e(TAG, "Cannot parse Byte value for " + value + " at key " + key);
                     return null;
                 }
             } else {
-                //Log.e(TAG, "Cannot cast value for " + key + " to a Byte: " + value, e);
+                ////Log.e(TAG, "Cannot cast value for " + key + " to a Byte: " + value, e);
                 return null;
             }
         }
@@ -363,11 +363,11 @@ public final class ContentValues {
                 try {
                     return Double.valueOf(value.toString());
                 } catch (NumberFormatException e2) {
-                    //Log.e(TAG, "Cannot parse Double value for " + value + " at key " + key);
+                    ////Log.e(TAG, "Cannot parse Double value for " + value + " at key " + key);
                     return null;
                 }
             } else {
-                //Log.e(TAG, "Cannot cast value for " + key + " to a Double: " + value, e);
+                ////Log.e(TAG, "Cannot cast value for " + key + " to a Double: " + value, e);
                 return null;
             }
         }
@@ -388,11 +388,11 @@ public final class ContentValues {
                 try {
                     return Float.valueOf(value.toString());
                 } catch (NumberFormatException e2) {
-                    //Log.e(TAG, "Cannot parse Float value for " + value + " at key " + key);
+                    ////Log.e(TAG, "Cannot parse Float value for " + value + " at key " + key);
                     return null;
                 }
             } else {
-                //Log.e(TAG, "Cannot cast value for " + key + " to a Float: " + value, e);
+                ////Log.e(TAG, "Cannot cast value for " + key + " to a Float: " + value, e);
                 return null;
             }
         }
@@ -414,7 +414,7 @@ public final class ContentValues {
             } else if (value instanceof Number) {
                 return ((Number) value).intValue() != 0;
             } else {
-                //Log.e(TAG, "Cannot cast value for " + key + " to a Boolean: " + value, e);
+                ////Log.e(TAG, "Cannot cast value for " + key + " to a Boolean: " + value, e);
                 return null;
             }
         }

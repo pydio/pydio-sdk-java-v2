@@ -47,7 +47,7 @@ public class TreeNodeSaxHandler extends DefaultHandler {
                 if("".equals(p.getProperty(Pydio.NODE_PROPERTY_FILENAME))){
                     p.setProperty(Pydio.NODE_PROPERTY_FILENAME, "/");
                 }
-                mRootNode = (FileNode) NodeFactory.createNode(Node.TYPE_TREE, p);
+                mRootNode = (FileNode) NodeFactory.createNode(Node.TYPE_REMOTE_FILE, p);
                 p = null;
             }
         }
@@ -62,7 +62,7 @@ public class TreeNodeSaxHandler extends DefaultHandler {
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if(mInsideTree && "tree".equals(qName)){
             if(p != null) {
-                mHandler.onNode(NodeFactory.createNode(Node.TYPE_TREE, p));
+                mHandler.onNode(NodeFactory.createNode(Node.TYPE_REMOTE_FILE, p));
                 p = null;
             }
             mInsideTree = false;

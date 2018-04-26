@@ -13,7 +13,8 @@ public class SearchNode extends FileNode {
 
     @Override
     public int type() {
-        return pydio.sdk.java.core.model.Node.TYPE_SEARCH;
+        return 0;
+        //return pydio.sdk.java.core.model.Node.TYPE_SEARCH;
     }
 
     @Override

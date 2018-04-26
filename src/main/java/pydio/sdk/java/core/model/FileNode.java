@@ -91,7 +91,7 @@ public class FileNode implements Node {
 
 	public long size(){
 		String strSize = properties.getProperty(Pydio.NODE_PROPERTY_BYTESIZE);
-		if(strSize == null) return 0;
+		if(strSize == null || "".equals(strSize)) return 0;
 		return Long.parseLong(strSize);
 	}
 
@@ -112,7 +112,7 @@ public class FileNode implements Node {
 	}
 
 	public int type() {
-		return Node.TYPE_TREE;
+		return Node.TYPE_REMOTE_FILE;
 	}
 
     public boolean equals(Object o){
