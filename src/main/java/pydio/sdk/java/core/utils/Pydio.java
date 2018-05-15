@@ -73,7 +73,7 @@ public class Pydio {
     public static final String PARAM_CHANGE_STREAM                      = "stream";
     public static final String PARAM_CHANGE_FILTER                      = "filter";
 
-    public static final String PARAM_CLIENT_TIME                      = "filter";
+    public static final String PARAM_CLIENT_TIME                      = "client_time";
 
 
 
