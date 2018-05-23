@@ -91,6 +91,7 @@ public class PydioClient implements Serializable {
     protected WorkspaceNode mWorkspace;
     private JSONObject bootConf;
     private String JWT;
+    private long JWTExpirationTime = -1;
     private ApiClient apiClient;
     private SSLContext mApiSSLContext;
     public boolean isPydioCells;
@@ -1948,7 +1949,8 @@ public class PydioClient implements Serializable {
     }
 
     private void getJWT() throws IOException {
-        if (null != JWT && !"".equals(JWT)) {
+        long cSecond = System.currentTimeMillis()/1000;
+        if (null != JWT && !"".equals(JWT) && (JWTExpirationTime == -1 || JWTExpirationTime > cSecond)) {
             initApiClient();
             apiClient.addDefaultHeader("Authorization", "Bearer " + JWT);
         }
@@ -1960,7 +1962,11 @@ public class PydioClient implements Serializable {
 
         String sc = sessionTransport.getStringContent(action, params);
         try {
-            JWT = new JSONObject(sc).getString("jwt");
+            JSONObject jsonObject = new JSONObject(sc);
+            JWT = jsonObject.getString("jwt");
+            if (jsonObject.has("expirationTime")) {
+                JWTExpirationTime = jsonObject.getLong("expirationTime");
+            }
             initApiClient();
             apiClient.addDefaultHeader("Authorization", "Bearer " + JWT);
         } catch (ParseException e) {
