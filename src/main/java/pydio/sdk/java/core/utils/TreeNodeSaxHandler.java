@@ -62,7 +62,11 @@ public class TreeNodeSaxHandler extends DefaultHandler {
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if(mInsideTree && "tree".equals(qName)){
             if(p != null) {
-                mHandler.onNode(NodeFactory.createNode(Node.TYPE_REMOTE_FILE, p));
+                Node node = NodeFactory.createNode(Node.TYPE_REMOTE_FILE, p);
+                if(node != null){
+                    node.setProperty(Pydio.NODE_PROPERTY_UUID, node.path());
+                    mHandler.onNode(node);
+                }
                 p = null;
             }
             mInsideTree = false;

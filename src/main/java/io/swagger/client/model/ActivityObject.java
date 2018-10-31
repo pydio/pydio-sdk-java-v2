@@ -31,7 +31,7 @@ import org.threeten.bp.OffsetDateTime;
 /**
  * ActivityObject
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-25T15:42:51.155Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
 public class ActivityObject {
   @SerializedName("jsonLdContext")
   private String jsonLdContext = null;
@@ -72,7 +72,7 @@ public class ActivityObject {
   @SerializedName("published")
   private OffsetDateTime published = null;
 
-  @SerializedName("updated")
+  @SerializedName("content")
   private OffsetDateTime updated = null;
 
   @SerializedName("duration")
@@ -456,8 +456,8 @@ public class ActivityObject {
   }
 
    /**
-   * Get updated
-   * @return updated
+   * Get content
+   * @return content
   **/
   @ApiModelProperty(value = "")
   public OffsetDateTime getUpdated() {
@@ -1419,7 +1419,7 @@ public class ActivityObject {
     sb.append("    startTime: ").append(toIndentedString(startTime)).append("\n");
     sb.append("    endTime: ").append(toIndentedString(endTime)).append("\n");
     sb.append("    published: ").append(toIndentedString(published)).append("\n");
-    sb.append("    updated: ").append(toIndentedString(updated)).append("\n");
+    sb.append("    content: ").append(toIndentedString(updated)).append("\n");
     sb.append("    duration: ").append(toIndentedString(duration)).append("\n");
     sb.append("    url: ").append(toIndentedString(url)).append("\n");
     sb.append("    mediaType: ").append(toIndentedString(mediaType)).append("\n");

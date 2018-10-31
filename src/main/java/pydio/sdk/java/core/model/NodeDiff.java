@@ -3,6 +3,7 @@ package pydio.sdk.java.core.model;
 import org.w3c.dom.Document;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import pydio.sdk.java.core.utils.Pydio;
 
@@ -18,6 +19,7 @@ public class NodeDiff {
     public static NodeDiff create(Document doc){
         NodeDiff nodeDiff = new NodeDiff();
         org.w3c.dom.Node diff = doc.getElementsByTagName(Pydio.XML_NODES_DIFF).item(0);
+
         if(diff != null) {
             for (int i = 0; i < diff.getChildNodes().getLength(); i++) {
                 org.w3c.dom.Node child = diff.getChildNodes().item(i);
@@ -26,27 +28,27 @@ public class NodeDiff {
                 ArrayList<Node> list = null;
 
                 if (Pydio.NODE_DIFF_REMOVE.equals(tag)) {
-                    if (nodeDiff.deleted == null) {
-                        nodeDiff.deleted = new ArrayList<Node>();
-                    }
                     list = nodeDiff.deleted;
                 } else if (Pydio.NODE_DIFF_ADD.equals(tag)) {
-                    if (nodeDiff.added == null) {
-                        nodeDiff.added = new ArrayList<Node>();
-                    }
                     list = nodeDiff.added;
                 } else if (Pydio.NODE_DIFF_UPDATE.equals(tag)) {
-                    if (nodeDiff.updated == null) {
-                        nodeDiff.updated = new ArrayList<Node>();
-                    }
                     list = nodeDiff.updated;
                 }
 
+                if(list == null){
+                    list = new ArrayList<>();
+                }
+
                 for (int j = 0; j < child.getChildNodes().getLength(); j++) {
-                    list.add(pydio.sdk.java.core.model.NodeFactory.createNode(child.getChildNodes().item(j)));
+                    org.w3c.dom.Node c = child.getChildNodes().item(j);
+                    Node pydNode = pydio.sdk.java.core.model.NodeFactory.createNode(c);
+                    if( pydNode != null){
+                        list.add(pydNode);
+                    }
                 }
             }
         }
+
         return nodeDiff;
     }
 }

@@ -1,6 +1,8 @@
 package pydio.sdk.java.core.model;
 
 import org.json.JSONObject;
+import org.w3c.dom.Attr;
+import org.w3c.dom.NamedNodeMap;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,18 +17,28 @@ public class NodeFactory {
 	
 	public static pydio.sdk.java.core.model.Node createNode(int type, org.w3c.dom.Node xml){
 		pydio.sdk.java.core.model.Node node = newNode(type);
-		if(xml != null) {
-			node.initFromXml(xml);
+		Properties p = new Properties();
+		NamedNodeMap attrs = xml.getAttributes();
+		if (xml.hasAttributes()) {
+			NamedNodeMap map = xml.getAttributes();
+			for (int i = 0; i < map.getLength(); i++) {
+				Attr at = (Attr) map.item(i);
+				String attrName = at.getNodeName();
+				String attrValue = at.getNodeValue();
+				p.setProperty(attrName, attrValue);
+			}
+		}
+		if(node != null){
+			node.setProperties(p);
 		}
 		return node;
 	}
 	
 	public static pydio.sdk.java.core.model.Node createNode(int type, JSONObject json){
 		pydio.sdk.java.core.model.Node node = newNode(type);
-
-		if(json != null){
+		/*if(json != null){
 			node.initFromJson(json);
-		}
+		}*/
 		return node;
 	}
 	
@@ -46,7 +58,10 @@ public class NodeFactory {
 
 	public static pydio.sdk.java.core.model.Node createNode(int type, Properties prop){
 		pydio.sdk.java.core.model.Node node = newNode(type);
-		node.initFromProperties(prop);
+		if(node == null) {
+			return null;
+		}
+		node.setProperties(prop);
 		return node;
 	}
 
@@ -62,7 +77,7 @@ public class NodeFactory {
 				return new pydio.sdk.java.core.model.ServerNode();
 				
 			case pydio.sdk.java.core.model.Node.TYPE_LOCAL_FILE:
-				return new VirtualNode();
+				return new ObjectNode();
 			default:
 				return null;	
 		}
@@ -73,7 +88,7 @@ public class NodeFactory {
             return null;
         }
         pydio.sdk.java.core.model.Node node = newNode(type);
-        node.initFromFile(file);
+        //node.initFromFile(file);
         return node;
     }
 

@@ -2,6 +2,7 @@ package pydio.sdk.java.core.http;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.CookieManager;
 import java.net.HttpCookie;
@@ -39,13 +40,18 @@ public class HttpClient {
     private CertificateTrust.Helper mCertificateTrustHelper;
     public CookieManager mCookieManager;
 
-    public HttpClient(boolean b) {
-        mSSLUnverifiedMode = b;
+    public HttpClient() {
+        mSSLUnverifiedMode = false;
         mCookieManager = new CookieManager();
     }
 
-    public HttpClient(boolean b, CookieManager cm) {
-        mSSLUnverifiedMode = b;
+    public HttpClient(boolean sslNotVerified) {
+        mSSLUnverifiedMode = sslNotVerified;
+        mCookieManager = new CookieManager();
+    }
+
+    public HttpClient(boolean sslNotVerified, CookieManager cm) {
+        mSSLUnverifiedMode = sslNotVerified;
         if(cm == null) {
             mCookieManager = new CookieManager();
         }else {
@@ -84,12 +90,7 @@ public class HttpClient {
         if(mSSLUnverifiedMode){
             HttpsURLConnection c = (HttpsURLConnection) new URL(url).openConnection();
             c.setSSLSocketFactory(sslContext().getSocketFactory());
-            c.setHostnameVerifier(new HostnameVerifier() {
-                @Override
-                public boolean verify(String s, SSLSession sslSession) {
-                    return true;
-                }
-            });
+            c.setHostnameVerifier((s, sslSession) -> true);
             con = c;
         } else {
             con = (HttpURLConnection) new URL(url).openConnection();
@@ -373,6 +374,90 @@ public class HttpClient {
 
         if (code == 405 && method == "GET") {
             //Log.i("BULLSHIT", "BAD METHOD FOR GET LINK");
+        }
+        return response;
+    }
+
+    public InputStream get(String url) throws IOException {
+        HttpURLConnection con;
+        if(mSSLUnverifiedMode){
+            HttpsURLConnection c = (HttpsURLConnection) new URL(url).openConnection();
+            c.setSSLSocketFactory(sslContext().getSocketFactory());
+            c.setHostnameVerifier((s, sslSession) -> true);
+            con = c;
+        } else {
+            con = (HttpURLConnection) new URL(url).openConnection();
+        }
+
+        con.setRequestMethod("GET");
+        con.setDoInput(true);
+
+        List<HttpCookie> cookies = mCookieManager.getCookieStore().getCookies();
+        if(cookies.size() > 0) {
+            StringBuilder cookieString = new StringBuilder();
+            for (int i = 0; i < cookies.size(); i++) {
+                String value = ";" + cookies.get(i).toString();
+                cookieString.append(value);
+            }
+            con.setRequestProperty("Cookie", cookieString.substring(1));
+        }
+
+        con.setRequestProperty("User-Agent", "Pydio-Native-" + ApplicationData.name + " " + ApplicationData.version + "." + ApplicationData.versionCode);
+
+        Map<String, List<String>> headerFields = con.getHeaderFields();
+        List<String> cookiesHeader = headerFields.get("Set-Cookie");
+        if(cookiesHeader != null) {
+            for (String cookie : cookiesHeader) {
+                List<HttpCookie> cs = HttpCookie.parse(cookie);
+                for (HttpCookie hc: cs) {
+                    mCookieManager.getCookieStore().add(null, hc);
+                }
+            }
+        }
+        return con.getInputStream();
+    }
+
+    public HttpResponse put(String url, ContentBody body) throws IOException {
+        HttpURLConnection con;
+        if(mSSLUnverifiedMode){
+            HttpsURLConnection c = (HttpsURLConnection) new URL(url).openConnection();
+            c.setSSLSocketFactory(sslContext().getSocketFactory());
+            c.setHostnameVerifier((s, sslSession) -> true);
+            con = c;
+        } else {
+            con = (HttpURLConnection) new URL(url).openConnection();
+        }
+
+        con.setRequestMethod("PUT");
+        con.setDoOutput(true);
+        con.setDoInput(true);
+
+        List<HttpCookie> cookies = mCookieManager.getCookieStore().getCookies();
+        if(cookies.size() > 0) {
+            StringBuilder cookieString = new StringBuilder();
+            for (int i = 0; i < cookies.size(); i++) {
+                String value = ";" + cookies.get(i).toString();
+                cookieString.append(value);
+            }
+            con.setRequestProperty("Cookie", cookieString.substring(1));
+        }
+
+        con.setRequestProperty("User-Agent", "Pydio-Native-" + ApplicationData.name + " " + ApplicationData.version + "." + ApplicationData.versionCode);
+        con.setRequestProperty("Content-Type", "application/octet-stream");
+        OutputStream out = con.getOutputStream();
+        body.writeTo(out);
+
+        HttpResponse response = new HttpResponse(con);
+
+        Map<String, List<String>> headerFields = con.getHeaderFields();
+        List<String> cookiesHeader = headerFields.get("Set-Cookie");
+        if(cookiesHeader != null) {
+            for (String cookie : cookiesHeader) {
+                List<HttpCookie> cs = HttpCookie.parse(cookie);
+                for (HttpCookie hc: cs) {
+                    mCookieManager.getCookieStore().add(null, hc);
+                }
+            }
         }
         return response;
     }

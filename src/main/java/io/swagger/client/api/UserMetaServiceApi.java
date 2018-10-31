@@ -33,6 +33,10 @@ import io.swagger.client.model.IdmUpdateUserMetaNamespaceResponse;
 import io.swagger.client.model.IdmUpdateUserMetaRequest;
 import io.swagger.client.model.IdmUpdateUserMetaResponse;
 import io.swagger.client.model.RestBulkMetaResponse;
+import io.swagger.client.model.RestDeleteUserMetaTagsResponse;
+import io.swagger.client.model.RestListUserMetaTagsResponse;
+import io.swagger.client.model.RestPutUserMetaTagRequest;
+import io.swagger.client.model.RestPutUserMetaTagResponse;
 import io.swagger.client.model.RestUserBookmarksRequest;
 import io.swagger.client.model.RestUserMetaCollection;
 import io.swagger.client.model.RestUserMetaNamespaceCollection;
@@ -62,6 +66,139 @@ public class UserMetaServiceApi {
         this.apiClient = apiClient;
     }
 
+    /**
+     * Build call for deleteUserMetaTags
+     * @param namespace  (required)
+     * @param tags  (required)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call deleteUserMetaTagsCall(String namespace, String tags, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/user-meta/tags/{Namespace}/{Tags}"
+            .replaceAll("\\{" + "Namespace" + "\\}", apiClient.escapeString(namespace.toString()))
+            .replaceAll("\\{" + "Tags" + "\\}", apiClient.escapeString(tags.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] {  };
+        return apiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call deleteUserMetaTagsValidateBeforeCall(String namespace, String tags, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'namespace' is set
+        if (namespace == null) {
+            throw new ApiException("Missing the required parameter 'namespace' when calling deleteUserMetaTags(Async)");
+        }
+        
+        // verify the required parameter 'tags' is set
+        if (tags == null) {
+            throw new ApiException("Missing the required parameter 'tags' when calling deleteUserMetaTags(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = deleteUserMetaTagsCall(namespace, tags, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * List Tags for a given namespace
+     * 
+     * @param namespace  (required)
+     * @param tags  (required)
+     * @return RestDeleteUserMetaTagsResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public RestDeleteUserMetaTagsResponse deleteUserMetaTags(String namespace, String tags) throws ApiException {
+        ApiResponse<RestDeleteUserMetaTagsResponse> resp = deleteUserMetaTagsWithHttpInfo(namespace, tags);
+        return resp.getData();
+    }
+
+    /**
+     * List Tags for a given namespace
+     * 
+     * @param namespace  (required)
+     * @param tags  (required)
+     * @return ApiResponse&lt;RestDeleteUserMetaTagsResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<RestDeleteUserMetaTagsResponse> deleteUserMetaTagsWithHttpInfo(String namespace, String tags) throws ApiException {
+        com.squareup.okhttp.Call call = deleteUserMetaTagsValidateBeforeCall(namespace, tags, null, null);
+        Type localVarReturnType = new TypeToken<RestDeleteUserMetaTagsResponse>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * List Tags for a given namespace (asynchronously)
+     * 
+     * @param namespace  (required)
+     * @param tags  (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call deleteUserMetaTagsAsync(String namespace, String tags, final ApiCallback<RestDeleteUserMetaTagsResponse> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = deleteUserMetaTagsValidateBeforeCall(namespace, tags, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<RestDeleteUserMetaTagsResponse>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
     /**
      * Build call for listUserMetaNamespace
      * @param progressListener Progress listener
@@ -97,7 +234,7 @@ public class UserMetaServiceApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
@@ -176,6 +313,261 @@ public class UserMetaServiceApi {
         return call;
     }
     /**
+     * Build call for listUserMetaTags
+     * @param namespace  (required)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call listUserMetaTagsCall(String namespace, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/user-meta/tags/{Namespace}"
+            .replaceAll("\\{" + "Namespace" + "\\}", apiClient.escapeString(namespace.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] {  };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call listUserMetaTagsValidateBeforeCall(String namespace, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'namespace' is set
+        if (namespace == null) {
+            throw new ApiException("Missing the required parameter 'namespace' when calling listUserMetaTags(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = listUserMetaTagsCall(namespace, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * List Tags for a given namespace
+     * 
+     * @param namespace  (required)
+     * @return RestListUserMetaTagsResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public RestListUserMetaTagsResponse listUserMetaTags(String namespace) throws ApiException {
+        ApiResponse<RestListUserMetaTagsResponse> resp = listUserMetaTagsWithHttpInfo(namespace);
+        return resp.getData();
+    }
+
+    /**
+     * List Tags for a given namespace
+     * 
+     * @param namespace  (required)
+     * @return ApiResponse&lt;RestListUserMetaTagsResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<RestListUserMetaTagsResponse> listUserMetaTagsWithHttpInfo(String namespace) throws ApiException {
+        com.squareup.okhttp.Call call = listUserMetaTagsValidateBeforeCall(namespace, null, null);
+        Type localVarReturnType = new TypeToken<RestListUserMetaTagsResponse>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * List Tags for a given namespace (asynchronously)
+     * 
+     * @param namespace  (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call listUserMetaTagsAsync(String namespace, final ApiCallback<RestListUserMetaTagsResponse> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = listUserMetaTagsValidateBeforeCall(namespace, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<RestListUserMetaTagsResponse>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for putUserMetaTag
+     * @param namespace  (required)
+     * @param body  (required)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call putUserMetaTagCall(String namespace, RestPutUserMetaTagRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = body;
+
+        // create path and map variables
+        String localVarPath = "/user-meta/tags/{Namespace}"
+            .replaceAll("\\{" + "Namespace" + "\\}", apiClient.escapeString(namespace.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] {  };
+        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call putUserMetaTagValidateBeforeCall(String namespace, RestPutUserMetaTagRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'namespace' is set
+        if (namespace == null) {
+            throw new ApiException("Missing the required parameter 'namespace' when calling putUserMetaTag(Async)");
+        }
+        
+        // verify the required parameter 'body' is set
+        if (body == null) {
+            throw new ApiException("Missing the required parameter 'body' when calling putUserMetaTag(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = putUserMetaTagCall(namespace, body, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * List Tags for a given namespace
+     * 
+     * @param namespace  (required)
+     * @param body  (required)
+     * @return RestPutUserMetaTagResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public RestPutUserMetaTagResponse putUserMetaTag(String namespace, RestPutUserMetaTagRequest body) throws ApiException {
+        ApiResponse<RestPutUserMetaTagResponse> resp = putUserMetaTagWithHttpInfo(namespace, body);
+        return resp.getData();
+    }
+
+    /**
+     * List Tags for a given namespace
+     * 
+     * @param namespace  (required)
+     * @param body  (required)
+     * @return ApiResponse&lt;RestPutUserMetaTagResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<RestPutUserMetaTagResponse> putUserMetaTagWithHttpInfo(String namespace, RestPutUserMetaTagRequest body) throws ApiException {
+        com.squareup.okhttp.Call call = putUserMetaTagValidateBeforeCall(namespace, body, null, null);
+        Type localVarReturnType = new TypeToken<RestPutUserMetaTagResponse>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * List Tags for a given namespace (asynchronously)
+     * 
+     * @param namespace  (required)
+     * @param body  (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call putUserMetaTagAsync(String namespace, RestPutUserMetaTagRequest body, final ApiCallback<RestPutUserMetaTagResponse> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = putUserMetaTagValidateBeforeCall(namespace, body, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<RestPutUserMetaTagResponse>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
      * Build call for searchUserMeta
      * @param body  (required)
      * @param progressListener Progress listener
@@ -211,7 +603,7 @@ public class UserMetaServiceApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
@@ -333,7 +725,7 @@ public class UserMetaServiceApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
@@ -455,7 +847,7 @@ public class UserMetaServiceApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
@@ -577,7 +969,7 @@ public class UserMetaServiceApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))

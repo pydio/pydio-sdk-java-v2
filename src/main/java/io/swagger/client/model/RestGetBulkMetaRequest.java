@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * RestGetBulkMetaRequest
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-25T15:42:51.155Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
 public class RestGetBulkMetaRequest {
   @SerializedName("NodePaths")
   private List<String> nodePaths = null;
@@ -41,6 +41,12 @@ public class RestGetBulkMetaRequest {
 
   @SerializedName("Versions")
   private Boolean versions = null;
+
+  @SerializedName("Offset")
+  private Integer offset = null;
+
+  @SerializedName("Limit")
+  private Integer limit = null;
 
   public RestGetBulkMetaRequest nodePaths(List<String> nodePaths) {
     this.nodePaths = nodePaths;
@@ -130,6 +136,42 @@ public class RestGetBulkMetaRequest {
     this.versions = versions;
   }
 
+  public RestGetBulkMetaRequest offset(Integer offset) {
+    this.offset = offset;
+    return this;
+  }
+
+   /**
+   * Get offset
+   * @return offset
+  **/
+  @ApiModelProperty(value = "")
+  public Integer getOffset() {
+    return offset;
+  }
+
+  public void setOffset(Integer offset) {
+    this.offset = offset;
+  }
+
+  public RestGetBulkMetaRequest limit(Integer limit) {
+    this.limit = limit;
+    return this;
+  }
+
+   /**
+   * Get limit
+   * @return limit
+  **/
+  @ApiModelProperty(value = "")
+  public Integer getLimit() {
+    return limit;
+  }
+
+  public void setLimit(Integer limit) {
+    this.limit = limit;
+  }
+
 
   @Override
   public boolean equals(Object o) {
@@ -143,12 +185,14 @@ public class RestGetBulkMetaRequest {
     return Objects.equals(this.nodePaths, restGetBulkMetaRequest.nodePaths) &&
         Objects.equals(this.nodeUuids, restGetBulkMetaRequest.nodeUuids) &&
         Objects.equals(this.allMetaProviders, restGetBulkMetaRequest.allMetaProviders) &&
-        Objects.equals(this.versions, restGetBulkMetaRequest.versions);
+        Objects.equals(this.versions, restGetBulkMetaRequest.versions) &&
+        Objects.equals(this.offset, restGetBulkMetaRequest.offset) &&
+        Objects.equals(this.limit, restGetBulkMetaRequest.limit);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(nodePaths, nodeUuids, allMetaProviders, versions);
+    return Objects.hash(nodePaths, nodeUuids, allMetaProviders, versions, offset, limit);
   }
 
 
@@ -161,6 +205,8 @@ public class RestGetBulkMetaRequest {
     sb.append("    nodeUuids: ").append(toIndentedString(nodeUuids)).append("\n");
     sb.append("    allMetaProviders: ").append(toIndentedString(allMetaProviders)).append("\n");
     sb.append("    versions: ").append(toIndentedString(versions)).append("\n");
+    sb.append("    offset: ").append(toIndentedString(offset)).append("\n");
+    sb.append("    limit: ").append(toIndentedString(limit)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -1,1 +1,8 @@
 /build
+
+
+.idea
+
+local.properties
+pydio-sdk-java-v2.iml
+pydiosdk.iml

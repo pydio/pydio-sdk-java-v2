@@ -1,15 +1,15 @@
 # Getting started
-The pydio java sdk provides a Java implementation of features for communicating with a Pydio server. Most of the functions are wrapped into the <em>PydioClient</em> class that contains methods to easily manage your files on a Pydio server.
+The pydio java sdk provides a Java implementation of features for communicating with a Pydio server. Most of the functions are wrapped into the <em>pydio.sdk.java.Pydio8</em> class that contains methods to easily manage your files on a Pydio server.
 
-## <em>PydioClient</em> instantiation:
+## <em>pydio.sdk.java.Pydio8</em> instantiation:
 
 
-Here is the simple way to instantiate a <em>PydioClient</em>
+Here is the simple way to instantiate a <em>pydio.sdk.java.Pydio8</em>
 ``` java
-    PydioClient client = new PydioClient("serverAddress", "username", "password");    
+    pydio.sdk.java.Pydio8 client = new pydio.sdk.java.Pydio8("serverAddress", "username", "password");    
 ```
 
-## Calling PydioClient methods:
+## Calling pydio.sdk.java.Pydio8 methods:
 
 Before showing how to use the client let's have a quick look at some important classes defined in the SDK. A pydio server response contains different sort of data. To easily deal with that data the SDk provides classes to easily
 
@@ -29,7 +29,7 @@ We have also the SearchNode that wrap parameters when searching on a file tree.
 
 #### Delegates
 
-The advanced PydioClient instantiation shows how delegate can be useful to provide data when a login event occurs. Delegates are also used to retrieve data. For example when listing a folder node delegates are used to retrieve children. Delegates are useful for a better memory usage. For example when listing a folder node loading the whole response data into memory is not a good practice. Instead the response is parsed as stream and each parsed node is passed to a delegate. Here are all delegates defined in the SDK:
+The advanced pydio.sdk.java.Pydio8 instantiation shows how delegate can be useful to provide data when a login event occurs. Delegates are also used to retrieve data. For example when listing a folder node delegates are used to retrieve children. Delegates are useful for a better memory usage. For example when listing a folder node loading the whole response data into memory is not a good practice. Instead the response is parsed as stream and each parsed node is passed to a delegate. Here are all delegates defined in the SDK:
 
 + <em>AuthenticationHelper</em> : Helps in login
 + <em>NodeHandler</em> : Helps in folder node listing.
@@ -39,7 +39,7 @@ The advanced PydioClient instantiation shows how delegate can be useful to provi
 + <em>WorkspaceNodeSaxHandler, RegistrySaxHandler, registryItemHandler, </em> : help in registry parsing. 
  
  
-### 2 - Using PydioClient
+### 2 - Using pydio.sdk.java.Pydio8
 
 The snippet code below does :
  
@@ -51,7 +51,7 @@ The snippet code below does :
 
 ``` java
       //Setting up the client
-      final PydioClient client = new PydioClient("yourServerAddress", "username", "password");
+      final pydio.sdk.java.Pydio8 client = new pydio.sdk.java.Pydio8("yourServerAddress", "username", "password");
 
       // the ID of the workspace you work on. "1" is refereing to "My Files"
       String workspaceID = "1";
@@ -87,14 +87,14 @@ The snippet code below does :
           System.out.println("Downloaded content : " + new String(out.toByteArray()));
 
       } catch (IOException e) {
-          e.printStackTrace();
+            //Log.e("IO", e.getMessage());
       }
 ```
 
 
 ### 3 - Error handling
 
-When an operation failed an IOException is thrown. The  <em>PydioClient</em> <em>responseStatus()</em> method can tell more about the reasons. That method return a constant integer that can be one of these following values:
+When an operation failed an IOException is thrown. The  <em>pydio.sdk.java.Pydio8</em> <em>responseStatus()</em> method can tell more about the reasons. That method return a constant integer that can be one of these following values:
 
 + Pydio.ERROR_NOT_A_SERVER 
 There is no Pydio server configured on the specified address

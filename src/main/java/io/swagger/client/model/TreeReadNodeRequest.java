@@ -27,13 +27,16 @@ import java.io.IOException;
 /**
  * TreeReadNodeRequest
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-25T15:42:51.155Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
 public class TreeReadNodeRequest {
   @SerializedName("Node")
   private TreeNode node = null;
 
   @SerializedName("WithCommits")
   private Boolean withCommits = null;
+
+  @SerializedName("WithExtendedStats")
+  private Boolean withExtendedStats = null;
 
   public TreeReadNodeRequest node(TreeNode node) {
     this.node = node;
@@ -71,6 +74,24 @@ public class TreeReadNodeRequest {
     this.withCommits = withCommits;
   }
 
+  public TreeReadNodeRequest withExtendedStats(Boolean withExtendedStats) {
+    this.withExtendedStats = withExtendedStats;
+    return this;
+  }
+
+   /**
+   * Get withExtendedStats
+   * @return withExtendedStats
+  **/
+  @ApiModelProperty(value = "")
+  public Boolean isWithExtendedStats() {
+    return withExtendedStats;
+  }
+
+  public void setWithExtendedStats(Boolean withExtendedStats) {
+    this.withExtendedStats = withExtendedStats;
+  }
+
 
   @Override
   public boolean equals(Object o) {
@@ -82,12 +103,13 @@ public class TreeReadNodeRequest {
     }
     TreeReadNodeRequest treeReadNodeRequest = (TreeReadNodeRequest) o;
     return Objects.equals(this.node, treeReadNodeRequest.node) &&
-        Objects.equals(this.withCommits, treeReadNodeRequest.withCommits);
+        Objects.equals(this.withCommits, treeReadNodeRequest.withCommits) &&
+        Objects.equals(this.withExtendedStats, treeReadNodeRequest.withExtendedStats);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(node, withCommits);
+    return Objects.hash(node, withCommits, withExtendedStats);
   }
 
 
@@ -98,6 +120,7 @@ public class TreeReadNodeRequest {
     
     sb.append("    node: ").append(toIndentedString(node)).append("\n");
     sb.append("    withCommits: ").append(toIndentedString(withCommits)).append("\n");
+    sb.append("    withExtendedStats: ").append(toIndentedString(withExtendedStats)).append("\n");
     sb.append("}");
     return sb.toString();
   }

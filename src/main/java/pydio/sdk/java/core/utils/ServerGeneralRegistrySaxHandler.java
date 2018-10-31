@@ -11,13 +11,14 @@ import java.util.Arrays;
  */
 public class ServerGeneralRegistrySaxHandler extends DefaultHandler {
 
-    RegistryItemHandler handler;
-    boolean mInsideAdminPlugin = false;
-    boolean mInsideConfigs = false;
-    boolean mInsideCoreUploader = false;
-    String mProperty;
+    private RegistryItemHandler handler;
+    private boolean insideAdminPlugin = false;
+    private boolean insideConfigs = false;
+    private boolean insideCoreUploader = false;
+    private boolean insideShareAction = false;
+    private String properties;
 
-    String[] allowedProperties = new String[]{
+    private String[] allowedProperties = new String[]{
             //"ALLOWED_EXTENSIONS",
             //"ALLOWED_EXTENSIONS_READABLE",
             //"UPLOAD_MAX_NUMBER",
@@ -65,31 +66,31 @@ public class ServerGeneralRegistrySaxHandler extends DefaultHandler {
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 
         if("ajxpcore".equals(qName) && "core.uploader".equals(attributes.getValue("id"))){
-            mInsideCoreUploader = true;
+            insideCoreUploader = true;
             return;
         }
 
 
         if("ajxp_plugin".equals(qName) && "admin".equals(attributes.getValue("name"))){
-            mInsideAdminPlugin = true;
+            insideAdminPlugin = true;
             return;
         }
 
 
-        if("plugin_configs".equals(qName) && (mInsideAdminPlugin || mInsideCoreUploader)){
-            mInsideConfigs = true;
+        if("plugin_configs".equals(qName) && (insideAdminPlugin || insideCoreUploader)){
+            insideConfigs = true;
             return;
         }
 
-        if("property".equals(qName) && mInsideConfigs){
-            mProperty = attributes.getValue("name");
+        if("property".equals(qName) && insideConfigs){
+            properties = attributes.getValue("name");
             return;
         }
-        mProperty = null;
+        properties = null;
     }
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        if(mProperty != null && mInsideConfigs && Arrays.asList(allowedProperties).contains(mProperty)){
+        if(properties != null && insideConfigs && Arrays.asList(allowedProperties).contains(properties)){
             String content = new String(ch, start, length);
             if(handler != null){
                 if(content.startsWith("\"")){
@@ -99,21 +100,21 @@ public class ServerGeneralRegistrySaxHandler extends DefaultHandler {
                 if(content.endsWith("\"")){
                     content = content.substring(0, content.length() - 1);
                 }
-                handler.onPref(mProperty, content);
+                handler.onPref(properties, content);
             }
-            mProperty = null;
+            properties = null;
         }
     }
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
 
-        if("plugin_configs".equals(qName) && mInsideConfigs){
-            mInsideConfigs = false;
+        if("plugin_configs".equals(qName) && insideConfigs){
+            insideConfigs = false;
             return;
         }
 
-        if(("ajxp_plugin".equals(qName) || "ajxpcore".equals(qName)) && mInsideAdminPlugin){
-            mInsideAdminPlugin = false;
+        if(("ajxp_plugin".equals(qName) || "ajxpcore".equals(qName)) && insideAdminPlugin){
+            insideAdminPlugin = false;
         }
     }
 }

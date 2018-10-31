@@ -7,7 +7,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -37,7 +36,6 @@ import pydio.sdk.java.core.model.ServerNode;
 import pydio.sdk.java.core.security.Crypto;
 import pydio.sdk.java.core.security.Passwords;
 import pydio.sdk.java.core.utils.HttpResponseParser;
-import pydio.sdk.java.core.utils.Log;
 import pydio.sdk.java.core.utils.Pydio;
 import pydio.sdk.java.core.utils.ServerResolution;
 
@@ -69,7 +67,12 @@ public class SessionTransport implements Transport {
     SessionTransport(){}
 
     public String getGETUrl(String action, Map<String, String> params) throws IOException {
-        StringBuilder url = new StringBuilder(mServerNode.url());
+        String u = mServerNode.url();
+        if (!u.endsWith("/")){
+            u += "/";
+        }
+
+        StringBuilder url = new StringBuilder(u);
         if(!url.toString().startsWith("http")){
             url = new StringBuilder(mResolvedServerAddress = ServerResolution.resolve(url.toString(), false));
         }
@@ -99,6 +102,9 @@ public class SessionTransport implements Transport {
 
     private URI getActionURI(String action) throws IOException{
         String url = mServerNode.url();
+        if(!url.endsWith("/")) {
+            url = url + "/";
+        }
 
         if(!url.startsWith("http")){
             url = mResolvedServerAddress = ServerResolution.resolve(url, false);
@@ -106,8 +112,10 @@ public class SessionTransport implements Transport {
 
         if(action != null && action.startsWith(Pydio.ACTION_CONF_PREFIX)){
             url += action;
+
         }else{
             String mIndex = "index.php?";
+
             url += mIndex;
             if(action != null && !"".equals(action)){
                 url += Pydio.PARAM_GET_ACTION+"="+action;
@@ -159,11 +167,7 @@ public class SessionTransport implements Transport {
                     if (result.equals("-4")) {
                         mLastRequestStatus = Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA;
                         mServerNode.setLastRequestResponseCode(Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA);
-                        int status = Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA;
-                        if(captcha_code != null){
-                            loadCaptcha();
-                        }
-                        mLastRequestStatus = status;
+                        mLastRequestStatus = Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA;
                     }
                     mServerNode.setLastRequestResponseCode(mLastRequestStatus);
                 }
@@ -231,38 +235,12 @@ public class SessionTransport implements Transport {
         }
     }
 
-    public void loadCaptcha() throws IOException {
+    public InputStream loadCaptcha() throws IOException {
         int status = mLastRequestStatus;
-        try {
-            boolean image = false;
-            //Log.i("Request",  "[action=" + Pydio.ACTION_CAPTCHA + "]");
-            HttpResponse resp = getResponse(Pydio.ACTION_CAPTCHA, null);
-            List<String> heads = resp.getHeaders("Content-type");
-            for (int i = 0; i < heads.size(); i++) {
-                if (heads.get(i).contains("image/png")) {
-                    image = true;
-                    break;
-                }
-            }
-            if (image) {
-                HttpEntity entity = resp.getEntity();
-                if (entity != null) {
-                    byte[] buffer = new byte[Pydio.LOCAL_CONFIG_BUFFER_SIZE_DEFAULT_VALUE];
-                    int read;
-                    InputStream in = entity.getContent();
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    while ((read = in.read(buffer, 0, buffer.length)) != -1) {
-                        out.write(buffer, 0, read);
-                    }
-                    mServerNode.setChallengeData(out.toByteArray());
-                    out.close();
-                    in.close();
-                }
-            }
-        }catch (Exception e){
-            mLastRequestStatus = status;
-            throw e;
-        }
+        HttpResponse resp = getResponse(Pydio.ACTION_CAPTCHA, null);
+        HttpEntity entity = resp.getEntity();
+        mLastRequestStatus = status;
+        return entity.getContent();
     }
 
     private boolean isSpecialActionRequested(HttpResponse response) throws IOException {
@@ -383,7 +361,7 @@ public class SessionTransport implements Transport {
 
     private HttpResponse request(URI uri, Map<String, String> params, ContentBody contentBody) throws IOException {
         if(mHttpClient == null){
-            mHttpClient = new HttpClient(mServerNode.SSLUnverified(), mCookieManager);
+            mHttpClient = new HttpClient(mServerNode.unVerifiedSSL(), mCookieManager);
         }
 
         if(params == null){
@@ -402,13 +380,12 @@ public class SessionTransport implements Transport {
                 response = mHttpClient.send(uri.toString(), params, contentBody);
             } catch (IOException e){
                 if(e instanceof SSLException){
-                    if(mServerNode.SSLUnverified()) {
-                        //Log.w("SSL", e.getMessage());
+                    if(mServerNode.unVerifiedSSL()) {
                         mLastRequestStatus = Pydio.ERROR_UNVERIFIED_CERTIFICATE;
                         mServerNode.setLastRequestResponseCode(Pydio.ERROR_UNVERIFIED_CERTIFICATE);
                         throw e;
                     }
-                    mHttpClient.enableUnverifiedMode(mServerNode.setSSLUnverified(true).getTrustHelper());
+                    mHttpClient.enableUnverifiedMode(mServerNode.setUnverifiedSSL(true).getTrustHelper());
                     continue;
                 }
 
@@ -449,16 +426,12 @@ public class SessionTransport implements Transport {
 
                         getSeed();
                         if(mLastRequestStatus == Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA){
-                            int status = mLastRequestStatus;
-                            loadCaptcha();
-                            mLastRequestStatus = status;
                             throw new IOException();
                         }
 
                         login();
 
                         if(mLastRequestStatus == Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA){
-                            loadCaptcha();
                             throw new IOException();
                         }
 
@@ -487,16 +460,12 @@ public class SessionTransport implements Transport {
                     //Log.e("Response", "Authentication is required");
                     getSeed();
                     if(mLastRequestStatus == Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA){
-                        int status = mLastRequestStatus;
-                        loadCaptcha();
-                        mLastRequestStatus = status;
                         throw new IOException();
                     }
 
                     login();
 
                     if(mLastRequestStatus == Pydio.ERROR_AUTHENTICATION_WITH_CAPTCHA){
-                        loadCaptcha();
                         throw new IOException();
                     }
 

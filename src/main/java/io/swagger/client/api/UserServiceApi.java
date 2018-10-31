@@ -59,7 +59,7 @@ public class UserServiceApi {
     }
 
     /**
-     * Build call for bindUsers
+     * Build call for bindUser
      * @param login  (required)
      * @param body  (required)
      * @param progressListener Progress listener
@@ -67,7 +67,7 @@ public class UserServiceApi {
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call bindUsersCall(String login, IdmUser body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call bindUserCall(String login, IdmUser body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
 
         // create path and map variables
@@ -96,7 +96,7 @@ public class UserServiceApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
@@ -110,20 +110,20 @@ public class UserServiceApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call bindUsersValidateBeforeCall(String login, IdmUser body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call bindUserValidateBeforeCall(String login, IdmUser body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
         // verify the required parameter 'login' is set
         if (login == null) {
-            throw new ApiException("Missing the required parameter 'login' when calling bindUsers(Async)");
+            throw new ApiException("Missing the required parameter 'login' when calling bindUser(Async)");
         }
         
         // verify the required parameter 'body' is set
         if (body == null) {
-            throw new ApiException("Missing the required parameter 'body' when calling bindUsers(Async)");
+            throw new ApiException("Missing the required parameter 'body' when calling bindUser(Async)");
         }
         
 
-        com.squareup.okhttp.Call call = bindUsersCall(login, body, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = bindUserCall(login, body, progressListener, progressRequestListener);
         return call;
 
     }
@@ -136,8 +136,8 @@ public class UserServiceApi {
      * @return RestBindResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public RestBindResponse bindUsers(String login, IdmUser body) throws ApiException {
-        ApiResponse<RestBindResponse> resp = bindUsersWithHttpInfo(login, body);
+    public RestBindResponse bindUser(String login, IdmUser body) throws ApiException {
+        ApiResponse<RestBindResponse> resp = bindUserWithHttpInfo(login, body);
         return resp.getData();
     }
 
@@ -149,8 +149,8 @@ public class UserServiceApi {
      * @return ApiResponse&lt;RestBindResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<RestBindResponse> bindUsersWithHttpInfo(String login, IdmUser body) throws ApiException {
-        com.squareup.okhttp.Call call = bindUsersValidateBeforeCall(login, body, null, null);
+    public ApiResponse<RestBindResponse> bindUserWithHttpInfo(String login, IdmUser body) throws ApiException {
+        com.squareup.okhttp.Call call = bindUserValidateBeforeCall(login, body, null, null);
         Type localVarReturnType = new TypeToken<RestBindResponse>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -164,7 +164,7 @@ public class UserServiceApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call bindUsersAsync(String login, IdmUser body, final ApiCallback<RestBindResponse> callback) throws ApiException {
+    public com.squareup.okhttp.Call bindUserAsync(String login, IdmUser body, final ApiCallback<RestBindResponse> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -185,7 +185,7 @@ public class UserServiceApi {
             };
         }
 
-        com.squareup.okhttp.Call call = bindUsersValidateBeforeCall(login, body, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = bindUserValidateBeforeCall(login, body, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<RestBindResponse>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
@@ -227,7 +227,7 @@ public class UserServiceApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
@@ -319,6 +319,7 @@ public class UserServiceApi {
      * @param uuid  (optional)
      * @param groupPath  (optional)
      * @param password  (optional)
+     * @param oldPassword  (optional)
      * @param isGroup Group specific data. (optional)
      * @param groupLabel  (optional)
      * @param policiesContextEditable  (optional)
@@ -327,7 +328,7 @@ public class UserServiceApi {
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call getUserCall(String login, String uuid, String groupPath, String password, Boolean isGroup, String groupLabel, Boolean policiesContextEditable, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call getUserCall(String login, String uuid, String groupPath, String password, String oldPassword, Boolean isGroup, String groupLabel, Boolean policiesContextEditable, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -342,6 +343,8 @@ public class UserServiceApi {
         localVarQueryParams.addAll(apiClient.parameterToPair("GroupPath", groupPath));
         if (password != null)
         localVarQueryParams.addAll(apiClient.parameterToPair("Password", password));
+        if (oldPassword != null)
+        localVarQueryParams.addAll(apiClient.parameterToPair("OldPassword", oldPassword));
         if (isGroup != null)
         localVarQueryParams.addAll(apiClient.parameterToPair("IsGroup", isGroup));
         if (groupLabel != null)
@@ -368,7 +371,7 @@ public class UserServiceApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
@@ -382,7 +385,7 @@ public class UserServiceApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call getUserValidateBeforeCall(String login, String uuid, String groupPath, String password, Boolean isGroup, String groupLabel, Boolean policiesContextEditable, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call getUserValidateBeforeCall(String login, String uuid, String groupPath, String password, String oldPassword, Boolean isGroup, String groupLabel, Boolean policiesContextEditable, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
         // verify the required parameter 'login' is set
         if (login == null) {
@@ -390,7 +393,7 @@ public class UserServiceApi {
         }
         
 
-        com.squareup.okhttp.Call call = getUserCall(login, uuid, groupPath, password, isGroup, groupLabel, policiesContextEditable, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = getUserCall(login, uuid, groupPath, password, oldPassword, isGroup, groupLabel, policiesContextEditable, progressListener, progressRequestListener);
         return call;
 
     }
@@ -402,14 +405,15 @@ public class UserServiceApi {
      * @param uuid  (optional)
      * @param groupPath  (optional)
      * @param password  (optional)
+     * @param oldPassword  (optional)
      * @param isGroup Group specific data. (optional)
      * @param groupLabel  (optional)
      * @param policiesContextEditable  (optional)
      * @return IdmUser
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public IdmUser getUser(String login, String uuid, String groupPath, String password, Boolean isGroup, String groupLabel, Boolean policiesContextEditable) throws ApiException {
-        ApiResponse<IdmUser> resp = getUserWithHttpInfo(login, uuid, groupPath, password, isGroup, groupLabel, policiesContextEditable);
+    public IdmUser getUser(String login, String uuid, String groupPath, String password, String oldPassword, Boolean isGroup, String groupLabel, Boolean policiesContextEditable) throws ApiException {
+        ApiResponse<IdmUser> resp = getUserWithHttpInfo(login, uuid, groupPath, password, oldPassword, isGroup, groupLabel, policiesContextEditable);
         return resp.getData();
     }
 
@@ -420,14 +424,15 @@ public class UserServiceApi {
      * @param uuid  (optional)
      * @param groupPath  (optional)
      * @param password  (optional)
+     * @param oldPassword  (optional)
      * @param isGroup Group specific data. (optional)
      * @param groupLabel  (optional)
      * @param policiesContextEditable  (optional)
      * @return ApiResponse&lt;IdmUser&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<IdmUser> getUserWithHttpInfo(String login, String uuid, String groupPath, String password, Boolean isGroup, String groupLabel, Boolean policiesContextEditable) throws ApiException {
-        com.squareup.okhttp.Call call = getUserValidateBeforeCall(login, uuid, groupPath, password, isGroup, groupLabel, policiesContextEditable, null, null);
+    public ApiResponse<IdmUser> getUserWithHttpInfo(String login, String uuid, String groupPath, String password, String oldPassword, Boolean isGroup, String groupLabel, Boolean policiesContextEditable) throws ApiException {
+        com.squareup.okhttp.Call call = getUserValidateBeforeCall(login, uuid, groupPath, password, oldPassword, isGroup, groupLabel, policiesContextEditable, null, null);
         Type localVarReturnType = new TypeToken<IdmUser>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -439,6 +444,7 @@ public class UserServiceApi {
      * @param uuid  (optional)
      * @param groupPath  (optional)
      * @param password  (optional)
+     * @param oldPassword  (optional)
      * @param isGroup Group specific data. (optional)
      * @param groupLabel  (optional)
      * @param policiesContextEditable  (optional)
@@ -446,7 +452,7 @@ public class UserServiceApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call getUserAsync(String login, String uuid, String groupPath, String password, Boolean isGroup, String groupLabel, Boolean policiesContextEditable, final ApiCallback<IdmUser> callback) throws ApiException {
+    public com.squareup.okhttp.Call getUserAsync(String login, String uuid, String groupPath, String password, String oldPassword, Boolean isGroup, String groupLabel, Boolean policiesContextEditable, final ApiCallback<IdmUser> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -467,7 +473,7 @@ public class UserServiceApi {
             };
         }
 
-        com.squareup.okhttp.Call call = getUserValidateBeforeCall(login, uuid, groupPath, password, isGroup, groupLabel, policiesContextEditable, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = getUserValidateBeforeCall(login, uuid, groupPath, password, oldPassword, isGroup, groupLabel, policiesContextEditable, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<IdmUser>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
@@ -510,7 +516,7 @@ public class UserServiceApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
@@ -642,7 +648,7 @@ public class UserServiceApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
@@ -772,7 +778,7 @@ public class UserServiceApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))

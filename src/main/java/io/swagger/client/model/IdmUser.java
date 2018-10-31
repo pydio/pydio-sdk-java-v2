@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * IdmUser
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-25T15:42:51.155Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
 public class IdmUser {
   @SerializedName("Uuid")
   private String uuid = null;
@@ -51,6 +51,9 @@ public class IdmUser {
 
   @SerializedName("Password")
   private String password = null;
+
+  @SerializedName("OldPassword")
+  private String oldPassword = null;
 
   @SerializedName("IsGroup")
   private Boolean isGroup = null;
@@ -188,6 +191,24 @@ public class IdmUser {
     this.password = password;
   }
 
+  public IdmUser oldPassword(String oldPassword) {
+    this.oldPassword = oldPassword;
+    return this;
+  }
+
+   /**
+   * Get oldPassword
+   * @return oldPassword
+  **/
+  @ApiModelProperty(value = "")
+  public String getOldPassword() {
+    return oldPassword;
+  }
+
+  public void setOldPassword(String oldPassword) {
+    this.oldPassword = oldPassword;
+  }
+
   public IdmUser isGroup(Boolean isGroup) {
     this.isGroup = isGroup;
     return this;
@@ -284,6 +305,7 @@ public class IdmUser {
         Objects.equals(this.roles, idmUser.roles) &&
         Objects.equals(this.login, idmUser.login) &&
         Objects.equals(this.password, idmUser.password) &&
+        Objects.equals(this.oldPassword, idmUser.oldPassword) &&
         Objects.equals(this.isGroup, idmUser.isGroup) &&
         Objects.equals(this.groupLabel, idmUser.groupLabel) &&
         Objects.equals(this.policies, idmUser.policies) &&
@@ -292,7 +314,7 @@ public class IdmUser {
 
   @Override
   public int hashCode() {
-    return Objects.hash(uuid, groupPath, attributes, roles, login, password, isGroup, groupLabel, policies, policiesContextEditable);
+    return Objects.hash(uuid, groupPath, attributes, roles, login, password, oldPassword, isGroup, groupLabel, policies, policiesContextEditable);
   }
 
 
@@ -307,6 +329,7 @@ public class IdmUser {
     sb.append("    roles: ").append(toIndentedString(roles)).append("\n");
     sb.append("    login: ").append(toIndentedString(login)).append("\n");
     sb.append("    password: ").append(toIndentedString(password)).append("\n");
+    sb.append("    oldPassword: ").append(toIndentedString(oldPassword)).append("\n");
     sb.append("    isGroup: ").append(toIndentedString(isGroup)).append("\n");
     sb.append("    groupLabel: ").append(toIndentedString(groupLabel)).append("\n");
     sb.append("    policies: ").append(toIndentedString(policies)).append("\n");

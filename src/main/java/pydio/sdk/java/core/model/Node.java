@@ -17,36 +17,29 @@ public interface Node extends Serializable {
 	int TYPE_OTHER 			= 5;
 	int TYPE_SEARCH 		= 6;
 
+	public static final int same = 0;
+	public static final int content = 1;
+	public static final int different = 2;
+
 	int type();
 
-	String label();
-	/**
-	 * 
-	 * @return 
-	 */	
-	String path();
-	/**
-	 * initalizes the calling Node using an XML object
-	 * @param xml is an XMl represation of a Node
-	 */
-	void initFromXml(org.w3c.dom.Node xml);
-	/**
-	 * initializes the calling Node properties using a json object
-	 * @param json representation of a Node
-	 * 
-	 */
-	void initFromJson(JSONObject json);
-	/**
-	 * initializes the calling Node properties using a Property object
-	 * @param prop Property object containing all Node properties
-	 */
-	void initFromProperties(Properties prop);
+	String id();
 
-    void initFromFile(File file);
+	String label();
+
+	String path();
 
     String getProperty(String key);
 
     void setProperty(String key, String value);
 
-	boolean equals(Object o);
+    void deleteProperty(String key);
+
+    void setProperties(Properties p);
+
+    String getEncoded();
+
+	int compare(Node node);
+
+	String getEncodedHash();
 }

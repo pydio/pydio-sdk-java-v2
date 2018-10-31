@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * InstallInstallConfig
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-25T15:42:51.155Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
 public class InstallInstallConfig {
   @SerializedName("internalUrl")
   private String internalUrl = null;
@@ -88,6 +88,12 @@ public class InstallInstallConfig {
   @SerializedName("externalFrontPlugins")
   private String externalFrontPlugins = null;
 
+  @SerializedName("externalDAV")
+  private String externalDAV = null;
+
+  @SerializedName("externalWOPI")
+  private String externalWOPI = null;
+
   @SerializedName("externalDex")
   private String externalDex = null;
 
@@ -109,8 +115,11 @@ public class InstallInstallConfig {
   @SerializedName("frontendRepeatPassword")
   private String frontendRepeatPassword = null;
 
-  @SerializedName("fpmAddress")
-  private String fpmAddress = null;
+  @SerializedName("frontendApplicationTitle")
+  private String frontendApplicationTitle = null;
+
+  @SerializedName("frontendDefaultLanguage")
+  private String frontendDefaultLanguage = null;
 
   @SerializedName("licenseRequired")
   private Boolean licenseRequired = null;
@@ -463,6 +472,42 @@ public class InstallInstallConfig {
     this.externalFrontPlugins = externalFrontPlugins;
   }
 
+  public InstallInstallConfig externalDAV(String externalDAV) {
+    this.externalDAV = externalDAV;
+    return this;
+  }
+
+   /**
+   * Get externalDAV
+   * @return externalDAV
+  **/
+  @ApiModelProperty(value = "")
+  public String getExternalDAV() {
+    return externalDAV;
+  }
+
+  public void setExternalDAV(String externalDAV) {
+    this.externalDAV = externalDAV;
+  }
+
+  public InstallInstallConfig externalWOPI(String externalWOPI) {
+    this.externalWOPI = externalWOPI;
+    return this;
+  }
+
+   /**
+   * Get externalWOPI
+   * @return externalWOPI
+  **/
+  @ApiModelProperty(value = "")
+  public String getExternalWOPI() {
+    return externalWOPI;
+  }
+
+  public void setExternalWOPI(String externalWOPI) {
+    this.externalWOPI = externalWOPI;
+  }
+
   public InstallInstallConfig externalDex(String externalDex) {
     this.externalDex = externalDex;
     return this;
@@ -589,22 +634,40 @@ public class InstallInstallConfig {
     this.frontendRepeatPassword = frontendRepeatPassword;
   }
 
-  public InstallInstallConfig fpmAddress(String fpmAddress) {
-    this.fpmAddress = fpmAddress;
+  public InstallInstallConfig frontendApplicationTitle(String frontendApplicationTitle) {
+    this.frontendApplicationTitle = frontendApplicationTitle;
     return this;
   }
 
    /**
-   * Get fpmAddress
-   * @return fpmAddress
+   * Get frontendApplicationTitle
+   * @return frontendApplicationTitle
   **/
   @ApiModelProperty(value = "")
-  public String getFpmAddress() {
-    return fpmAddress;
+  public String getFrontendApplicationTitle() {
+    return frontendApplicationTitle;
   }
 
-  public void setFpmAddress(String fpmAddress) {
-    this.fpmAddress = fpmAddress;
+  public void setFrontendApplicationTitle(String frontendApplicationTitle) {
+    this.frontendApplicationTitle = frontendApplicationTitle;
+  }
+
+  public InstallInstallConfig frontendDefaultLanguage(String frontendDefaultLanguage) {
+    this.frontendDefaultLanguage = frontendDefaultLanguage;
+    return this;
+  }
+
+   /**
+   * Get frontendDefaultLanguage
+   * @return frontendDefaultLanguage
+  **/
+  @ApiModelProperty(value = "")
+  public String getFrontendDefaultLanguage() {
+    return frontendDefaultLanguage;
+  }
+
+  public void setFrontendDefaultLanguage(String frontendDefaultLanguage) {
+    this.frontendDefaultLanguage = frontendDefaultLanguage;
   }
 
   public InstallInstallConfig licenseRequired(Boolean licenseRequired) {
@@ -698,6 +761,8 @@ public class InstallInstallConfig {
         Objects.equals(this.externalGateway, installInstallConfig.externalGateway) &&
         Objects.equals(this.externalWebsocket, installInstallConfig.externalWebsocket) &&
         Objects.equals(this.externalFrontPlugins, installInstallConfig.externalFrontPlugins) &&
+        Objects.equals(this.externalDAV, installInstallConfig.externalDAV) &&
+        Objects.equals(this.externalWOPI, installInstallConfig.externalWOPI) &&
         Objects.equals(this.externalDex, installInstallConfig.externalDex) &&
         Objects.equals(this.externalDexID, installInstallConfig.externalDexID) &&
         Objects.equals(this.externalDexSecret, installInstallConfig.externalDexSecret) &&
@@ -705,7 +770,8 @@ public class InstallInstallConfig {
         Objects.equals(this.frontendLogin, installInstallConfig.frontendLogin) &&
         Objects.equals(this.frontendPassword, installInstallConfig.frontendPassword) &&
         Objects.equals(this.frontendRepeatPassword, installInstallConfig.frontendRepeatPassword) &&
-        Objects.equals(this.fpmAddress, installInstallConfig.fpmAddress) &&
+        Objects.equals(this.frontendApplicationTitle, installInstallConfig.frontendApplicationTitle) &&
+        Objects.equals(this.frontendDefaultLanguage, installInstallConfig.frontendDefaultLanguage) &&
         Objects.equals(this.licenseRequired, installInstallConfig.licenseRequired) &&
         Objects.equals(this.licenseString, installInstallConfig.licenseString) &&
         Objects.equals(this.checkResults, installInstallConfig.checkResults);
@@ -713,7 +779,7 @@ public class InstallInstallConfig {
 
   @Override
   public int hashCode() {
-    return Objects.hash(internalUrl, dbConnectionType, dbTCPHostname, dbTCPPort, dbTCPName, dbTCPUser, dbTCPPassword, dbSocketFile, dbSocketName, dbSocketUser, dbSocketPassword, dbManualDSN, dsName, dsPort, dsFolder, externalMicro, externalGateway, externalWebsocket, externalFrontPlugins, externalDex, externalDexID, externalDexSecret, frontendHosts, frontendLogin, frontendPassword, frontendRepeatPassword, fpmAddress, licenseRequired, licenseString, checkResults);
+    return Objects.hash(internalUrl, dbConnectionType, dbTCPHostname, dbTCPPort, dbTCPName, dbTCPUser, dbTCPPassword, dbSocketFile, dbSocketName, dbSocketUser, dbSocketPassword, dbManualDSN, dsName, dsPort, dsFolder, externalMicro, externalGateway, externalWebsocket, externalFrontPlugins, externalDAV, externalWOPI, externalDex, externalDexID, externalDexSecret, frontendHosts, frontendLogin, frontendPassword, frontendRepeatPassword, frontendApplicationTitle, frontendDefaultLanguage, licenseRequired, licenseString, checkResults);
   }
 
 
@@ -741,6 +807,8 @@ public class InstallInstallConfig {
     sb.append("    externalGateway: ").append(toIndentedString(externalGateway)).append("\n");
     sb.append("    externalWebsocket: ").append(toIndentedString(externalWebsocket)).append("\n");
     sb.append("    externalFrontPlugins: ").append(toIndentedString(externalFrontPlugins)).append("\n");
+    sb.append("    externalDAV: ").append(toIndentedString(externalDAV)).append("\n");
+    sb.append("    externalWOPI: ").append(toIndentedString(externalWOPI)).append("\n");
     sb.append("    externalDex: ").append(toIndentedString(externalDex)).append("\n");
     sb.append("    externalDexID: ").append(toIndentedString(externalDexID)).append("\n");
     sb.append("    externalDexSecret: ").append(toIndentedString(externalDexSecret)).append("\n");
@@ -748,7 +816,8 @@ public class InstallInstallConfig {
     sb.append("    frontendLogin: ").append(toIndentedString(frontendLogin)).append("\n");
     sb.append("    frontendPassword: ").append(toIndentedString(frontendPassword)).append("\n");
     sb.append("    frontendRepeatPassword: ").append(toIndentedString(frontendRepeatPassword)).append("\n");
-    sb.append("    fpmAddress: ").append(toIndentedString(fpmAddress)).append("\n");
+    sb.append("    frontendApplicationTitle: ").append(toIndentedString(frontendApplicationTitle)).append("\n");
+    sb.append("    frontendDefaultLanguage: ").append(toIndentedString(frontendDefaultLanguage)).append("\n");
     sb.append("    licenseRequired: ").append(toIndentedString(licenseRequired)).append("\n");
     sb.append("    licenseString: ").append(toIndentedString(licenseString)).append("\n");
     sb.append("    checkResults: ").append(toIndentedString(checkResults)).append("\n");

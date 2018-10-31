@@ -35,7 +35,7 @@ public class HttpResponse {
         mEntity = entity;
     }
 
-    public int code() throws IOException {
+    public int code() {
         return mCode;
     }
 

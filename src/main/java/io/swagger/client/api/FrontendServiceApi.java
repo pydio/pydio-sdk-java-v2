@@ -27,9 +27,16 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 
 
+import io.swagger.client.model.RestFrontBinaryRequest;
+import io.swagger.client.model.RestFrontBinaryResponse;
 import io.swagger.client.model.RestFrontBootConfResponse;
-import io.swagger.client.model.RestFrontLogMessage;
-import io.swagger.client.model.RestFrontLogResponse;
+import io.swagger.client.model.RestFrontEnrollAuthRequest;
+import io.swagger.client.model.RestFrontEnrollAuthResponse;
+import io.swagger.client.model.RestFrontMessagesResponse;
+import io.swagger.client.model.RestFrontPluginsResponse;
+import io.swagger.client.model.RestFrontSessionRequest;
+import io.swagger.client.model.RestFrontSessionResponse;
+import io.swagger.client.model.RestFrontStateResponse;
 import io.swagger.client.model.RestSettingsMenuResponse;
 
 import java.lang.reflect.Type;
@@ -92,7 +99,7 @@ public class FrontendServiceApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
@@ -171,18 +178,18 @@ public class FrontendServiceApi {
         return call;
     }
     /**
-     * Build call for frontLog
+     * Build call for frontEnrollAuth
      * @param body  (required)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call frontLogCall(RestFrontLogMessage body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call frontEnrollAuthCall(RestFrontEnrollAuthRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
 
         // create path and map variables
-        String localVarPath = "/frontend/frontlogs";
+        String localVarPath = "/frontend/enroll";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -206,7 +213,7 @@ public class FrontendServiceApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
@@ -216,57 +223,57 @@ public class FrontendServiceApi {
         }
 
         String[] localVarAuthNames = new String[] {  };
-        return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call frontLogValidateBeforeCall(RestFrontLogMessage body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call frontEnrollAuthValidateBeforeCall(RestFrontEnrollAuthRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
         // verify the required parameter 'body' is set
         if (body == null) {
-            throw new ApiException("Missing the required parameter 'body' when calling frontLog(Async)");
+            throw new ApiException("Missing the required parameter 'body' when calling frontEnrollAuth(Async)");
         }
         
 
-        com.squareup.okhttp.Call call = frontLogCall(body, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = frontEnrollAuthCall(body, progressListener, progressRequestListener);
         return call;
 
     }
 
     /**
-     * Sends a log from front (php) to back
+     * Generic endpoint that can be implemented by 2FA systems for enrollment
      * 
      * @param body  (required)
-     * @return RestFrontLogResponse
+     * @return RestFrontEnrollAuthResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public RestFrontLogResponse frontLog(RestFrontLogMessage body) throws ApiException {
-        ApiResponse<RestFrontLogResponse> resp = frontLogWithHttpInfo(body);
+    public RestFrontEnrollAuthResponse frontEnrollAuth(RestFrontEnrollAuthRequest body) throws ApiException {
+        ApiResponse<RestFrontEnrollAuthResponse> resp = frontEnrollAuthWithHttpInfo(body);
         return resp.getData();
     }
 
     /**
-     * Sends a log from front (php) to back
+     * Generic endpoint that can be implemented by 2FA systems for enrollment
      * 
      * @param body  (required)
-     * @return ApiResponse&lt;RestFrontLogResponse&gt;
+     * @return ApiResponse&lt;RestFrontEnrollAuthResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<RestFrontLogResponse> frontLogWithHttpInfo(RestFrontLogMessage body) throws ApiException {
-        com.squareup.okhttp.Call call = frontLogValidateBeforeCall(body, null, null);
-        Type localVarReturnType = new TypeToken<RestFrontLogResponse>(){}.getType();
+    public ApiResponse<RestFrontEnrollAuthResponse> frontEnrollAuthWithHttpInfo(RestFrontEnrollAuthRequest body) throws ApiException {
+        com.squareup.okhttp.Call call = frontEnrollAuthValidateBeforeCall(body, null, null);
+        Type localVarReturnType = new TypeToken<RestFrontEnrollAuthResponse>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
 
     /**
-     * Sends a log from front (php) to back (asynchronously)
+     * Generic endpoint that can be implemented by 2FA systems for enrollment (asynchronously)
      * 
      * @param body  (required)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call frontLogAsync(RestFrontLogMessage body, final ApiCallback<RestFrontLogResponse> callback) throws ApiException {
+    public com.squareup.okhttp.Call frontEnrollAuthAsync(RestFrontEnrollAuthRequest body, final ApiCallback<RestFrontEnrollAuthResponse> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -287,8 +294,764 @@ public class FrontendServiceApi {
             };
         }
 
-        com.squareup.okhttp.Call call = frontLogValidateBeforeCall(body, progressListener, progressRequestListener);
-        Type localVarReturnType = new TypeToken<RestFrontLogResponse>(){}.getType();
+        com.squareup.okhttp.Call call = frontEnrollAuthValidateBeforeCall(body, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<RestFrontEnrollAuthResponse>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for frontMessages
+     * @param lang  (required)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call frontMessagesCall(String lang, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/frontend/messages/{Lang}"
+            .replaceAll("\\{" + "Lang" + "\\}", apiClient.escapeString(lang.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] {  };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call frontMessagesValidateBeforeCall(String lang, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'lang' is set
+        if (lang == null) {
+            throw new ApiException("Missing the required parameter 'lang' when calling frontMessages(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = frontMessagesCall(lang, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Serve list of I18n messages
+     * 
+     * @param lang  (required)
+     * @return RestFrontMessagesResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public RestFrontMessagesResponse frontMessages(String lang) throws ApiException {
+        ApiResponse<RestFrontMessagesResponse> resp = frontMessagesWithHttpInfo(lang);
+        return resp.getData();
+    }
+
+    /**
+     * Serve list of I18n messages
+     * 
+     * @param lang  (required)
+     * @return ApiResponse&lt;RestFrontMessagesResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<RestFrontMessagesResponse> frontMessagesWithHttpInfo(String lang) throws ApiException {
+        com.squareup.okhttp.Call call = frontMessagesValidateBeforeCall(lang, null, null);
+        Type localVarReturnType = new TypeToken<RestFrontMessagesResponse>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Serve list of I18n messages (asynchronously)
+     * 
+     * @param lang  (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call frontMessagesAsync(String lang, final ApiCallback<RestFrontMessagesResponse> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = frontMessagesValidateBeforeCall(lang, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<RestFrontMessagesResponse>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for frontPlugins
+     * @param lang  (required)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call frontPluginsCall(String lang, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/frontend/plugins/{Lang}"
+            .replaceAll("\\{" + "Lang" + "\\}", apiClient.escapeString(lang.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] {  };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call frontPluginsValidateBeforeCall(String lang, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'lang' is set
+        if (lang == null) {
+            throw new ApiException("Missing the required parameter 'lang' when calling frontPlugins(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = frontPluginsCall(lang, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Serve list of I18n messages
+     * 
+     * @param lang  (required)
+     * @return RestFrontPluginsResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public RestFrontPluginsResponse frontPlugins(String lang) throws ApiException {
+        ApiResponse<RestFrontPluginsResponse> resp = frontPluginsWithHttpInfo(lang);
+        return resp.getData();
+    }
+
+    /**
+     * Serve list of I18n messages
+     * 
+     * @param lang  (required)
+     * @return ApiResponse&lt;RestFrontPluginsResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<RestFrontPluginsResponse> frontPluginsWithHttpInfo(String lang) throws ApiException {
+        com.squareup.okhttp.Call call = frontPluginsValidateBeforeCall(lang, null, null);
+        Type localVarReturnType = new TypeToken<RestFrontPluginsResponse>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Serve list of I18n messages (asynchronously)
+     * 
+     * @param lang  (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call frontPluginsAsync(String lang, final ApiCallback<RestFrontPluginsResponse> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = frontPluginsValidateBeforeCall(lang, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<RestFrontPluginsResponse>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for frontPutBinary
+     * @param binaryType  (required)
+     * @param uuid  (required)
+     * @param body  (required)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call frontPutBinaryCall(String binaryType, String uuid, RestFrontBinaryRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = body;
+
+        // create path and map variables
+        String localVarPath = "/frontend/binaries/{BinaryType}/{Uuid}"
+            .replaceAll("\\{" + "BinaryType" + "\\}", apiClient.escapeString(binaryType.toString()))
+            .replaceAll("\\{" + "Uuid" + "\\}", apiClient.escapeString(uuid.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] {  };
+        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call frontPutBinaryValidateBeforeCall(String binaryType, String uuid, RestFrontBinaryRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'binaryType' is set
+        if (binaryType == null) {
+            throw new ApiException("Missing the required parameter 'binaryType' when calling frontPutBinary(Async)");
+        }
+        
+        // verify the required parameter 'uuid' is set
+        if (uuid == null) {
+            throw new ApiException("Missing the required parameter 'uuid' when calling frontPutBinary(Async)");
+        }
+        
+        // verify the required parameter 'body' is set
+        if (body == null) {
+            throw new ApiException("Missing the required parameter 'body' when calling frontPutBinary(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = frontPutBinaryCall(binaryType, uuid, body, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Upload frontend binaries (avatars / logos / bg images)
+     * 
+     * @param binaryType  (required)
+     * @param uuid  (required)
+     * @param body  (required)
+     * @return RestFrontBinaryResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public RestFrontBinaryResponse frontPutBinary(String binaryType, String uuid, RestFrontBinaryRequest body) throws ApiException {
+        ApiResponse<RestFrontBinaryResponse> resp = frontPutBinaryWithHttpInfo(binaryType, uuid, body);
+        return resp.getData();
+    }
+
+    /**
+     * Upload frontend binaries (avatars / logos / bg images)
+     * 
+     * @param binaryType  (required)
+     * @param uuid  (required)
+     * @param body  (required)
+     * @return ApiResponse&lt;RestFrontBinaryResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<RestFrontBinaryResponse> frontPutBinaryWithHttpInfo(String binaryType, String uuid, RestFrontBinaryRequest body) throws ApiException {
+        com.squareup.okhttp.Call call = frontPutBinaryValidateBeforeCall(binaryType, uuid, body, null, null);
+        Type localVarReturnType = new TypeToken<RestFrontBinaryResponse>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Upload frontend binaries (avatars / logos / bg images) (asynchronously)
+     * 
+     * @param binaryType  (required)
+     * @param uuid  (required)
+     * @param body  (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call frontPutBinaryAsync(String binaryType, String uuid, RestFrontBinaryRequest body, final ApiCallback<RestFrontBinaryResponse> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = frontPutBinaryValidateBeforeCall(binaryType, uuid, body, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<RestFrontBinaryResponse>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for frontServeBinary
+     * @param binaryType  (required)
+     * @param uuid  (required)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call frontServeBinaryCall(String binaryType, String uuid, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/frontend/binaries/{BinaryType}/{Uuid}"
+            .replaceAll("\\{" + "BinaryType" + "\\}", apiClient.escapeString(binaryType.toString()))
+            .replaceAll("\\{" + "Uuid" + "\\}", apiClient.escapeString(uuid.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] {  };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call frontServeBinaryValidateBeforeCall(String binaryType, String uuid, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'binaryType' is set
+        if (binaryType == null) {
+            throw new ApiException("Missing the required parameter 'binaryType' when calling frontServeBinary(Async)");
+        }
+        
+        // verify the required parameter 'uuid' is set
+        if (uuid == null) {
+            throw new ApiException("Missing the required parameter 'uuid' when calling frontServeBinary(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = frontServeBinaryCall(binaryType, uuid, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Serve frontend binaries directly (avatars / logos / bg images)
+     * 
+     * @param binaryType  (required)
+     * @param uuid  (required)
+     * @return RestFrontBinaryResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public RestFrontBinaryResponse frontServeBinary(String binaryType, String uuid) throws ApiException {
+        ApiResponse<RestFrontBinaryResponse> resp = frontServeBinaryWithHttpInfo(binaryType, uuid);
+        return resp.getData();
+    }
+
+    /**
+     * Serve frontend binaries directly (avatars / logos / bg images)
+     * 
+     * @param binaryType  (required)
+     * @param uuid  (required)
+     * @return ApiResponse&lt;RestFrontBinaryResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<RestFrontBinaryResponse> frontServeBinaryWithHttpInfo(String binaryType, String uuid) throws ApiException {
+        com.squareup.okhttp.Call call = frontServeBinaryValidateBeforeCall(binaryType, uuid, null, null);
+        Type localVarReturnType = new TypeToken<RestFrontBinaryResponse>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Serve frontend binaries directly (avatars / logos / bg images) (asynchronously)
+     * 
+     * @param binaryType  (required)
+     * @param uuid  (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call frontServeBinaryAsync(String binaryType, String uuid, final ApiCallback<RestFrontBinaryResponse> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = frontServeBinaryValidateBeforeCall(binaryType, uuid, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<RestFrontBinaryResponse>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for frontSession
+     * @param body  (required)
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call frontSessionCall(RestFrontSessionRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = body;
+
+        // create path and map variables
+        String localVarPath = "/frontend/session";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] {  };
+        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call frontSessionValidateBeforeCall(RestFrontSessionRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+        // verify the required parameter 'body' is set
+        if (body == null) {
+            throw new ApiException("Missing the required parameter 'body' when calling frontSession(Async)");
+        }
+        
+
+        com.squareup.okhttp.Call call = frontSessionCall(body, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Handle JWT
+     * 
+     * @param body  (required)
+     * @return RestFrontSessionResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public RestFrontSessionResponse frontSession(RestFrontSessionRequest body) throws ApiException {
+        ApiResponse<RestFrontSessionResponse> resp = frontSessionWithHttpInfo(body);
+        return resp.getData();
+    }
+
+    /**
+     * Handle JWT
+     * 
+     * @param body  (required)
+     * @return ApiResponse&lt;RestFrontSessionResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<RestFrontSessionResponse> frontSessionWithHttpInfo(RestFrontSessionRequest body) throws ApiException {
+        com.squareup.okhttp.Call call = frontSessionValidateBeforeCall(body, null, null);
+        Type localVarReturnType = new TypeToken<RestFrontSessionResponse>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Handle JWT (asynchronously)
+     * 
+     * @param body  (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call frontSessionAsync(RestFrontSessionRequest body, final ApiCallback<RestFrontSessionResponse> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = frontSessionValidateBeforeCall(body, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<RestFrontSessionResponse>(){}.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
+    /**
+     * Build call for frontState
+     * @param progressListener Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call frontStateCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/frontend/state";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if(progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                    .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[] {  };
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call frontStateValidateBeforeCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        
+
+        com.squareup.okhttp.Call call = frontStateCall(progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Send XML state registry
+     * 
+     * @return RestFrontStateResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public RestFrontStateResponse frontState() throws ApiException {
+        ApiResponse<RestFrontStateResponse> resp = frontStateWithHttpInfo();
+        return resp.getData();
+    }
+
+    /**
+     * Send XML state registry
+     * 
+     * @return ApiResponse&lt;RestFrontStateResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<RestFrontStateResponse> frontStateWithHttpInfo() throws ApiException {
+        com.squareup.okhttp.Call call = frontStateValidateBeforeCall(null, null);
+        Type localVarReturnType = new TypeToken<RestFrontStateResponse>(){}.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Send XML state registry (asynchronously)
+     * 
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call frontStateAsync(final ApiCallback<RestFrontStateResponse> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = frontStateValidateBeforeCall(progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<RestFrontStateResponse>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
@@ -327,7 +1090,7 @@ public class FrontendServiceApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))

@@ -1,161 +1,192 @@
 package pydio.sdk.java.core.model;
 
-
-import org.json.JSONObject;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.NodeList;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
-import pydio.sdk.java.core.utils.Log;
 import pydio.sdk.java.core.utils.Pydio;
+import pydio.sdk.java.server.Plugin;
 
 public class WorkspaceNode implements Node {
-    Properties properties;
-	
-	public boolean allowsCrossCopy(){
-		return properties.getProperty(Pydio.WORKSPACE_PROPERTY_CROSS_COPY) == "true";
-	}
-	
-	public String slug(){
-		return properties.getProperty(Pydio.WORKSPACE_PROPERTY_SLUG);
-	}
-	
-	public String getDescription(){
-		return properties.getProperty(Pydio.NODE_PROPERTY_DESCRIPTION);
-	}
-	
-	public String getAccessType(){
-		return properties.getProperty(Pydio.WORKSPACE_PROPERTY_ACCESS_TYPE);
-	}
+    private Properties properties;
+    private Properties preferences;
+    private List<Plugin> plugins;
+    private List<String> actions;
 
-    public boolean syncable(){
+    public boolean allowsCrossCopy() {
+        return "true".equals(properties.getProperty(Pydio.WORKSPACE_PROPERTY_CROSS_COPY));
+    }
+
+    public String slug() {
+        return properties.getProperty(Pydio.WORKSPACE_PROPERTY_SLUG);
+    }
+
+    public String getDescription() {
+        return properties.getProperty(Pydio.NODE_PROPERTY_DESCRIPTION);
+    }
+
+    public String getAccessType() {
+        return properties.getProperty(Pydio.WORKSPACE_PROPERTY_ACCESS_TYPE);
+    }
+
+    public boolean syncable() {
         return "true".equals(getProperty(Pydio.WORKSPACE_PROPERTY_META_SYNC));
     }
-	
-	public String label() {
-		return properties.getProperty(Pydio.NODE_PROPERTY_LABEL);
-	}
-	
-	public String getId(){
-		return properties.getProperty(Pydio.WORKSPACE_PROPERTY_ID);
-	}
 
-	public String acl(){
+    public String label() {
+        return properties.getProperty(Pydio.NODE_PROPERTY_LABEL);
+    }
+
+    public String getId() {
+        return properties.getProperty(Pydio.WORKSPACE_PROPERTY_SLUG);
+    }
+
+    public String acl() {
         return properties.getProperty(Pydio.WORKSPACE_PROPERTY_ACL);
     }
 
-    public String owner(){
+    public String owner() {
         return properties.getProperty(Pydio.WORKSPACE_PROPERTY_OWNER);
     }
 
-    public boolean isReadOnly(){
+    public boolean isPublic() {
+        String pub = properties.getProperty(Pydio.WORKSPACE_IS_PUBLIC);
+        return "true".equals(pub);
+    }
+
+    public boolean isReadOnly() {
         return "r".equals(acl());
     }
 
-    public boolean readableWritable(){
+    public boolean readableWritable() {
         return "rw".equals(acl());
     }
 
-	public void initFromXml(org.w3c.dom.Node xml) {
-        properties = new Properties();
-		/*
-		 * 
-		 *Example of repository format 
-		<repo access_type="fs" allowCrossRepositoryCopy="true" id="0" repositorySlug="default">
-		<label>Fichiers Communs</label>
-		<description>Fichiers partag�s par tous les utilisateurs</description>
-		<client_settings icon="plugins/access.fs/icon.png">
-	        <resources>
-	            <i18n namespace="access_fs" path="plugins/access.fs/i18n"/>
-	        </resources>
-	    </client_settings>
-		</repo>*/		
-		
-		xml.normalize();
-		NodeList children = xml.getChildNodes();
+    public boolean isSyncable() {
+        return "true".equals(getProperty(Pydio.WORKSPACE_PROPERTY_META_SYNC));
+    }
 
-		if (xml.hasAttributes()) {
-			NamedNodeMap map = xml.getAttributes();
+    public boolean isActionEnabled(String action) {
+        if (actions == null || actions.size() == 0) {
+            return true;
+        }
 
-            properties.setProperty(Pydio.WORKSPACE_PROPERTY_ACCESS_TYPE, map.getNamedItem(Pydio.WORKSPACE_PROPERTY_ACCESS_TYPE).getNodeValue());
-            properties.setProperty(Pydio.WORKSPACE_PROPERTY_CROSS_COPY, map.getNamedItem(Pydio.WORKSPACE_PROPERTY_ACCESS_TYPE).getNodeValue());
-            properties.setProperty(Pydio.WORKSPACE_PROPERTY_SLUG, map.getNamedItem(Pydio.WORKSPACE_PROPERTY_SLUG).getNodeValue());
-            properties.setProperty(Pydio.WORKSPACE_PROPERTY_ID, map.getNamedItem(Pydio.WORKSPACE_PROPERTY_ID).getNodeValue());
-		}
+        for (String mAction : actions) {
+            String[] items = mAction.split(":");
+            String actionName = items[0];
 
-		if (xml.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-			if (children.getLength() > 0) {
-				for (int i = 0; i < children.getLength(); i++) {
-					org.w3c.dom.Node n = children.item(i);
-					if(Pydio.WORKSPACE_LABEL.equals(n.getNodeName())){
-						properties.setProperty(Pydio.NODE_PROPERTY_LABEL, n.getTextContent());
-					}else if(Pydio.WORKSPACE_DESCRIPTION.equals(n.getNodeName())){
-                        properties.setProperty(Pydio.NODE_PROPERTY_DESCRIPTION, n.getTextContent());
-					}
-				}
-			}
-		}
-	}
-
-	public void initFromJson(JSONObject json) {		
-	}
-
-	public void initFromProperties(Properties p) {
-        properties = p;
-	}
-    @Override
-    public void initFromFile(File file) {
-        properties = new Properties();
-        if(file.isDirectory()) {
-            properties.setProperty(Pydio.NODE_PROPERTY_LABEL, file.getName());
-            properties.setProperty(Pydio.NODE_PROPERTY_PATH, file.getAbsolutePath());
-            properties.setProperty(Pydio.WORKSPACE_PROPERTY_ACCESS_TYPE, Pydio.WORKSPACE_ACCESS_TYPE_FS);
-            properties.setProperty(Pydio.WORKSPACE_PROPERTY_ID, file.getAbsolutePath());
-            properties.setProperty(Pydio.WORKSPACE_PROPERTY_CROSS_COPY, "true");
-            properties.setProperty(Pydio.WORKSPACE_PROPERTY_META_SYNC, "true");
-            properties.setProperty(Pydio.WORKSPACE_PROPERTY_SLUG, "true");
-        }else{
-            try {
-                InputStream in = new FileInputStream(file);
-                if(file.getName().endsWith(".xml")){
-                    properties.loadFromXML(in);
-                }else{
-                    properties.load(in);
+            if (action.equals(actionName)) {
+                String[] rights = items[1].split(":");
+                boolean readChecked = true, writeChecked = true;
+                try {
+                    if ("true".equals(rights[0])) {
+                        readChecked = acl().contains("r");
+                    }
+                    if ("true".equals(rights[1])) {
+                        writeChecked = acl().contains("w");
+                    }
+                    return readChecked && writeChecked;
+                } catch (Exception e) {
+                    return true;
                 }
-            } catch (Exception e) {
-                //Log.e("Pydio", e.getMessage());
             }
         }
+        return false;
     }
+
+    public boolean isShared() {
+        return "true".equals(properties.getProperty(Pydio.NODE_PROPERTY_AJXP_SHARED)) || "shared".equals(properties.getProperty(Pydio.WORKSPACE_PROPERTY_OWNER));
+    }
+
+    public void setActions(List<String> actions) {
+        this.actions = actions;
+    }
+
+    public void setPreferences(Properties prefs) {
+        this.preferences = prefs;
+    }
+
+    public void setPlugins(List<Plugin> plugins){
+        this.plugins = plugins;
+    }
+
+    public Plugin getPlugin(String id){
+        if (this.plugins == null){
+            return null;
+        }
+
+        for(Plugin p: this.plugins){
+            if(p.id.equals(id)){
+                return p;
+            }
+        }
+
+        return null;
+    }
+
+    //********************************************************************************************
+    //                  Super class: NODE METHODS
+    //********************************************************************************************
+    @Override
+    public void setProperties(Properties p) {
+        properties = p;
+    }
+
     @Override
     public String getProperty(String key) {
         return properties.getProperty(key, "");
     }
-	@Override
-	public void setProperty(String key, String value) {
-		if(properties == null){
-			properties = new Properties();
-		}
-		properties.setProperty(key, value);
-	}
 
-	public int type() {
-		return Node.TYPE_WORKSPACE;
-	}
+    @Override
+    public void setProperty(String key, String value) {
+        if (properties == null) {
+            properties = new Properties();
+        }
+        properties.setProperty(key, value);
+    }
 
-	public String path() {
-		return "/";
-	}
+    @Override
+    public void deleteProperty(String key) {
+        if(properties != null && properties.contains(key)){
+            properties.remove(key);
+        }
+    }
 
-	public boolean equals(Object o){
-		try{
-			return this == o || (o instanceof WorkspaceNode) && ((WorkspaceNode)o).getId() == getId() && ((WorkspaceNode)o).label() == label();
-		}catch(NullPointerException e){
-			return false;
-		}
-	}
+    @Override
+    public int type() {
+        return Node.TYPE_WORKSPACE;
+    }
+
+    @Override
+    public String id() {
+        return properties.getProperty(Pydio.WORKSPACE_PROPERTY_SLUG);
+    }
+
+    @Override
+    public String path() {
+        return "/";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        try {
+            return this == o || (o instanceof WorkspaceNode) && ((WorkspaceNode) o).getId() == getId() && ((WorkspaceNode) o).label() == label();
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public String getEncoded() {
+        return null;
+    }
+
+    @Override
+    public int compare(Node node) {
+        return 0;
+    }
+
+    @Override
+    public String getEncodedHash() {
+        return null;
+    }
 }

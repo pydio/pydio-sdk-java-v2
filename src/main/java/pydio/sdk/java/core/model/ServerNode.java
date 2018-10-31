@@ -1,15 +1,31 @@
 package pydio.sdk.java.core.model;
 
 
-
 import org.json.JSONObject;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManager;
+
+import pydio.sdk.java.core.errors.Error;
+import pydio.sdk.java.core.handlers.Completion;
 import pydio.sdk.java.core.security.CertificateTrust;
+import pydio.sdk.java.core.security.CertificateTrustManager;
+import pydio.sdk.java.core.thread.Background;
 import pydio.sdk.java.core.utils.Pydio;
 
 /**
@@ -24,33 +40,47 @@ public class ServerNode implements Node {
 	private String mScheme = null;
 	private String mHost = null;
 	private String mPath = null;
+	private String mVersion = null;
+	private String mVersionName = null;
+	private String mIconURL;
+	private String mWelcomeMessage;
 	private int mPort = 80;
-	private boolean mSSLUnverified = false;
 	private String mLabel = null;
 	private String mUrl = null;
+	private boolean mSSLUnverified = false;
 	private Properties mProperties = null;
 	private byte[] mChallengeData;
+	private JSONObject bootConf;
+
 	private X509Certificate[] mLastUnverifiedCertificateChain;
 	private CertificateTrust.Helper mGivenTrustHelper, mTrustHelper;
 	private String mCaptcha;
 	private int mLastResponseCode = Pydio.OK;
+	public Map<String, WorkspaceNode> workspaces;
+	public SSLContext HttpSecureContext;
 
-	public void initFromProperties(Properties spec) {
-		this.mUrl = spec.getProperty("url");
-		URI uri = URI.create(this.mUrl);
-		this.mHost  = uri.getHost();
-		this.mPath = uri.getPath();
-		this.mScheme = uri.getScheme();
-		this.mPort = uri.getPort();
-		this.setProperties(spec);
+	public ServerNode() {}
+
+	public static ServerNode fromAddress(String address) throws IOException {
+		URL url = new URL(address);
+		ServerNode node = new ServerNode();
+		node.mScheme = url.getProtocol();
+		node.mHost = url.getHost();
+		node.mPort = url.getPort();
+		node.mPath = url.getPath();
+		node.mUrl = address;
+		return node;
 	}
-    @Override
-    public void initFromFile(File file) {}
+
+	//********************************************************************************************
+	//                  Super class: NODE METHODS
+	//********************************************************************************************
     @Override
     public String getProperty(String key) {
 		if(mProperties == null) return null;
 		return mProperties.getProperty(key);
 	}
+
 	@Override
 	public void setProperty(String key, String value) {
 		if(mProperties == null){
@@ -59,28 +89,212 @@ public class ServerNode implements Node {
 		mProperties.setProperty(key, value);
 	}
 
-	public void initFromXml(org.w3c.dom.Node xml) {}
+	@Override
+	public void deleteProperty(String key) {
+		if(mProperties != null && mProperties.contains(key)){
+			mProperties.remove(key);
+		}
+	}
 
-	public void initFromJson(JSONObject json) {}
-
+	@Override
 	public String path(){
 		return mPath;
 	}
 
+	@Override
 	public String label() {
 		return mLabel;
 	}
 
+	@Override
 	public int type() {
 		return Node.TYPE_SERVER;
 	}
 
+	@Override
+	public String id() {
+		String id = mScheme + "://" + mHost ;
+		if (mPort != 80) {
+			id = id + ":" + mPort;
+		}
+		id = id + mPath;
+		return id;
+	}
 
-
-
-	public ServerNode setProperties(Properties p) {
+	@Override
+	public void setProperties(Properties p) {
 		mProperties = p;
-		return this;
+	}
+
+	@Override
+	public String getEncoded() {
+		return null;
+	}
+
+	@Override
+	public String getEncodedHash() {
+		return null;
+	}
+
+	@Override
+	public int compare(Node node) {
+		return 0;
+	}
+
+	//*****************************************************************************
+	//						RESOLVE
+	//*****************************************************************************
+	public void resolve(String address, boolean unverifiedSSL, CertificateTrust.Helper h, Completion c){
+		Background.go(() -> {
+			resolveRemote(address, unverifiedSSL, h, c);
+		});
+	}
+
+	private void resolveRemote(final String address, boolean unverifiedSSL, final CertificateTrust.Helper h, final Completion c) {
+		URL url;
+		try {
+			url = new URL(address);
+		} catch (MalformedURLException e) {
+			c.onComplete(new Error(400, "unable to parse URL", e));
+			return;
+		}
+
+		mScheme = url.getProtocol();
+		mHost = url.getHost();
+		mPort = url.getPort();
+		mPath = url.getPath();
+		mUrl = address;
+		setUnverifiedSSL(unverifiedSSL);
+		setCertificateTrustHelper(h);
+
+		int err = downloadBootConf("a/frontend/bootconf");
+		if (err == 0) {
+			c.onComplete(null);
+			return;
+		}
+
+		if (err != Pydio.ERROR_UNEXPECTED_RESPONSE) {
+			err = downloadBootConf("index.php?get_action=get_boot_conf");
+			if (err == 0) {
+				c.onComplete(null);
+				return;
+			}
+		}
+		c.onComplete(new Error(err, "failed to download boot configs", null));
+	}
+
+	private int downloadBootConf(String apiURLTail) {
+		InputStream in;
+		SSLContext sslCtx;
+		HttpURLConnection con;
+
+
+		String apiURL = url();
+		boolean addressEndsWithSlash = apiURL.endsWith("/");
+		boolean tailStartsWithSlash = apiURLTail.startsWith("/");
+
+		if (addressEndsWithSlash && tailStartsWithSlash) {
+            apiURL = apiURL + apiURLTail.substring(1);
+        } else if(!addressEndsWithSlash && !tailStartsWithSlash) {
+            apiURL = apiURL + "/" + apiURLTail;
+        } else {
+		    apiURL = apiURL + apiURLTail;
+        }
+
+		if (unVerifiedSSL()) {
+			try {
+				sslCtx = SSLContext.getInstance("TLS");
+				sslCtx.init(null, new TrustManager[]{trustManager()}, null);
+			} catch (Exception e) {
+				return Pydio.ERROR_TLS_INIT;
+			}
+
+			HttpsURLConnection scon;
+			try {
+				scon = (HttpsURLConnection) new URL(apiURL).openConnection();
+			} catch (IOException e) {
+				return Pydio.ERROR_CON_FAILED;
+			}
+			scon.setSSLSocketFactory(sslCtx.getSocketFactory());
+			con = scon;
+		} else {
+			try {
+				con = (HttpURLConnection) new URL(apiURL).openConnection();
+			} catch (IOException e) {
+				return Pydio.ERROR_CON_FAILED;
+			}
+		}
+
+		try {
+			in = con.getInputStream();
+		} catch (IOException e) {
+			if (e instanceof SSLException) {
+				return Pydio.ERROR_UNVERIFIED_CERTIFICATE;
+			}
+			return Pydio.ERROR_CON_FAILED;
+
+		}catch (Exception e){
+			if(e instanceof IllegalArgumentException && e.getMessage().toLowerCase().contains("unreachable")){
+				return Pydio.ERROR_UNREACHABLE_HOST;
+			}
+			return Pydio.ERROR_OTHER;
+		}
+
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		byte[] buffer = new byte[4096];
+		for(;;) {
+			int n = 0;
+			try {
+				n = in.read(buffer);
+			} catch (IOException e) {
+				return Pydio.ERROR_OTHER;
+			}
+			if (n == -1) {
+				break;
+			}
+			out.write(buffer, 0, n);
+		}
+
+		try {
+			bootConf = new JSONObject(new String(out.toByteArray(), "UTF-8"));
+		} catch (Exception ignored){
+			return Pydio.ERROR_UNEXPECTED_RESPONSE;
+		}
+
+		boolean isCells = bootConf.has("backend");
+		mVersion = bootConf.getString("ajxpVersion");
+		mVersionName = isCells ? "cells" : "pydio";
+
+		JSONObject customWordings = bootConf.getJSONObject("customWording");
+		mLabel = customWordings.getString("title");
+		mIconURL = customWordings.getString("icon");
+
+		tailStartsWithSlash = mIconURL.startsWith("/");
+		if (addressEndsWithSlash && tailStartsWithSlash) {
+			mIconURL = url() + mIconURL;
+		} else if(!addressEndsWithSlash && !tailStartsWithSlash) {
+			mIconURL = url() + "/" + mIconURL;
+		} else {
+			mIconURL = url() + mIconURL;
+		}
+
+		if(customWordings.has("welcomeMessage")) {
+			mWelcomeMessage = customWordings.getString("welcomeMessage");
+		}
+		return 0;
+	}
+
+
+	//*****************************************************************************
+	//						PROPERTIES
+	//*****************************************************************************
+	public String version() {
+		return mVersion;
+	}
+
+	public String versionName() {
+		return mVersionName;
 	}
 
 	public CertificateTrust.Helper getTrustHelper(){
@@ -133,16 +347,9 @@ public class ServerNode implements Node {
     public boolean legacy(){
         return mLegacy;
     }
-	
-	public boolean SSLUnverified(){
-		return mSSLUnverified;
-	}
 
-	public String address(){
-		String path = mScheme.toLowerCase() + "://" + mHost + path();
-		if(!path.endsWith("/"))
-			return path + "/";
-		return path;
+	public boolean unVerifiedSSL(){
+		return mSSLUnverified;
 	}
 
 	public String host(){
@@ -160,13 +367,31 @@ public class ServerNode implements Node {
 	public String url(){
 		if(mUrl != null) return mUrl;
 
-        String url = mScheme.toLowerCase()+"://"+ mHost;
-        if(mPort > 0 && mPort != 80){
-            url += ":"+ mPort;
-        }
-        return mUrl = url+ mPath;
+		String path = mScheme.toLowerCase() + "://" + mHost;
+		if(mPort > 0 && mPort != 80){
+			path += ":" + mPort;
+		}
+		path += path();
+		if(!path.endsWith("/"))
+			return path + "/";
+		return mUrl = path;
 	}
 
+	public String welcomeMessage(){
+		return mWelcomeMessage;
+	}
+
+	public String iconURL() {
+		return mIconURL;
+	}
+
+	public String apiURL() {
+		return bootConf.getString("ENDPOINT_REST_API");
+	}
+
+	public TrustManager trustManager() {
+		return new CertificateTrustManager(mTrustHelper);
+	}
 
     public boolean equals(Object o){
         try{
@@ -194,6 +419,13 @@ public class ServerNode implements Node {
 		return  mChallengeData;
 	}
 
+	public WorkspaceNode getWorkspace(String id) {
+		if (workspaces != null && workspaces.containsKey(id)) {
+			return workspaces.get(id);
+		}
+		return null;
+	}
+
 	public ServerNode setLastUnverifiedCertificateChain(X509Certificate[] chain){
 		mLastUnverifiedCertificateChain = chain;
 		return this;
@@ -204,8 +436,8 @@ public class ServerNode implements Node {
 		return this;
 	}
 
-	public ServerNode setSSLUnverified(boolean v){
-		mSSLUnverified = v;
+	public ServerNode setUnverifiedSSL(boolean unverified){
+		mSSLUnverified = unverified;
 		return this;
 	}
 
@@ -216,6 +448,24 @@ public class ServerNode implements Node {
 
 	public ServerNode setScheme(String scheme){
 		this.mScheme = scheme;
+		return this;
+	}
+
+	public ServerNode setWorkspaces(List<WorkspaceNode> nodes){
+		if(this.workspaces == null) {
+			this.workspaces = new HashMap<>();
+		}
+		for (WorkspaceNode wn: nodes) {
+			this.workspaces.put(wn.getId(), wn);
+		}
+		return this;
+	}
+
+	public ServerNode addWorkspace(WorkspaceNode node){
+		if(this.workspaces == null) {
+			this.workspaces = new HashMap<>();
+		}
+		this.workspaces.put(node.getId(), node);
 		return this;
 	}
 
@@ -238,5 +488,4 @@ public class ServerNode implements Node {
 		mChallengeData = data;
 		return this;
 	}
-
 }

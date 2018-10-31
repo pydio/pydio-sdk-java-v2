@@ -31,7 +31,7 @@ import java.util.Map;
 /**
  * ObjectDataSource
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-25T15:42:51.155Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
 public class ObjectDataSource {
   @SerializedName("Name")
   private String name = null;

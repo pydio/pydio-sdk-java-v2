@@ -22,11 +22,13 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * RestSettingsEntryMeta
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-25T15:42:51.155Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
 public class RestSettingsEntryMeta {
   @SerializedName("IconClass")
   private String iconClass = null;
@@ -36,6 +38,12 @@ public class RestSettingsEntryMeta {
 
   @SerializedName("Props")
   private String props = null;
+
+  @SerializedName("Advanced")
+  private Boolean advanced = null;
+
+  @SerializedName("Indexed")
+  private List<String> indexed = null;
 
   public RestSettingsEntryMeta iconClass(String iconClass) {
     this.iconClass = iconClass;
@@ -91,6 +99,50 @@ public class RestSettingsEntryMeta {
     this.props = props;
   }
 
+  public RestSettingsEntryMeta advanced(Boolean advanced) {
+    this.advanced = advanced;
+    return this;
+  }
+
+   /**
+   * Get advanced
+   * @return advanced
+  **/
+  @ApiModelProperty(value = "")
+  public Boolean isAdvanced() {
+    return advanced;
+  }
+
+  public void setAdvanced(Boolean advanced) {
+    this.advanced = advanced;
+  }
+
+  public RestSettingsEntryMeta indexed(List<String> indexed) {
+    this.indexed = indexed;
+    return this;
+  }
+
+  public RestSettingsEntryMeta addIndexedItem(String indexedItem) {
+    if (this.indexed == null) {
+      this.indexed = new ArrayList<String>();
+    }
+    this.indexed.add(indexedItem);
+    return this;
+  }
+
+   /**
+   * Get indexed
+   * @return indexed
+  **/
+  @ApiModelProperty(value = "")
+  public List<String> getIndexed() {
+    return indexed;
+  }
+
+  public void setIndexed(List<String> indexed) {
+    this.indexed = indexed;
+  }
+
 
   @Override
   public boolean equals(Object o) {
@@ -103,12 +155,14 @@ public class RestSettingsEntryMeta {
     RestSettingsEntryMeta restSettingsEntryMeta = (RestSettingsEntryMeta) o;
     return Objects.equals(this.iconClass, restSettingsEntryMeta.iconClass) &&
         Objects.equals(this.component, restSettingsEntryMeta.component) &&
-        Objects.equals(this.props, restSettingsEntryMeta.props);
+        Objects.equals(this.props, restSettingsEntryMeta.props) &&
+        Objects.equals(this.advanced, restSettingsEntryMeta.advanced) &&
+        Objects.equals(this.indexed, restSettingsEntryMeta.indexed);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(iconClass, component, props);
+    return Objects.hash(iconClass, component, props, advanced, indexed);
   }
 
 
@@ -120,6 +174,8 @@ public class RestSettingsEntryMeta {
     sb.append("    iconClass: ").append(toIndentedString(iconClass)).append("\n");
     sb.append("    component: ").append(toIndentedString(component)).append("\n");
     sb.append("    props: ").append(toIndentedString(props)).append("\n");
+    sb.append("    advanced: ").append(toIndentedString(advanced)).append("\n");
+    sb.append("    indexed: ").append(toIndentedString(indexed)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -23,14 +23,17 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.client.model.IdmWorkspaceScope;
 import io.swagger.client.model.ServiceResourcePolicy;
+import io.swagger.client.model.TreeNode;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * IdmWorkspace
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-04-25T15:42:51.155Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
 public class IdmWorkspace {
   @SerializedName("UUID")
   private String UUID = null;
@@ -56,8 +59,11 @@ public class IdmWorkspace {
   @SerializedName("Attributes")
   private String attributes = null;
 
+  @SerializedName("RootUUIDs")
+  private List<String> rootUUIDs = null;
+
   @SerializedName("RootNodes")
-  private List<String> rootNodes = null;
+  private Map<String, TreeNode> rootNodes = null;
 
   @SerializedName("PoliciesContextEditable")
   private Boolean policiesContextEditable = null;
@@ -214,16 +220,42 @@ public class IdmWorkspace {
     this.attributes = attributes;
   }
 
-  public IdmWorkspace rootNodes(List<String> rootNodes) {
+  public IdmWorkspace rootUUIDs(List<String> rootUUIDs) {
+    this.rootUUIDs = rootUUIDs;
+    return this;
+  }
+
+  public IdmWorkspace addRootUUIDsItem(String rootUUIDsItem) {
+    if (this.rootUUIDs == null) {
+      this.rootUUIDs = new ArrayList<String>();
+    }
+    this.rootUUIDs.add(rootUUIDsItem);
+    return this;
+  }
+
+   /**
+   * Get rootUUIDs
+   * @return rootUUIDs
+  **/
+  @ApiModelProperty(value = "")
+  public List<String> getRootUUIDs() {
+    return rootUUIDs;
+  }
+
+  public void setRootUUIDs(List<String> rootUUIDs) {
+    this.rootUUIDs = rootUUIDs;
+  }
+
+  public IdmWorkspace rootNodes(Map<String, TreeNode> rootNodes) {
     this.rootNodes = rootNodes;
     return this;
   }
 
-  public IdmWorkspace addRootNodesItem(String rootNodesItem) {
+  public IdmWorkspace putRootNodesItem(String key, TreeNode rootNodesItem) {
     if (this.rootNodes == null) {
-      this.rootNodes = new ArrayList<String>();
+      this.rootNodes = new HashMap<String, TreeNode>();
     }
-    this.rootNodes.add(rootNodesItem);
+    this.rootNodes.put(key, rootNodesItem);
     return this;
   }
 
@@ -232,11 +264,11 @@ public class IdmWorkspace {
    * @return rootNodes
   **/
   @ApiModelProperty(value = "")
-  public List<String> getRootNodes() {
+  public Map<String, TreeNode> getRootNodes() {
     return rootNodes;
   }
 
-  public void setRootNodes(List<String> rootNodes) {
+  public void setRootNodes(Map<String, TreeNode> rootNodes) {
     this.rootNodes = rootNodes;
   }
 
@@ -276,13 +308,14 @@ public class IdmWorkspace {
         Objects.equals(this.lastUpdated, idmWorkspace.lastUpdated) &&
         Objects.equals(this.policies, idmWorkspace.policies) &&
         Objects.equals(this.attributes, idmWorkspace.attributes) &&
+        Objects.equals(this.rootUUIDs, idmWorkspace.rootUUIDs) &&
         Objects.equals(this.rootNodes, idmWorkspace.rootNodes) &&
         Objects.equals(this.policiesContextEditable, idmWorkspace.policiesContextEditable);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(UUID, label, description, slug, scope, lastUpdated, policies, attributes, rootNodes, policiesContextEditable);
+    return Objects.hash(UUID, label, description, slug, scope, lastUpdated, policies, attributes, rootUUIDs, rootNodes, policiesContextEditable);
   }
 
 
@@ -299,6 +332,7 @@ public class IdmWorkspace {
     sb.append("    lastUpdated: ").append(toIndentedString(lastUpdated)).append("\n");
     sb.append("    policies: ").append(toIndentedString(policies)).append("\n");
     sb.append("    attributes: ").append(toIndentedString(attributes)).append("\n");
+    sb.append("    rootUUIDs: ").append(toIndentedString(rootUUIDs)).append("\n");
     sb.append("    rootNodes: ").append(toIndentedString(rootNodes)).append("\n");
     sb.append("    policiesContextEditable: ").append(toIndentedString(policiesContextEditable)).append("\n");
     sb.append("}");

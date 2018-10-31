@@ -71,6 +71,7 @@ public class ContentBody implements HttpEntity {
     public ContentBody(InputStream in, long length){
         mLength = length;
         mInStream = in;
+        mMaxChunckSize = mLength;
     }
 
     public String getFilename() {
