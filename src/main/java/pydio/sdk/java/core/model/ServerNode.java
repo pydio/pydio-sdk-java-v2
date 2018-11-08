@@ -454,7 +454,10 @@ public class ServerNode implements Node {
 	public ServerNode setWorkspaces(List<WorkspaceNode> nodes){
 		if(this.workspaces == null) {
 			this.workspaces = new HashMap<>();
+		} else {
+			this.workspaces.clear();
 		}
+
 		for (WorkspaceNode wn: nodes) {
 			this.workspaces.put(wn.getId(), wn);
 		}
