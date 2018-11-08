@@ -67,6 +67,8 @@ import pydio.sdk.java.utils.io;
 
 public class PydioCells implements Client {
 
+    private final static Object lock = new Object();
+
     public String URL;
     private String apiURL;
     protected String JWT;
@@ -83,7 +85,6 @@ public class PydioCells implements Client {
     }
 
     protected void getJWT() throws SDKException {
-        ApiClient apiClient = getApiClient();
 
         Token t = null;
         String subject = String.format("%s@%s", user, serverNode.url());
@@ -92,39 +93,50 @@ public class PydioCells implements Client {
         }
 
         if (t == null || t.isNotValid()) {
-            String password = Passwords.load(serverNode.url(), user);
-            if (password == null) {
-                throw new SDKException(400, "no password provided", null);
-            }
+            synchronized (lock) {
+                ApiClient apiClient = getApiClient();
+                String password = Passwords.load(serverNode.url(), user);
+                if (password == null) {
+                    throw new SDKException(400, "no password provided", null);
+                }
 
-            RestFrontSessionRequest request = new RestFrontSessionRequest();
-            request.setClientTime((int) System.currentTimeMillis());
+                RestFrontSessionRequest request = new RestFrontSessionRequest();
+                request.setClientTime((int) System.currentTimeMillis());
 
-            Map<String, String> authInfo = new HashMap<>();
-            authInfo.put("login", this.user);
-            authInfo.put("password", password);
-            authInfo.put("type", "credentials");
-            request.authInfo(authInfo);
+                Map<String, String> authInfo = new HashMap<>();
+                authInfo.put("login", this.user);
+                authInfo.put("password", password);
+                authInfo.put("type", "credentials");
+                request.authInfo(authInfo);
 
-            FrontendServiceApi api = new FrontendServiceApi(apiClient);
-            RestFrontSessionResponse response;
-            try {
-                response = api.frontSession(request);
-            } catch (ApiException e) {
-                throw new SDKException(e.getCode(), e.getResponseBody(), e);
-            }
+                FrontendServiceApi api = new FrontendServiceApi(apiClient);
+                RestFrontSessionResponse response;
+                try {
+                    response = api.frontSession(request);
+                } catch (ApiException e) {
+                    throw new SDKException(e.getCode(), e.getResponseBody(), e);
+                }
 
-            t = new Token();
-            t.subject = subject;
-            t.value = response.getJWT();
-            long expireIn = (long) response.getExpireTime();
-            t.expiry = System.currentTimeMillis() + expireIn * 1000;
+                t = new Token();
+                t.subject = subject;
+                t.value = response.getJWT();
+                long expireIn = (long) response.getExpireTime();
+                t.expiry = System.currentTimeMillis() + expireIn * 1000;
 
-            if (this.tokenStore != null) {
-                this.tokenStore.set(t);
+                if (this.tokenStore != null) {
+                    this.tokenStore.set(t);
+                }
             }
         }
         this.JWT = t.value;
+    }
+
+    protected String getS3Endpoint() {
+        String u = this.URL;
+        if (u.endsWith("/")) {
+            u = u.substring(0, u.length() - 1);
+        }
+        return u;
     }
 
     private ApiClient getApiClient() {
@@ -164,7 +176,7 @@ public class PydioCells implements Client {
             }
         }
         String uuid = node.getUuid();
-        if (uuid == null){
+        if (uuid == null) {
             return null;
         }
         result.setProperty(Pydio.NODE_PROPERTY_UUID, node.getUuid());
@@ -244,7 +256,7 @@ public class PydioCells implements Client {
     }
 
     @Override
-    public InputStream getUserData(String binary) throws SDKException {
+    public InputStream getUserData(String binary) {
         return null;
     }
 
@@ -407,7 +419,7 @@ public class PydioCells implements Client {
     public FileNode ls(String ws, String folder, NodeHandler handler) throws SDKException {
         RestGetBulkMetaRequest request = new RestGetBulkMetaRequest();
         //request.addNodePathsItem(fullPath(ws, folder));
-        if("/".equals(folder)) {
+        if ("/".equals(folder)) {
             request.addNodePathsItem(ws + "/*");
         } else {
             request.addNodePathsItem(fullPath(ws, folder + "/*"));
@@ -428,16 +440,16 @@ public class PydioCells implements Client {
 
         FileNode result = null;
         List<TreeNode> nodes = response.getNodes();
-        if(nodes != null){
+        if (nodes != null) {
             for (TreeNode node : response.getNodes()) {
                 FileNode fileNode;
                 try {
-                     fileNode = toFileNode(ws, node);
-                } catch (NullPointerException ignored){
+                    fileNode = toFileNode(ws, node);
+                } catch (NullPointerException ignored) {
                     continue;
                 }
 
-                if(fileNode != null){
+                if (fileNode != null) {
                     String nodePath = ("/" + node.getPath()).replace("//", "/");
                     if (nodePath.equals(fullPath(ws, folder))) {
                         result = fileNode;
@@ -451,7 +463,7 @@ public class PydioCells implements Client {
     }
 
     @Override
-    public void search(String ws, String pattern, NodeHandler h) throws SDKException {
+    public void search(String ws, String pattern, NodeHandler h) {
 
     }
 
@@ -465,8 +477,29 @@ public class PydioCells implements Client {
         return null;
     }
 
+    /*@Override
+    public Message upload(File source, String ws, String path, String name, boolean autoRename, TransferProgressListener progressListener) throws SDKException {
+        getJWT();
+        MinioClient mc;
+        try {
+            mc = new MinioClient(getS3Endpoint(), "gateway", this.JWT);
+        } catch (Exception e) {
+            throw SDKException.conFailed(e);
+        }
+
+        String cleanPath = String.format("%s/%s", path, name);
+        String filename = String.format("%s%s", ws, cleanPath).replace("//", "/");
+
+        try {
+            mc.putObject("data", filename, source.getPath());
+        } catch (Exception e) {
+            throw SDKException.conWriteFailed(e);
+        }
+        return null;
+    }*/
+
     @Override
-    public String uploadURL(String ws, String folder, String name, boolean autoRename) throws SDKException{
+    public String uploadURL(String ws, String folder, String name, boolean autoRename) throws SDKException {
         return null;
     }
 
@@ -489,11 +522,10 @@ public class PydioCells implements Client {
         return downloaded;
     }
 
-
     @Override
     public Message delete(String ws, String[] files) throws SDKException {
         List<TreeNode> nodes = new ArrayList<>();
-        for (String file: files){
+        for (String file : files) {
             TreeNode node = new TreeNode();
             node.setPath(fullPath(ws, file));
             nodes.add(node);
@@ -518,7 +550,7 @@ public class PydioCells implements Client {
     }
 
     @Override
-    public Message restore(String ws, String[] files) throws SDKException {
+    public Message restore(String ws, String[] files) {
         return null;
     }
 
@@ -532,7 +564,7 @@ public class PydioCells implements Client {
 
         String parent = new File(srcFile).getParentFile().getPath();
         String dstFile;
-        if("/".equals(parent)) {
+        if ("/".equals(parent)) {
             dstFile = parent + newName;
         } else {
             dstFile = parent + "/" + newName;
@@ -696,12 +728,12 @@ public class PydioCells implements Client {
     }
 
     @Override
-    public String streamingAudioURL(String ws, String file) throws SDKException {
+    public String streamingAudioURL(String ws, String file) {
         return null;
     }
 
     @Override
-    public String streamingVideoURL(String ws, String file) throws SDKException {
+    public String streamingVideoURL(String ws, String file) {
         return null;
     }
 
@@ -851,7 +883,7 @@ public class PydioCells implements Client {
     }
 
     @Override
-    public InputStream getCaptcha() throws SDKException {
+    public InputStream getCaptcha() {
         return null;
     }
 
