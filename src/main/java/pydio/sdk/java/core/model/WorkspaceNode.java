@@ -123,6 +123,9 @@ public class WorkspaceNode implements Node {
         return null;
     }
 
+    public boolean isLoaded() {
+        return this.actions != null && this.preferences != null && this.plugins != null;
+    }
     //********************************************************************************************
     //                  Super class: NODE METHODS
     //********************************************************************************************
