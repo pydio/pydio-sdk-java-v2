@@ -9,9 +9,21 @@ public class SDKException extends Throwable {
     public Exception cause;
 
     public SDKException(int code, String message, Exception cause){
-        this.code = code;
-        this.message = message;
-        this.cause = cause;
+        if (cause instanceof ApiException) {
+            ApiException ae = (ApiException) cause;
+            if (ae.getCode() == 401) {
+                this.code = Pydio.ERROR_AUTHENTICATION;
+            } else {
+                this.code = Pydio.ERROR_CON_FAILED;
+            }
+
+            this.message = message;
+            this.cause = cause;
+        } else {
+            this.code = code;
+            this.message = message;
+            this.cause = cause;
+        }
     }
 
     public SDKException(ApiException e){

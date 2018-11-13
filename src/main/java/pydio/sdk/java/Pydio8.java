@@ -1,7 +1,6 @@
 package pydio.sdk.java;
 
 import org.json.JSONObject;
-import org.w3c.dom.Document;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.BufferedReader;
@@ -47,7 +46,6 @@ import pydio.sdk.java.core.utils.ServerGeneralRegistrySaxHandler;
 import pydio.sdk.java.core.utils.Token;
 import pydio.sdk.java.core.utils.TransferProgressListener;
 import pydio.sdk.java.core.utils.TreeNodeSaxHandler;
-import pydio.sdk.java.core.utils.UnexpectedResponseException;
 import pydio.sdk.java.core.utils.WorkspaceNodeSaxHandler;
 import pydio.sdk.java.utils.io;
 
@@ -663,7 +661,7 @@ public class Pydio8 implements Client {
     }
 
     @Override
-    public InputStream previewData(String ws, String file) throws SDKException {
+    public InputStream previewData(String ws, String file, int dim) throws SDKException {
         Params params = Params.create(Pydio.PARAM_TEMP_WORKSPACE, ws)
                 .set(Pydio.PARAM_FILE, file)
                 .set(Pydio.PARAM_GET_THUMB, "true");
@@ -910,7 +908,7 @@ public class Pydio8 implements Client {
     }
 
     @Override
-    public InputStream getCaptcha() throws SDKException {
+    public InputStream getCaptcha() {
         try {
             return transport.loadCaptcha();
         } catch (IOException e) {

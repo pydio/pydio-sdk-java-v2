@@ -723,7 +723,7 @@ public class PydioCells implements Client {
     }
 
     @Override
-    public InputStream previewData(String ws, String file) throws SDKException {
+    public InputStream previewData(String ws, String file, int dim) throws SDKException {
         return null;
     }
 

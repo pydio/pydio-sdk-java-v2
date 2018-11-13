@@ -5,6 +5,7 @@ import pydio.sdk.java.core.utils.Pydio;
 public class Error {
 
     public static Error fromException(SDKException e){
+
         return new Error(e.code, e.message, e.cause);
     }
 

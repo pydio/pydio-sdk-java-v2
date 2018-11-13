@@ -176,7 +176,7 @@ public class ServerNode implements Node {
 		if (err != Pydio.ERROR_UNEXPECTED_RESPONSE) {
 			err = downloadBootConf("index.php?get_action=get_boot_conf");
 			if (err == 0) {
-				c.onComplete(null);
+				c.onComplete(new Error(Pydio.ERROR_PYDIO_8_SERVER, "found pydio 8 server", null));
 				return;
 			}
 		}
@@ -229,7 +229,7 @@ public class ServerNode implements Node {
 			in = con.getInputStream();
 		} catch (IOException e) {
 			if (e instanceof SSLException) {
-				return Pydio.ERROR_UNVERIFIED_CERTIFICATE;
+				return Pydio.ERROR_SSL_ERROR;
 			}
 			return Pydio.ERROR_CON_FAILED;
 
@@ -248,7 +248,7 @@ public class ServerNode implements Node {
 			try {
 				n = in.read(buffer);
 			} catch (IOException e) {
-				return Pydio.ERROR_OTHER;
+				return Pydio.ERROR_CON_FAILED;
 			}
 			if (n == -1) {
 				break;

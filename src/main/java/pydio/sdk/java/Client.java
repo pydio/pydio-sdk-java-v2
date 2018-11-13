@@ -82,7 +82,7 @@ public interface Client {
 
     Message mkdir(String ws, String parent, String name) throws SDKException;
 
-    InputStream previewData(String ws, String file) throws SDKException;
+    InputStream previewData(String ws, String file, int dim) throws SDKException;
 
     String streamingAudioURL(String ws, String file) throws SDKException;
 

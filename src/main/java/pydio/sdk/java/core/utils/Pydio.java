@@ -328,7 +328,9 @@ public class Pydio {
             ERROR_CON_STATE = 22,
             ERROR_CON_READ = 23,
             ERROR_CON_WRITE = 24,
-            ERROR_BAD_CONFIG = 25
+            ERROR_BAD_CONFIG = 25,
+            ERROR_SSL_ERROR = 26,
+            ERROR_PYDIO_8_SERVER = 27
     ;
 
 
