@@ -1,15 +1,15 @@
 # Getting started
-The pydio java sdk provides a Java implementation of features for communicating with a Pydio server. Most of the functions are wrapped into the <em>pydio.sdk.java.Pydio8</em> class that contains methods to easily manage your files on a Pydio server.
+The pydio java sdk provides a Java implementation of features for communicating with a Pydio server. Most of the functions are wrapped into the <em>com.pydio.sdk.core.Pydio8</em> class that contains methods to easily manage your files on a Pydio server.
 
-## <em>pydio.sdk.java.Pydio8</em> instantiation:
+## <em>com.pydio.sdk.core.Pydio8</em> instantiation:
 
 
-Here is the simple way to instantiate a <em>pydio.sdk.java.Pydio8</em>
+Here is the simple way to instantiate a <em>com.pydio.sdk.core.Pydio8</em>
 ``` java
-    pydio.sdk.java.Pydio8 client = new pydio.sdk.java.Pydio8("serverAddress", "username", "password");    
+    com.pydio.sdk.core.Pydio8 client = new com.pydio.sdk.core.Pydio8("serverAddress", "username", "password");    
 ```
 
-## Calling pydio.sdk.java.Pydio8 methods:
+## Calling com.pydio.sdk.core.Pydio8 methods:
 
 Before showing how to use the client let's have a quick look at some important classes defined in the SDK. A pydio server response contains different sort of data. To easily deal with that data the SDk provides classes to easily
 
@@ -29,7 +29,7 @@ We have also the SearchNode that wrap parameters when searching on a file tree.
 
 #### Delegates
 
-The advanced pydio.sdk.java.Pydio8 instantiation shows how delegate can be useful to provide data when a login event occurs. Delegates are also used to retrieve data. For example when listing a folder node delegates are used to retrieve children. Delegates are useful for a better memory usage. For example when listing a folder node loading the whole response data into memory is not a good practice. Instead the response is parsed as stream and each parsed node is passed to a delegate. Here are all delegates defined in the SDK:
+The advanced com.pydio.sdk.core.Pydio8 instantiation shows how delegate can be useful to provide data when a login event occurs. Delegates are also used to retrieve data. For example when listing a folder node delegates are used to retrieve children. Delegates are useful for a better memory usage. For example when listing a folder node loading the whole response data into memory is not a good practice. Instead the response is parsed as stream and each parsed node is passed to a delegate. Here are all delegates defined in the SDK:
 
 + <em>AuthenticationHelper</em> : Helps in login
 + <em>NodeHandler</em> : Helps in folder node listing.
@@ -39,7 +39,7 @@ The advanced pydio.sdk.java.Pydio8 instantiation shows how delegate can be usefu
 + <em>WorkspaceNodeSaxHandler, RegistrySaxHandler, registryItemHandler, </em> : help in registry parsing. 
  
  
-### 2 - Using pydio.sdk.java.Pydio8
+### 2 - Using com.pydio.sdk.core.Pydio8
 
 The snippet code below does :
  
@@ -51,7 +51,7 @@ The snippet code below does :
 
 ``` java
       //Setting up the client
-      final pydio.sdk.java.Pydio8 client = new pydio.sdk.java.Pydio8("yourServerAddress", "username", "password");
+      final com.pydio.sdk.core.Pydio8 client = new com.pydio.sdk.core.Pydio8("yourServerAddress", "username", "password");
 
       // the ID of the workspace you work on. "1" is refereing to "My Files"
       String workspaceID = "1";
@@ -94,7 +94,7 @@ The snippet code below does :
 
 ### 3 - Error handling
 
-When an operation failed an IOException is thrown. The  <em>pydio.sdk.java.Pydio8</em> <em>responseStatus()</em> method can tell more about the reasons. That method return a constant integer that can be one of these following values:
+When an operation failed an IOException is thrown. The  <em>com.pydio.sdk.core.Pydio8</em> <em>responseStatus()</em> method can tell more about the reasons. That method return a constant integer that can be one of these following values:
 
 + Pydio.ERROR_NOT_A_SERVER 
 There is no Pydio server configured on the specified address
@@ -137,4 +137,4 @@ Error other than all cited before.
 
 
 ### 4 - Examples
-Find more examples [here](https://github.com/pydio/pydio-sdk-java-v2/tree/master/src/main/java/examples) 
+Find more com.pydio.sdk.examples [here](https://github.com/pydio/pydio-sdk-java-v2/tree/master/src/main/java/examples) 

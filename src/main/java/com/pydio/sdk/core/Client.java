@@ -1,0 +1,102 @@
+package com.pydio.sdk.core;
+
+import com.pydio.sdk.core.common.callback.ChangeProcessor;
+import com.pydio.sdk.core.common.callback.NodeHandler;
+import com.pydio.sdk.core.common.callback.RegistryItemHandler;
+import com.pydio.sdk.core.common.callback.TransferProgressListener;
+import com.pydio.sdk.core.common.errors.SDKException;
+import com.pydio.sdk.core.model.FileNode;
+import com.pydio.sdk.core.model.Message;
+import com.pydio.sdk.core.model.ServerNode;
+import com.pydio.sdk.core.model.Token;
+
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.cert.X509Certificate;
+
+public interface Client {
+
+    static Client get(ServerNode node) {
+        if (node.versionName().startsWith("cells")) {
+            return PydioCells.getFactory().get(node);
+        }
+        return new Pydio8(node);
+    }
+
+    String getURLString();
+
+    void setUser(String user);
+
+    void setTokenProvider(Token.Provider p);
+
+    void setTokenStore(Token.Store s);
+
+    void setServerNode(ServerNode node);
+
+    String getUser();
+
+    InputStream getUserData(String binary) throws SDKException;
+
+    void login() throws SDKException;
+
+    void logout() throws SDKException;
+
+    X509Certificate[] remoteCertificateChain();
+
+    void downloadServerRegistry(RegistryItemHandler itemHandler) throws SDKException;
+
+    void downloadWorkspaceRegistry(String ws, RegistryItemHandler itemHandler) throws SDKException;
+
+    void workspaceList(final NodeHandler handler) throws SDKException;
+
+    FileNode nodeInfo(String ws, String path) throws SDKException;
+
+    FileNode ls(String ws, String folder, NodeHandler handler) throws SDKException;
+
+    void search(String ws, String pattern, NodeHandler h) throws SDKException;
+
+    Message upload(InputStream source, long length, String ws, String path, String name, boolean autoRename, final TransferProgressListener progressListener) throws SDKException;
+
+    Message upload(File source, String ws, String path, String name, boolean autoRename, final TransferProgressListener progressListener) throws SDKException;
+
+    String uploadURL(String ws, String folder, String name, boolean autoRename) throws SDKException;
+
+    long download(String ws, String file, OutputStream target, TransferProgressListener progressListener) throws SDKException;
+
+    long download(String ws, String file, File target, TransferProgressListener progressListener) throws SDKException;
+
+    String downloadURL(String ws, String file) throws SDKException;
+
+    Message delete(String ws, String[] files) throws SDKException;
+
+    Message restore(String ws, String[] files) throws SDKException;
+
+    Message move(String ws, String[] files, String dstFolder) throws SDKException;
+
+    Message rename(String ws, String srcFile, String newName) throws SDKException;
+
+    Message copy(String ws, String[] files, String folder) throws SDKException;
+
+    Message mkdir(String ws, String parent, String name) throws SDKException;
+
+    InputStream previewData(String ws, String file, int dim) throws SDKException;
+
+    String streamingAudioURL(String ws, String file) throws SDKException;
+
+    String streamingVideoURL(String ws, String file) throws SDKException;
+
+    JSONObject stats(String ws, String file, boolean withHash) throws SDKException;
+
+    long changes(String ws, String folder, int seq, boolean flatten, ChangeProcessor processor) throws SDKException;
+
+    String share(String ws, String file, String ws_label, boolean isFolder, String ws_description, String password, int expiration, int download, boolean canPreview, boolean canDownload) throws SDKException;
+
+    void unshare(String ws, String file) throws SDKException;
+
+    JSONObject shareInfo(String ws, String file) throws SDKException;
+
+    InputStream getCaptcha() throws SDKException;
+}
