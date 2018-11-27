@@ -5,7 +5,7 @@ import com.pydio.sdk.core.api.p8.P8Client;
 import com.pydio.sdk.core.api.p8.P8Request;
 import com.pydio.sdk.core.api.p8.P8RequestBuilder;
 import com.pydio.sdk.core.api.p8.P8Response;
-import com.pydio.sdk.core.api.p8.auth.DefaultP8Credentials;
+import com.pydio.sdk.core.api.p8.consts.Action;
 import com.pydio.sdk.core.api.p8.consts.Param;
 import com.pydio.sdk.core.common.callback.ChangeProcessor;
 import com.pydio.sdk.core.common.callback.NodeHandler;
@@ -24,7 +24,7 @@ import com.pydio.sdk.core.model.Node;
 import com.pydio.sdk.core.model.NodeDiff;
 import com.pydio.sdk.core.model.ServerNode;
 import com.pydio.sdk.core.model.Token;
-import com.pydio.sdk.core.security.Passwords;
+import com.pydio.sdk.core.security.Credentials;
 import com.pydio.sdk.core.utils.io;
 
 import org.json.JSONObject;
@@ -48,8 +48,7 @@ public class Pydio8 implements Client {
 
     private ServerNode serverNode;
     private P8Client p8;
-    private DefaultP8Credentials credentials;
-    private String user;
+    private Credentials credentials;
     private String secureToken;
     private int loginFailure;
 
@@ -59,9 +58,10 @@ public class Pydio8 implements Client {
 
         Configuration config = new Configuration();
         config.endpoint = serverNode.url();
-        config.selfSigned = serverNode.unVerifiedSSL();
-        if (config.selfSigned) {
+        config.resolver = serverNode.getServerResolver();
+        if (config.selfSigned = serverNode.unVerifiedSSL()) {
             config.sslContext = serverNode.getSslContext();
+            config.hostnameVerifier = serverNode.getHostnameVerifier();
         }
         p8 = new P8Client(config);
     }
@@ -71,22 +71,20 @@ public class Pydio8 implements Client {
 
     private P8Request refreshSecureToken(P8Request req) {
         try {
-            login();
+            JSONObject info = authenticationInfo();
+            if (!info.has(Param.captchaCode)) {
+                login();
+                return P8RequestBuilder.update(req).setSecureToken(secureToken).getRequest();
+            }
         } catch (SDKException e) {
             e.printStackTrace();
         }
-        return P8RequestBuilder.update(req).setSecureToken(secureToken).getRequest();
+        return null;
     }
 
     @Override
-    public String getURLString() {
-        return serverNode.url();
-    }
-
-    @Override
-    public void setUser(String user) {
-        this.user = user;
-        this.credentials = new DefaultP8Credentials(this.serverNode.url(), user, Passwords::load);
+    public void setCredentials(Credentials c) {
+        this.credentials = c;
     }
 
     @Override
@@ -100,13 +98,8 @@ public class Pydio8 implements Client {
     }
 
     @Override
-    public void setServerNode(ServerNode node) {
-        serverNode = node;
-    }
-
-    @Override
     public String getUser() {
-        return user;
+        return this.credentials.getLogin();
     }
 
     @Override
@@ -128,38 +121,9 @@ public class Pydio8 implements Client {
 
     @Override
     public void login() throws SDKException {
-        P8Response seedResponse = p8.execute(P8RequestBuilder.getSeed().getRequest());
-        String seed = seedResponse.toString();
-        boolean withCaptcha = false;
-        if (!"-1".equals(seed)) {
-            seed = seed.trim();
-            if (seed.contains("\"seed\":-1") || seed.contains("\"seed\": -1")) {
-                withCaptcha = seed.contains("\"captcha\": true") || seed.contains("\"captcha\":true");
-                seed = "-1";
-
-            } else {
-                String contentType = seedResponse.getHeaders("Content-Type").get(0);
-                boolean seemsToBePydio = (contentType != null) && (
-                        (contentType.toLowerCase().contains("text/plain"))
-                                | (contentType.toLowerCase().contains("text/xml"))
-                                | (contentType.toLowerCase().contains("text/json"))
-                                | (contentType.toLowerCase().contains("application/json")));
-
-                if (!seemsToBePydio) {
-                    throw SDKException.unexpectedContent(new IOException(seed));
-                }
-                seed = "-1";
-            }
-        }
-
-        if (withCaptcha) {
-            throw SDKException.fromP8Code(Code.authentication_with_captcha_required);
-        }
-
         P8RequestBuilder builder = P8RequestBuilder.login(credentials);
-        builder.setParam(Param.seed, seed);
-        P8Response rsp = p8.execute(builder.getRequest());
-
+        P8Request req = builder.getRequest();
+        P8Response rsp = p8.execute(req);
         final int code = rsp.code();
         if (code != Code.ok) {
             throw SDKException.fromP8Code(code);
@@ -182,6 +146,8 @@ public class Pydio8 implements Client {
             } else {
                 throw SDKException.unexpectedContent(new IOException(doc.toString()));
             }
+        } else {
+            throw SDKException.fromP8Code(Code.authentication_required);
         }
     }
 
@@ -219,9 +185,12 @@ public class Pydio8 implements Client {
     public void workspaceList(NodeHandler handler) throws SDKException {
         P8RequestBuilder builder = P8RequestBuilder.workspaceList().setSecureToken(secureToken);
         P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
-        final int resultCode = rsp.saxParse(new WorkspaceNodeSaxHandler(handler, 0, -1));
-        if (resultCode != Code.ok) {
-            throw SDKException.fromP8Code(resultCode);
+        if (rsp.code() != Code.ok) {
+            throw SDKException.fromP8Code(rsp.code());
+        }
+        final int code = rsp.saxParse(new WorkspaceNodeSaxHandler(handler, 0, -1));
+        if (code != Code.ok) {
+            throw SDKException.fromP8Code(code);
         }
     }
 
@@ -229,6 +198,10 @@ public class Pydio8 implements Client {
     public FileNode nodeInfo(String ws, String path) throws SDKException {
         P8RequestBuilder builder = P8RequestBuilder.nodeInfo(ws, path).setSecureToken(secureToken);
         P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
+        if (rsp.code() != Code.ok) {
+            throw SDKException.fromP8Code(rsp.code());
+        }
+
         final FileNode[] node = new FileNode[1];
         final int resultCode = rsp.saxParse(new TreeNodeSaxHandler((n) -> node[0] = (FileNode) n));
         if (resultCode != Code.ok) {
@@ -242,11 +215,17 @@ public class Pydio8 implements Client {
         P8RequestBuilder builder = P8RequestBuilder.ls(ws, folder).setSecureToken(secureToken);
         while (true) {
             P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
+            int code = rsp.code();
+            if (code != Code.ok) {
+                throw SDKException.fromP8Code(code);
+            }
+
             TreeNodeSaxHandler treeHandler = new TreeNodeSaxHandler(handler);
             final int resultCode = rsp.saxParse(treeHandler);
             if (resultCode != Code.ok) {
                 throw SDKException.fromP8Code(resultCode);
             }
+
             if (treeHandler.mPagination) {
                 if (!(treeHandler.mPaginationTotalPage == treeHandler.mPaginationCurrentPage)) {
                     builder.setParam(Param.dir, folder + "%23" + (treeHandler.mPaginationCurrentPage + 1));
@@ -263,6 +242,11 @@ public class Pydio8 implements Client {
     public void search(String ws, String pattern, NodeHandler h) throws SDKException {
         P8RequestBuilder builder = P8RequestBuilder.search(ws, pattern).setSecureToken(secureToken);
         P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
+        int code = rsp.code();
+        if (code != Code.ok) {
+            throw SDKException.fromP8Code(code);
+        }
+
         final int resultCode = rsp.saxParse(new TreeNodeSaxHandler(h));
         if (resultCode != Code.ok) {
             throw SDKException.fromP8Code(resultCode);
@@ -273,12 +257,7 @@ public class Pydio8 implements Client {
     public Message upload(InputStream source, long length, String ws, String path, String name, boolean autoRename, TransferProgressListener progressListener) throws SDKException {
         stats(ws, path, false);
         P8RequestBuilder builder;
-        try {
-            builder = P8RequestBuilder.upload(ws, path, name, autoRename, null);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            throw SDKException.encoding(e);
-        }
+        builder = P8RequestBuilder.upload(ws, path, name, autoRename, null);
 
         //TODO: get size from server configs
         long maxChunkSize = 2 * 1024 * 1204;
@@ -384,15 +363,13 @@ public class Pydio8 implements Client {
             throw SDKException.fromP8Code(rsp.code());
         }
 
-        InputStream stream = rsp.getContent();
-        long total_read;
+
         try {
-            total_read = io.pipeReadWithProgress(stream, target, progressListener::onProgress);
+            return rsp.write(target, progressListener);
         } catch (IOException e) {
+            e.printStackTrace();
             throw SDKException.conReadFailed(e);
         }
-        io.close(stream);
-        return total_read;
     }
 
     @Override
@@ -642,6 +619,42 @@ public class Pydio8 implements Client {
 
     @Override
     public InputStream getCaptcha() {
-        return null;
+        P8Request request = new P8RequestBuilder().setAction(Action.getCaptcha).getRequest();
+        return p8.execute(request).getContent();
+    }
+
+    @Override
+    public JSONObject authenticationInfo() throws SDKException {
+        P8Response seedResponse = p8.execute(P8RequestBuilder.getSeed().getRequest());
+        String seed = seedResponse.toString();
+        JSONObject o = new JSONObject();
+
+        boolean withCaptcha = false;
+
+        if (!"-1".equals(seed)) {
+            seed = seed.trim();
+            if (seed.contains("\"seed\":-1") || seed.contains("\"seed\": -1")) {
+                withCaptcha = seed.contains("\"captcha\": true") || seed.contains("\"captcha\":true");
+                o.put(Param.seed, "-1");
+
+            } else {
+                String contentType = seedResponse.getHeaders("Content-Type").get(0);
+                boolean seemsToBePydio = (contentType != null) && (
+                        (contentType.toLowerCase().contains("text/plain"))
+                                | (contentType.toLowerCase().contains("text/xml"))
+                                | (contentType.toLowerCase().contains("text/json"))
+                                | (contentType.toLowerCase().contains("application/json")));
+
+                if (!seemsToBePydio) {
+                    throw SDKException.unexpectedContent(new IOException(seed));
+                }
+                o.put(Param.seed, "-1");
+            }
+        }
+
+        if (withCaptcha) {
+            o.put(Param.captchaCode, true);
+        }
+        return o;
     }
 }

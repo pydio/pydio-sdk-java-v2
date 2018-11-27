@@ -1,8 +1,9 @@
 package com.pydio.sdk.core.api.p8.auth;
 
 import com.pydio.sdk.core.common.callback.PasswordLoader;
+import com.pydio.sdk.core.security.Credentials;
 
-public class DefaultP8Credentials implements P8Credentials {
+public class DefaultP8Credentials implements Credentials {
 
     private PasswordLoader loader;
     private String url;
@@ -28,6 +29,11 @@ public class DefaultP8Credentials implements P8Credentials {
     @Override
     public String getCaptcha() {
         return captcha;
+    }
+
+    @Override
+    public String getSeed() {
+        return null;
     }
 
 

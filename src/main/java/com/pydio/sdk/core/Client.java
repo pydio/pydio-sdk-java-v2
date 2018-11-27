@@ -9,6 +9,7 @@ import com.pydio.sdk.core.model.FileNode;
 import com.pydio.sdk.core.model.Message;
 import com.pydio.sdk.core.model.ServerNode;
 import com.pydio.sdk.core.model.Token;
+import com.pydio.sdk.core.security.Credentials;
 
 import org.json.JSONObject;
 
@@ -26,15 +27,11 @@ public interface Client {
         return new Pydio8(node);
     }
 
-    String getURLString();
-
-    void setUser(String user);
+    void setCredentials(Credentials c);
 
     void setTokenProvider(Token.Provider p);
 
     void setTokenStore(Token.Store s);
-
-    void setServerNode(ServerNode node);
 
     String getUser();
 
@@ -99,4 +96,6 @@ public interface Client {
     JSONObject shareInfo(String ws, String file) throws SDKException;
 
     InputStream getCaptcha() throws SDKException;
+
+    JSONObject authenticationInfo() throws SDKException;
 }

@@ -1,10 +1,12 @@
 package com.pydio.sdk.core.model;
 
 
+import com.pydio.sdk.core.common.callback.ServerResolver;
 import com.pydio.sdk.core.common.errors.Code;
 import com.pydio.sdk.core.common.errors.Error;
 import com.pydio.sdk.core.security.CertificateTrust;
 import com.pydio.sdk.core.security.CertificateTrustManager;
+import com.pydio.sdk.core.utils.io;
 
 import org.json.JSONObject;
 
@@ -15,15 +17,22 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.TrustManager;
 
 /**
@@ -35,7 +44,6 @@ import javax.net.ssl.TrustManager;
 public class ServerNode implements Node {
 
     public Map<String, WorkspaceNode> workspaces;
-    private boolean legacy = false;
     private String scheme = null;
     private String host = null;
     private int port = 80;
@@ -50,8 +58,9 @@ public class ServerNode implements Node {
     private SSLContext sslContext;
     private Properties properties = null;
     private JSONObject bootConf;
-    private X509Certificate[] certificateChain;
-    private CertificateTrust.Helper givenTrustHelper, trustHelper;
+    private byte[][] certificateChain;
+    private CertificateTrust.Helper trustHelper;
+    private ServerResolver serverResolver;
 
     public ServerNode() {
     }
@@ -139,11 +148,11 @@ public class ServerNode implements Node {
     //*****************************************************************************
     //						RESOLVE
     //*****************************************************************************
-    public Error resolve(String address, boolean unverifiedSSL, CertificateTrust.Helper h) {
-        return resolveRemote(address, unverifiedSSL, h);
+    public Error resolve(String address) {
+        return resolveRemote(address);
     }
 
-    private Error resolveRemote(final String address, boolean unverifiedSSL, final CertificateTrust.Helper h) {
+    private Error resolveRemote(final String address) {
         URL url;
         try {
             url = new URL(address);
@@ -156,8 +165,6 @@ public class ServerNode implements Node {
         port = url.getPort();
         path = url.getPath();
         this.url = address;
-        setUnverifiedSSL(unverifiedSSL);
-        setCertificateTrustHelper(h);
 
         int err = downloadBootConf("a/frontend/bootconf");
         if (err == 0) {
@@ -171,14 +178,12 @@ public class ServerNode implements Node {
                 return null;
             }
         }
-        return new Error(Code.not_pydio_server);
+        return new Error(err);
     }
 
     private int downloadBootConf(String apiURLTail) {
         InputStream in;
-        SSLContext sslCtx;
         HttpURLConnection con;
-
 
         String apiURL = url();
         boolean addressEndsWithSlash = apiURL.endsWith("/");
@@ -199,7 +204,6 @@ public class ServerNode implements Node {
             } catch (Exception e) {
                 return Code.tls_init;
             }
-
             HttpsURLConnection scon;
             try {
                 scon = (HttpsURLConnection) new URL(apiURL).openConnection();
@@ -207,6 +211,7 @@ public class ServerNode implements Node {
                 return Code.con_failed;
             }
             scon.setSSLSocketFactory(sslContext.getSocketFactory());
+            scon.setHostnameVerifier(getHostnameVerifier());
             con = scon;
         } else {
             try {
@@ -216,10 +221,37 @@ public class ServerNode implements Node {
             }
         }
 
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             in = con.getInputStream();
+            io.pipeRead(in, out);
         } catch (IOException e) {
+            if (e instanceof SSLHandshakeException) {
+                Throwable cause = e.getCause();
+                if (cause != null) {
+                    cause = cause.getCause();
+                    if (cause instanceof CertPathValidatorException) {
+                        CertPathValidatorException ex = (CertPathValidatorException) cause;
+                        List<? extends Certificate> certs = ex.getCertPath().getCertificates();
+
+                        int size = certs.size();
+                        this.certificateChain = new byte[size][];
+                        int i = 0;
+                        for (Certificate c : certs) {
+                            try {
+                                this.certificateChain[i] = c.getEncoded();
+                                i++;
+                            } catch (CertificateEncodingException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
+                }
+                return Code.ssl_certificate_not_signed;
+            }
+
             if (e instanceof SSLException) {
+                e.printStackTrace();
                 return Code.ssl_error;
             }
             return Code.con_failed;
@@ -229,22 +261,6 @@ public class ServerNode implements Node {
                 return Code.unreachable_host;
             }
             return Code.con_failed;
-        }
-
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        byte[] buffer = new byte[4096];
-        for (; ; ) {
-            int n = 0;
-            try {
-                n = in.read(buffer);
-            } catch (IOException e) {
-                return Code.con_failed;
-            }
-            if (n == -1) {
-                break;
-            }
-            out.write(buffer, 0, n);
         }
 
         try {
@@ -281,7 +297,7 @@ public class ServerNode implements Node {
     //						PROPERTIES
     //*****************************************************************************
     private TrustManager trustManager() {
-        return new CertificateTrustManager(trustHelper);
+        return new CertificateTrustManager(getTrustHelper());
     }
 
     public String version() {
@@ -302,21 +318,32 @@ public class ServerNode implements Node {
         return versionName;
     }
 
-    public CertificateTrust.Helper getTrustHelper() {
+    private CertificateTrust.Helper getTrustHelper() {
         if (trustHelper == null) {
             return trustHelper = new CertificateTrust.Helper() {
                 @Override
                 public boolean isServerTrusted(X509Certificate[] chain) {
-                    certificateChain = chain;
-                    return givenTrustHelper != null && givenTrustHelper.isServerTrusted(chain);
+                    for (X509Certificate c : chain) {
+                        for (byte[] trusted : ServerNode.this.certificateChain) {
+                            try {
+                                c.checkValidity();
+                                MessageDigest hash = MessageDigest.getInstance("MD5");
+                                byte[] c1 = hash.digest(trusted);
+                                byte[] c2 = hash.digest(c.getEncoded());
+                                if (Arrays.equals(c1, c2)) {
+                                    return true;
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    return false;
                 }
 
                 @Override
                 public X509Certificate[] getAcceptedIssuers() {
-                    if (givenTrustHelper != null) {
-                        return givenTrustHelper.getAcceptedIssuers();
-                    }
-                    return new X509Certificate[0];
+                    return null;
                 }
             };
         }
@@ -334,23 +361,6 @@ public class ServerNode implements Node {
         path = uri.getPath();
         port = uri.getPort();
         return this;
-    }
-
-    public ServerNode init(String url, CertificateTrust.Helper helper) {
-        this.init(url);
-        givenTrustHelper = helper;
-        return this;
-    }
-
-    public ServerNode init(String url, String user, CertificateTrust.Helper helper) {
-        this.init(url);
-        //mUser = user;
-        givenTrustHelper = helper;
-        return this;
-    }
-
-    public boolean legacy() {
-        return legacy;
     }
 
     public boolean unVerifiedSSL() {
@@ -399,6 +409,19 @@ public class ServerNode implements Node {
                 sslContext = SSLContext.getInstance("TLS");
                 sslContext.init(null, new TrustManager[]{trustManager()}, null);
             } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        try {
+            sslContext.getSocketFactory();
+        } catch (Exception e) {
+            try {
+                sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, new TrustManager[]{trustManager()}, null);
+            } catch (Exception ex) {
+                e.printStackTrace();
                 return null;
             }
         }
@@ -443,8 +466,15 @@ public class ServerNode implements Node {
         return this;
     }
 
-    public ServerNode setCertificateTrustHelper(CertificateTrust.Helper helper) {
-        givenTrustHelper = helper;
-        return this;
+    public byte[][] getCertificateChain() {
+        return certificateChain;
+    }
+
+    public HostnameVerifier getHostnameVerifier() {
+        return (s, sslSession) -> true;
+    }
+
+    public ServerResolver getServerResolver() {
+        return this.serverResolver;
     }
 }

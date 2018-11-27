@@ -37,7 +37,7 @@ public class TreeNodeSaxHandler extends DefaultHandler {
             mPaginationCurrentPage = Integer.parseInt(attributes.getValue("current"));
         }
 
-        if ("xmlElementTree".equals(qName)) {
+        if ("tree".equals(qName)) {
             mInsideTree = true;
             mParsedCount++;
             p = new Properties();
@@ -61,7 +61,7 @@ public class TreeNodeSaxHandler extends DefaultHandler {
     }
 
     public void endElement(String uri, String localName, String qName) {
-        if (mInsideTree && "xmlElementTree".equals(qName)) {
+        if (mInsideTree && "tree".equals(qName)) {
             if(p != null) {
                 Node node = NodeFactory.createNode(Node.TYPE_REMOTE_FILE, p);
                 if(node != null){

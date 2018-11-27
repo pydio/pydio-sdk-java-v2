@@ -37,7 +37,7 @@ import com.pydio.sdk.core.model.FileNode;
 import com.pydio.sdk.core.model.Message;
 import com.pydio.sdk.core.model.ServerNode;
 import com.pydio.sdk.core.model.Token;
-import com.pydio.sdk.core.security.Passwords;
+import com.pydio.sdk.core.security.Credentials;
 import com.pydio.sdk.core.utils.io;
 import com.squareup.okhttp.OkHttpClient;
 
@@ -72,8 +72,8 @@ public class PydioCells implements Client {
     public String URL;
     private String apiURL;
     protected String JWT;
-    private String user;
     private ServerNode serverNode;
+    private Credentials credentials;
 
     private Token.Provider tokenProvider;
     private Token.Store tokenStore;
@@ -87,7 +87,7 @@ public class PydioCells implements Client {
     protected void getJWT() throws SDKException {
 
         Token t = null;
-        String subject = String.format("%s@%s", user, serverNode.url());
+        String subject = String.format("%s@%s", credentials.getLogin(), serverNode.url());
         if (tokenProvider != null) {
             t = tokenProvider.get(subject);
         }
@@ -95,7 +95,8 @@ public class PydioCells implements Client {
         if (t == null || t.isNotValid()) {
             synchronized (lock) {
                 ApiClient apiClient = getApiClient();
-                String password = Passwords.load(serverNode.url(), user);
+                String password = credentials.getPassword();
+
                 if (password == null) {
                     throw new SDKException(Code.authentication_required, new IOException("no password provided"));
                 }
@@ -104,7 +105,7 @@ public class PydioCells implements Client {
                 request.setClientTime((int) System.currentTimeMillis());
 
                 Map<String, String> authInfo = new HashMap<>();
-                authInfo.put("login", this.user);
+                authInfo.put("login", credentials.getLogin());
                 authInfo.put("password", password);
                 authInfo.put("type", "credentials");
                 request.authInfo(authInfo);
@@ -142,8 +143,8 @@ public class PydioCells implements Client {
     private ApiClient getApiClient() {
         ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(apiURL);
-        SSLContext context = this.serverNode.getSslContext();
-        if (context != null) {
+        if (this.serverNode.unVerifiedSSL()) {
+            SSLContext context = this.serverNode.getSslContext();
             OkHttpClient c = apiClient.getHttpClient();
             c.setSslSocketFactory(context.getSocketFactory());
             c.setHostnameVerifier((s, sslSession) -> URL.contains(s));
@@ -227,13 +228,8 @@ public class PydioCells implements Client {
     }
 
     @Override
-    public String getURLString() {
-        return serverNode.url();
-    }
-
-    @Override
-    public void setUser(String user) {
-        this.user = user;
+    public void setCredentials(Credentials c) {
+        this.credentials = c;
     }
 
     @Override
@@ -247,13 +243,8 @@ public class PydioCells implements Client {
     }
 
     @Override
-    public void setServerNode(ServerNode node) {
-        this.serverNode = node;
-    }
-
-    @Override
     public String getUser() {
-        return this.user;
+        return this.credentials.getLogin();
     }
 
     @Override
@@ -263,9 +254,6 @@ public class PydioCells implements Client {
 
     @Override
     public void login() throws SDKException {
-        if ("".equals(user)) {
-            throw new SDKException(Code.authentication_required, new IOException("missing username"));
-        }
         this.getJWT();
     }
 
@@ -368,6 +356,7 @@ public class PydioCells implements Client {
             throw SDKException.malFormURI(e);
         }
 
+        this.getJWT();
         HttpURLConnection con = null;
         try {
             con = (HttpURLConnection) url.openConnection();
@@ -376,9 +365,7 @@ public class PydioCells implements Client {
             throw SDKException.conFailed(e);
         }
 
-        this.getJWT();
         con.setRequestProperty("Authorization", "Bearer " + this.JWT);
-
         InputStream in;
         try {
             in = con.getInputStream();
@@ -477,27 +464,6 @@ public class PydioCells implements Client {
     public Message upload(File source, String ws, String path, String name, boolean autoRename, TransferProgressListener progressListener) throws SDKException {
         return null;
     }
-
-    /*@Override
-    public Message upload(File source, String ws, String path, String name, boolean autoRename, TransferProgressListener progressListener) throws SDKException {
-        getJWT();
-        MinioClient mc;
-        try {
-            mc = new MinioClient(getS3Endpoint(), "gateway", this.JWT);
-        } catch (Exception e) {
-            throw SDKException.conFailed(e);
-        }
-
-        String cleanPath = String.format("%s/%s", path, name);
-        String filename = String.format("%s%s", ws, cleanPath).replace("//", "/");
-
-        try {
-            mc.putObject("data", filename, source.getPath());
-        } catch (Exception e) {
-            throw SDKException.conWriteFailed(e);
-        }
-        return null;
-    }*/
 
     @Override
     public String uploadURL(String ws, String folder, String name, boolean autoRename) throws SDKException {
@@ -913,4 +879,8 @@ public class PydioCells implements Client {
         return registry.get("default");
     }
 
+    @Override
+    public JSONObject authenticationInfo() {
+        return null;
+    }
 }

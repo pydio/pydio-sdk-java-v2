@@ -68,7 +68,10 @@ public class P8Client {
         P8Response response = execute(request);
         final int c = response.code();
         if (c == code) {
-            return execute(retry.update(request));
+            P8Request retryRequest = retry.update(request);
+            if (retryRequest != null) {
+                response = execute(retryRequest);
+            }
         }
         return response;
     }
@@ -137,7 +140,7 @@ public class P8Client {
                 return null;
             }
             c.setSSLSocketFactory(config.sslContext.getSocketFactory());
-            c.setHostnameVerifier((s, sslSession) -> true);
+            c.setHostnameVerifier(config.hostnameVerifier);
             con = c;
         } else {
 
@@ -157,9 +160,6 @@ public class P8Client {
             //todo : return detailed
             return null;
         }
-
-        con.setDoInput(true);
-
         if (!ignoreCookies) {
             List<HttpCookie> cookies = this.cookies.getCookieStore().getCookies();
             if (cookies.size() > 0) {
@@ -177,6 +177,7 @@ public class P8Client {
         } else {
             con.setRequestProperty("User-Agent", "Pydio-Native-" + ApplicationData.name + " " + ApplicationData.version + "." + ApplicationData.versionCode);
         }
+        con.setDoInput(true);
         return con;
     }
 
@@ -232,7 +233,7 @@ public class P8Client {
         ByteArrayOutputStream partHeaderBuffer = new ByteArrayOutputStream();
         Iterator<Map.Entry<String, String>> it = request.params.get().entrySet().iterator();
 
-        String CHARSET_UTF8 = "utf-8";
+        String utf8 = "utf-8";
         String LF = "\r\n";
         String DLF = LF + LF;
 
@@ -243,14 +244,16 @@ public class P8Client {
             while (it.hasNext()) {
                 Map.Entry<String, String> entry = it.next();
                 String name = entry.getKey(), value = entry.getValue();
-                partHeaderBuffer.write(("Content-Disposition: form-data; name=\"" + URLEncoder.encode(name, CHARSET_UTF8) + "\"").getBytes());
-                partHeaderBuffer.write(LF.getBytes());
-                partHeaderBuffer.write(("Content-Type: text/plain; charset=" + CHARSET_UTF8).getBytes());
-                partHeaderBuffer.write(DLF.getBytes());
-                partHeaderBuffer.write(value.getBytes(CHARSET_UTF8));
-                partHeaderBuffer.write(LF.getBytes());
-                partHeaderBuffer.write(("--" + boundary).getBytes());
-                partHeaderBuffer.write(LF.getBytes());
+                if (value != null) {
+                    partHeaderBuffer.write(("Content-Disposition: form-data; name=\"" + URLEncoder.encode(name, utf8) + "\"").getBytes());
+                    partHeaderBuffer.write(LF.getBytes());
+                    partHeaderBuffer.write(("Content-Type: text/plain; charset=" + utf8).getBytes());
+                    partHeaderBuffer.write(DLF.getBytes());
+                    partHeaderBuffer.write(value.getBytes(utf8));
+                    partHeaderBuffer.write(LF.getBytes());
+                    partHeaderBuffer.write(("--" + boundary).getBytes());
+                    partHeaderBuffer.write(LF.getBytes());
+                }
             }
 
             byte[] partHeaderBytes = partHeaderBuffer.toByteArray();
@@ -259,7 +262,7 @@ public class P8Client {
 
 
             if (request.body != null) {
-                partHeaderBuffer.write(("Content-Disposition: form-data; name=\"userfile_0\"; filename=" + URLEncoder.encode(request.body.getFilename(), CHARSET_UTF8)).getBytes());
+                partHeaderBuffer.write(("Content-Disposition: form-data; name=\"userfile_0\"; filename=" + URLEncoder.encode(request.body.getFilename(), utf8)).getBytes());
                 partHeaderBuffer.write(LF.getBytes());
                 partHeaderBuffer.write(("Content-Type: " + request.body.getContentType()).getBytes());
 
@@ -280,7 +283,6 @@ public class P8Client {
                 out.write(partHeaderBytes);
                 out.write(lastBoundaryBytes);
             }
-
             P8Response response = new P8Response(con);
 
             Map<String, List<String>> headerFields = con.getHeaderFields();
@@ -293,10 +295,9 @@ public class P8Client {
                     }
                 }
             }
-
             return response;
-
         } catch (IOException e) {
+            e.printStackTrace();
             return P8Response.error(Code.con_failed);
         }
     }
@@ -321,9 +322,7 @@ public class P8Client {
         try {
             OutputStream out = con.getOutputStream();
             request.body.writeTo(out);
-
             P8Response response = new P8Response(con);
-
             Map<String, List<String>> headerFields = con.getHeaderFields();
             List<String> cookiesHeader = headerFields.get("Set-Cookie");
             if (cookiesHeader != null) {
@@ -336,6 +335,7 @@ public class P8Client {
             }
             return response;
         } catch (IOException e) {
+            e.printStackTrace();
             return P8Response.error(Code.con_failed);
         }
     }

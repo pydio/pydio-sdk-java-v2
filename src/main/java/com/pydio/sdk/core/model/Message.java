@@ -87,7 +87,7 @@ public class Message implements Serializable{
                 }
 
                 for (int j = 0; list != null && j < child.getChildNodes().getLength(); j++) {
-                    list.add(com.pydio.sdk.core.model.NodeFactory.createNode(child.getChildNodes().item(j)));
+                    list.add(NodeFactory.createNode(child.getChildNodes().item(j)));
                 }
             }
         }

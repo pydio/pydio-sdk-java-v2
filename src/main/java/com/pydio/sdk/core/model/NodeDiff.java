@@ -40,7 +40,7 @@ public class NodeDiff {
 
                 for (int j = 0; j < child.getChildNodes().getLength(); j++) {
                     org.w3c.dom.Node c = child.getChildNodes().item(j);
-                    Node pydNode = com.pydio.sdk.core.model.NodeFactory.createNode(c);
+                    Node pydNode = NodeFactory.createNode(c);
                     if( pydNode != null){
                         list.add(pydNode);
                     }

@@ -32,8 +32,9 @@ public class Param {
     public static final String simpleRightDownload = "simple_right_download";
     public static final String query = "query";
     public static final String binaryId = "binary_id";
-    public static final String userId = "user_id";
+    public static final String userId = "userid";
     public static final String seed = "seed";
+    public static final String loginSeed = "login_seed";
     public static final String password = "password";
     public final static String getAction = "get_action";
     public static final String seqId = "seq_id";

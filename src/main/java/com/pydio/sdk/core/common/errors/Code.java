@@ -24,4 +24,21 @@ public class Code {
     public static final int con_write_failed = 20;
     public static final int con_closed = 21;
     public static final int not_found = 22;
+
+    public static int fromHttpStatus(int status) {
+
+        if (status == 200) {
+            return ok;
+        }
+
+        if (status == 404) {
+            return not_found;
+        }
+
+        if (status == 401 || status == 403) {
+            return authentication_required;
+        }
+
+        return unexpected_response;
+    }
 }

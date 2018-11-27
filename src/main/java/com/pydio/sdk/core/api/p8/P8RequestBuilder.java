@@ -1,6 +1,5 @@
 package com.pydio.sdk.core.api.p8;
 
-import com.pydio.sdk.core.api.p8.auth.P8Credentials;
 import com.pydio.sdk.core.api.p8.consts.Action;
 import com.pydio.sdk.core.api.p8.consts.Const;
 import com.pydio.sdk.core.api.p8.consts.Param;
@@ -14,11 +13,11 @@ public class P8RequestBuilder {
 
     private P8Request request;
 
-    P8RequestBuilder() {
+    public P8RequestBuilder() {
         request = new P8Request();
     }
 
-    P8RequestBuilder(P8Request request) {
+    public P8RequestBuilder(P8Request request) {
         this.request = request;
     }
 
@@ -40,17 +39,16 @@ public class P8RequestBuilder {
         return builder.ignoreCookies(false);
     }
 
-    public static P8RequestBuilder login(P8Credentials credentials) {
+    public static P8RequestBuilder login(Credentials credentials) {
         P8RequestBuilder builder = new P8RequestBuilder();
         builder = builder.setAction(Action.login).
-                setParam(Param.seed, "-1").
+                setParam(Param.loginSeed, credentials.getSeed()).
                 setParam(Param.userId, credentials.getLogin()).
                 setParam(Param.password, credentials.getPassword());
-
         if (credentials.getCaptcha() != null) {
             builder.setParam(Param.captchaCode, credentials.getCaptcha());
         }
-        return builder;
+        return builder.ignoreCookies(false);
     }
 
     public static P8RequestBuilder logout() {
@@ -346,7 +344,7 @@ public class P8RequestBuilder {
         return this;
     }
 
-    public P8RequestBuilder setCredentials(Credentials credentials) {
+    public P8RequestBuilder setCredentials(com.pydio.sdk.core.security.Credentials credentials) {
         request.credentials = credentials;
         return this;
     }

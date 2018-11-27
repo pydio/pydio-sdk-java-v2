@@ -6,15 +6,15 @@ import com.pydio.sdk.core.api.p8.P8Request;
 import com.pydio.sdk.core.api.p8.P8RequestBuilder;
 import com.pydio.sdk.core.api.p8.P8Response;
 import com.pydio.sdk.core.api.p8.auth.DefaultP8Credentials;
-import com.pydio.sdk.core.api.p8.auth.P8Credentials;
 import com.pydio.sdk.core.api.p8.consts.Param;
 import com.pydio.sdk.core.common.errors.Code;
+import com.pydio.sdk.core.security.Credentials;
 
 import org.w3c.dom.Document;
 
 public class Workspaces {
 
-    public static String login(P8Client client, P8Credentials credentials) {
+    public static String login(P8Client client, Credentials credentials) {
         P8Response seedResponse = client.execute(P8RequestBuilder.getSeed().getRequest());
         String seed = seedResponse.toString();
         boolean withCaptcha = false;
