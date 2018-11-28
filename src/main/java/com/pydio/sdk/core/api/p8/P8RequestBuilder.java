@@ -8,6 +8,7 @@ import com.pydio.sdk.core.security.Credentials;
 import com.pydio.sdk.core.utils.Params;
 
 import java.io.File;
+import java.io.IOException;
 
 public class P8RequestBuilder {
 
@@ -109,12 +110,13 @@ public class P8RequestBuilder {
         return builder;
     }
 
-    public static P8RequestBuilder upload(String ws, String dir, String name, boolean autoRename, ContentBody body) {
+    public static P8RequestBuilder upload(String ws, String dir, String name, boolean autoRename, ContentBody body) throws IOException {
         P8RequestBuilder builder = new P8RequestBuilder()
                 .setAction(Action.upload)
                 .setParam(Param.dir, dir)
-                .setParam(Param.tmpRepositoryId, ws)
-                .setParam(Param.urlencodedFilename, name)
+                .setParam(Param.tmpRepositoryId, ws);
+        String urlEncodedName = java.net.URLEncoder.encode(name, "utf-8");
+        builder.setParam(Param.urlencodedFilename, urlEncodedName)
                 .setParam(Param.autoRename, String.valueOf(autoRename))
                 .setParam(Param.xhrUploader, "true")
                 .setBody(body);
@@ -193,13 +195,13 @@ public class P8RequestBuilder {
         return builder.ignoreCookies(false);
     }
 
-    public static P8RequestBuilder mkdir(String ws, String path) {
+    public static P8RequestBuilder mkdir(String ws, String dir, String name) {
         P8RequestBuilder builder = new P8RequestBuilder()
                 .setAction(Action.mkdir)
                 .setParam(Param.tmpRepositoryId, ws)
-                .setParam(Param.dir, path)
-                .ignoreCookies(false);
-        return builder;
+                .setParam(Param.dir, dir)
+                .setParam(Param.dirname, name);
+        return builder.ignoreCookies(false);
     }
 
     public static P8RequestBuilder previewImage(String ws, String file, int dim) {

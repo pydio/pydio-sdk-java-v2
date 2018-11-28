@@ -82,6 +82,12 @@ public class Pydio8 implements Client {
         return null;
     }
 
+    private void loadSecureToken() throws SDKException {
+        if (null == secureToken || "".equals(secureToken)) {
+            login();
+        }
+    }
+
     @Override
     public void setCredentials(Credentials c) {
         this.credentials = c;
@@ -256,8 +262,6 @@ public class Pydio8 implements Client {
     @Override
     public Message upload(InputStream source, long length, String ws, String path, String name, boolean autoRename, TransferProgressListener progressListener) throws SDKException {
         stats(ws, path, false);
-        P8RequestBuilder builder;
-        builder = P8RequestBuilder.upload(ws, path, name, autoRename, null);
 
         //TODO: get size from server configs
         long maxChunkSize = 2 * 1024 * 1204;
@@ -270,7 +274,6 @@ public class Pydio8 implements Client {
                         throw new IOException("");
                     }
                 }
-
                 @Override
                 public void partTransferred(int part, int total) throws IOException {
                     if (total == 0) total = 1;
@@ -280,9 +283,17 @@ public class Pydio8 implements Client {
                 }
             });
         }
-        builder.setBody(cb);
 
-        P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
+        P8RequestBuilder builder;
+        try {
+            builder = P8RequestBuilder.upload(ws, path, name, autoRename, cb).setSecureToken(secureToken);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw SDKException.encoding(e);
+        }
+
+        P8Request req = builder.getRequest();
+        P8Response rsp = p8.execute(req, this::refreshSecureToken, Code.authentication_required);
         if (rsp.code() != Code.ok) {
             throw SDKException.fromP8Code(rsp.code());
         }
@@ -305,20 +316,24 @@ public class Pydio8 implements Client {
         }
 
         NodeDiff diff;
-        diff = NodeDiff.create(rsp.toXMLDocument());
-        if (diff.added != null) {
-            Node node = diff.added.get(0);
-            String label = node.label();
-            if (!label.equals(cb.getFilename())) {
-                cb.setFilename(label);
-            }
+        Document doc = rsp.toXMLDocument();
+        if (doc != null) {
+            diff = NodeDiff.create(doc);
+            if (diff.added != null) {
+                Node node = diff.added.get(0);
+                String label = node.label();
+                if (!label.equals(cb.getFilename())) {
+                    cb.setFilename(label);
+                }
 
-            Message msg = Message.create(Message.SUCCESS, "");
-            msg.added = diff.added;
-            msg.updated = diff.updated;
-            msg.deleted = diff.deleted;
-            return msg;
+                Message msg = Message.create(Message.SUCCESS, "");
+                msg.added = diff.added;
+                msg.updated = diff.updated;
+                msg.deleted = diff.deleted;
+                return msg;
+            }
         }
+
 
         FileNode info = nodeInfo(ws, path + "/" + name);
 
@@ -343,9 +358,15 @@ public class Pydio8 implements Client {
 
     @Override
     public String uploadURL(String ws, String folder, String name, boolean autoRename) throws SDKException {
-        loginIfRequire();
+        loadSecureToken();
         try {
-            P8RequestBuilder builder = P8RequestBuilder.upload(ws, folder, name, autoRename, null);
+            P8RequestBuilder builder = null;
+            try {
+                builder = P8RequestBuilder.upload(ws, folder, name, autoRename, null);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw SDKException.encoding(e);
+            }
             return p8.getURL(builder.getRequest());
         } catch (ProtocolException | UnknownHostException e) {
             throw SDKException.malFormURI(e);
@@ -376,7 +397,7 @@ public class Pydio8 implements Client {
     public long download(String ws, String file, File target, TransferProgressListener progressListener) throws SDKException {
         OutputStream out;
         try {
-            out = new FileOutputStream(file);
+            out = new FileOutputStream(target);
         } catch (FileNotFoundException e) {
             throw SDKException.notFound(e);
         }
@@ -390,6 +411,8 @@ public class Pydio8 implements Client {
 
     @Override
     public String downloadURL(String ws, String file) throws SDKException {
+        loadSecureToken();
+
         P8RequestBuilder builder = P8RequestBuilder.download(ws, file).setSecureToken(secureToken);
         try {
             return p8.getURL(builder.getRequest());
@@ -457,8 +480,9 @@ public class Pydio8 implements Client {
 
     @Override
     public Message mkdir(String ws, String parent, String name) throws SDKException {
-        P8RequestBuilder builder = P8RequestBuilder.mkdir(ws, parent + "/" + name).setSecureToken(secureToken);
-        P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
+        P8RequestBuilder builder = P8RequestBuilder.mkdir(ws, parent, name).setSecureToken(secureToken);
+        P8Request req = builder.getRequest();
+        P8Response rsp = p8.execute(req, this::refreshSecureToken, Code.authentication_required);
         if (rsp.code() != Code.ok) {
             throw SDKException.fromP8Code(rsp.code());
         }
@@ -478,6 +502,8 @@ public class Pydio8 implements Client {
 
     @Override
     public String streamingAudioURL(String ws, String file) throws SDKException {
+        loadSecureToken();
+
         P8RequestBuilder builder = P8RequestBuilder.streamingAudio(ws, file).setSecureToken(secureToken);
         try {
             return p8.getURL(builder.getRequest());
@@ -490,6 +516,8 @@ public class Pydio8 implements Client {
 
     @Override
     public String streamingVideoURL(String ws, String file) throws SDKException {
+        loadSecureToken();
+
         P8RequestBuilder builder = P8RequestBuilder.streamingVideo(ws, file).setSecureToken(secureToken);
         try {
             return p8.getURL(builder.getRequest());
@@ -503,6 +531,8 @@ public class Pydio8 implements Client {
 
     @Override
     public JSONObject stats(String ws, String file, boolean withHash) throws SDKException {
+        loadSecureToken();
+
         P8RequestBuilder builder = P8RequestBuilder.stats(ws, file, withHash).setSecureToken(secureToken);
         P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
         if (rsp.code() != Code.ok) {
