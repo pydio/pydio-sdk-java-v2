@@ -283,13 +283,11 @@ public class PydioCells implements Client {
             throw SDKException.malFormURI(e);
         }
 
-        this.getJWT();
         HttpURLConnection con;
         InputStream in;
         try {
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
-            con.setRequestProperty("Authorization", "Bearer " + this.JWT);
             in = con.getInputStream();
         } catch (IOException e) {
             throw SDKException.conFailed(e);
