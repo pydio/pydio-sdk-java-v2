@@ -25,6 +25,7 @@ import com.pydio.sdk.core.model.NodeDiff;
 import com.pydio.sdk.core.model.ServerNode;
 import com.pydio.sdk.core.model.Token;
 import com.pydio.sdk.core.security.Credentials;
+import com.pydio.sdk.core.server.Prop;
 import com.pydio.sdk.core.utils.io;
 
 import org.json.JSONObject;
@@ -263,8 +264,15 @@ public class Pydio8 implements Client {
     public Message upload(InputStream source, long length, String ws, String path, String name, boolean autoRename, TransferProgressListener progressListener) throws SDKException {
         stats(ws, path, false);
 
-        //TODO: get size from server configs
-        long maxChunkSize = 2 * 1024 * 1204;
+        long maxChunkSize = 2 * 1024 * 1204; // Default apache in most php init configs
+        String maxSize = this.serverNode.getProperty(Prop.uploadMaxSize);
+        if (maxSize != null && !"".equals(maxSize)) {
+            try {
+                maxChunkSize = Long.parseLong(maxSize);
+            } catch (Exception ignored) {
+            }
+        }
+
         ContentBody cb = new ContentBody(source, name, length, maxChunkSize);
         if (progressListener != null) {
             cb.setListener(new ContentBody.ProgressListener() {
