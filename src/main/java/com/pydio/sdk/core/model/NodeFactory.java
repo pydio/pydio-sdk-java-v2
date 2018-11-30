@@ -18,7 +18,6 @@ public class NodeFactory {
     public static Node createNode(int type, org.w3c.dom.Node xml) {
         Node node = newNode(type);
 		Properties p = new Properties();
-		NamedNodeMap attrs = xml.getAttributes();
 		if (xml.hasAttributes()) {
 			NamedNodeMap map = xml.getAttributes();
 			for (int i = 0; i < map.getLength(); i++) {
@@ -50,7 +49,7 @@ public class NodeFactory {
 		String nodename = xml.getNodeName(); 
 		if("repo".equals(nodename)) {
             return createNode(Node.TYPE_WORKSPACE, xml);
-        } else if ("xmlElementTree".equals(nodename)) {
+        } else if ("tree".equals(nodename)) {
             return createNode(Node.TYPE_REMOTE_FILE, xml);
 		}
 		return null;
