@@ -65,28 +65,28 @@ public class WorkspaceNode implements Node {
         return "true".equals(getProperty(Pydio.WORKSPACE_PROPERTY_META_SYNC));
     }
 
-    public boolean isActionEnabled(String action) {
+    public boolean isActionDisabled(String action) {
         if (actions == null || actions.size() == 0) {
             return true;
         }
 
-        for (String mAction : actions) {
-            String[] items = mAction.split(":");
+        for (String a : actions) {
+            String[] items = a.split(":");
             String actionName = items[0];
 
             if (action.equals(actionName)) {
                 String[] rights = items[1].split(":");
                 boolean readChecked = true, writeChecked = true;
                 try {
-                    if ("true".equals(rights[0])) {
+                    if ("false".equals(rights[0])) {
                         readChecked = acl().contains("r");
                     }
-                    if ("true".equals(rights[1])) {
+                    if ("false".equals(rights[1])) {
                         writeChecked = acl().contains("w");
                     }
                     return readChecked && writeChecked;
                 } catch (Exception e) {
-                    return true;
+                    return false;
                 }
             }
         }
