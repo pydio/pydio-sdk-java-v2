@@ -67,7 +67,7 @@ public class WorkspaceNode implements Node {
 
     public boolean isActionDisabled(String action) {
         if (actions == null || actions.size() == 0) {
-            return true;
+            return false;
         }
 
         for (String a : actions) {
