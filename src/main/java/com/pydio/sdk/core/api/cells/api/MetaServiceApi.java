@@ -198,7 +198,7 @@ public class MetaServiceApi {
         Object localVarPostBody = body;
 
         // create path and map variables
-        String localVarPath = "/meta/bulk/getRequest";
+        String localVarPath = "/meta/bulk/get";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -321,7 +321,7 @@ public class MetaServiceApi {
         Object localVarPostBody = body;
 
         // create path and map variables
-        String localVarPath = "/meta/getRequest/{NodePath}"
+        String localVarPath = "/meta/get/{NodePath}"
                 .replaceAll("\\{" + "NodePath" + "\\}", apiClient.escapeString(nodePath));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();

@@ -22,7 +22,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * IdmPolicyCondition
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-11-30T14:51:15.861Z")
 public class IdmPolicyCondition {
   @SerializedName("type")
   private String type = null;

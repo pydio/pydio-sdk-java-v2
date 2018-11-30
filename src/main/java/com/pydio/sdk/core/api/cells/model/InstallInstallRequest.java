@@ -22,7 +22,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * InstallInstallRequest
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-11-30T14:51:15.861Z")
 public class InstallInstallRequest {
     @SerializedName("config")
     private InstallInstallConfig config = null;

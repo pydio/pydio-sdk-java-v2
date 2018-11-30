@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * JobsJob
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-11-30T14:51:15.861Z")
 public class JobsJob {
   @SerializedName("ID")
   private String ID = null;
@@ -58,6 +58,9 @@ public class JobsJob {
 
   @SerializedName("MaxConcurrency")
   private Integer maxConcurrency = null;
+
+    @SerializedName("TasksSilentUpdate")
+    private Boolean tasksSilentUpdate = null;
 
   @SerializedName("Tasks")
   private List<JobsTask> tasks = null;
@@ -284,6 +287,25 @@ public class JobsJob {
     this.maxConcurrency = maxConcurrency;
   }
 
+    public JobsJob tasksSilentUpdate(Boolean tasksSilentUpdate) {
+        this.tasksSilentUpdate = tasksSilentUpdate;
+        return this;
+    }
+
+    /**
+     * Get tasksSilentUpdate
+     *
+     * @return tasksSilentUpdate
+     **/
+    @ApiModelProperty(value = "")
+    public Boolean isTasksSilentUpdate() {
+        return tasksSilentUpdate;
+    }
+
+    public void setTasksSilentUpdate(Boolean tasksSilentUpdate) {
+        this.tasksSilentUpdate = tasksSilentUpdate;
+    }
+
   public JobsJob tasks(List<JobsTask> tasks) {
     this.tasks = tasks;
     return this;
@@ -331,12 +353,13 @@ public class JobsJob {
         Objects.equals(this.autoClean, jobsJob.autoClean) &&
         Objects.equals(this.actions, jobsJob.actions) &&
         Objects.equals(this.maxConcurrency, jobsJob.maxConcurrency) &&
+            Objects.equals(this.tasksSilentUpdate, jobsJob.tasksSilentUpdate) &&
         Objects.equals(this.tasks, jobsJob.tasks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(ID, label, owner, inactive, languages, eventNames, schedule, autoStart, autoClean, actions, maxConcurrency, tasks);
+      return Objects.hash(ID, label, owner, inactive, languages, eventNames, schedule, autoStart, autoClean, actions, maxConcurrency, tasksSilentUpdate, tasks);
   }
 
 
@@ -356,6 +379,7 @@ public class JobsJob {
     sb.append("    autoClean: ").append(toIndentedString(autoClean)).append("\n");
     sb.append("    actions: ").append(toIndentedString(actions)).append("\n");
     sb.append("    maxConcurrency: ").append(toIndentedString(maxConcurrency)).append("\n");
+      sb.append("    tasksSilentUpdate: ").append(toIndentedString(tasksSilentUpdate)).append("\n");
     sb.append("    tasks: ").append(toIndentedString(tasks)).append("\n");
     sb.append("}");
     return sb.toString();

@@ -24,13 +24,16 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * RestCreateNodesRequest
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-11-30T14:51:15.861Z")
 public class RestCreateNodesRequest {
     @SerializedName("Nodes")
     private List<TreeNode> nodes = null;
 
     @SerializedName("Recursive")
     private Boolean recursive = null;
+
+    @SerializedName("TemplateUUID")
+    private String templateUUID = null;
 
     public RestCreateNodesRequest nodes(List<TreeNode> nodes) {
         this.nodes = nodes;
@@ -78,6 +81,25 @@ public class RestCreateNodesRequest {
         this.recursive = recursive;
     }
 
+    public RestCreateNodesRequest templateUUID(String templateUUID) {
+        this.templateUUID = templateUUID;
+        return this;
+    }
+
+    /**
+     * Get templateUUID
+     *
+     * @return templateUUID
+     **/
+    @ApiModelProperty(value = "")
+    public String getTemplateUUID() {
+        return templateUUID;
+    }
+
+    public void setTemplateUUID(String templateUUID) {
+        this.templateUUID = templateUUID;
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -89,12 +111,13 @@ public class RestCreateNodesRequest {
         }
         RestCreateNodesRequest restCreateNodesRequest = (RestCreateNodesRequest) o;
         return Objects.equals(this.nodes, restCreateNodesRequest.nodes) &&
-                Objects.equals(this.recursive, restCreateNodesRequest.recursive);
+                Objects.equals(this.recursive, restCreateNodesRequest.recursive) &&
+                Objects.equals(this.templateUUID, restCreateNodesRequest.templateUUID);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nodes, recursive);
+        return Objects.hash(nodes, recursive, templateUUID);
     }
 
 
@@ -105,6 +128,7 @@ public class RestCreateNodesRequest {
 
         sb.append("    nodes: ").append(toIndentedString(nodes)).append("\n");
         sb.append("    recursive: ").append(toIndentedString(recursive)).append("\n");
+        sb.append("    templateUUID: ").append(toIndentedString(templateUUID)).append("\n");
         sb.append("}");
         return sb.toString();
     }

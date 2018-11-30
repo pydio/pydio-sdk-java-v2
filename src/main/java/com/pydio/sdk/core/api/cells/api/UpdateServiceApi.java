@@ -53,9 +53,8 @@ public class UpdateServiceApi {
 
     /**
      * Build call for applyUpdate
-     *
-     * @param targetVersion           (required)
-     * @param progressListener        Progress listener
+     * @param targetVersion  (required)
+     * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -119,7 +118,7 @@ public class UpdateServiceApi {
     /**
      * Apply an update to a given version
      *
-     * @param targetVersion (required)
+     * @param targetVersion  (required)
      * @return UpdateApplyUpdateResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
@@ -131,7 +130,7 @@ public class UpdateServiceApi {
     /**
      * Apply an update to a given version
      *
-     * @param targetVersion (required)
+     * @param targetVersion  (required)
      * @return ApiResponse&lt;UpdateApplyUpdateResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
@@ -145,8 +144,8 @@ public class UpdateServiceApi {
     /**
      * Apply an update to a given version (asynchronously)
      *
-     * @param targetVersion (required)
-     * @param callback      The callback to be executed when the API call finishes
+     * @param targetVersion  (required)
+     * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
@@ -177,17 +176,15 @@ public class UpdateServiceApi {
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
-
     /**
      * Build call for updateRequired
-     *
-     * @param channel                 Channel name. (optional)
-     * @param packageName             Name of the currently running application. (optional)
-     * @param currentVersion          Current version of the application. (optional)
-     * @param GOOS                    Current GOOS. (optional)
-     * @param GOARCH                  Current GOARCH. (optional)
-     * @param serviceName             Not Used : specific service to getRequest updates for. (optional)
-     * @param progressListener        Progress listener
+     * @param channel Channel name. (optional)
+     * @param packageName Name of the currently running application. (optional)
+     * @param currentVersion Current version of the application. (optional)
+     * @param GOOS Current GOOS. (optional)
+     * @param GOARCH Current GOARCH. (optional)
+     * @param serviceName Not Used : specific service to get updates for. (optional)
+     * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -257,12 +254,12 @@ public class UpdateServiceApi {
     /**
      * Check the remote server to see if there are available binaries
      *
-     * @param channel        Channel name. (optional)
-     * @param packageName    Name of the currently running application. (optional)
+     * @param channel Channel name. (optional)
+     * @param packageName Name of the currently running application. (optional)
      * @param currentVersion Current version of the application. (optional)
-     * @param GOOS           Current GOOS. (optional)
-     * @param GOARCH         Current GOARCH. (optional)
-     * @param serviceName    Not Used : specific service to getRequest updates for. (optional)
+     * @param GOOS Current GOOS. (optional)
+     * @param GOARCH Current GOARCH. (optional)
+     * @param serviceName Not Used : specific service to get updates for. (optional)
      * @return UpdateUpdateResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
@@ -274,12 +271,12 @@ public class UpdateServiceApi {
     /**
      * Check the remote server to see if there are available binaries
      *
-     * @param channel        Channel name. (optional)
-     * @param packageName    Name of the currently running application. (optional)
+     * @param channel Channel name. (optional)
+     * @param packageName Name of the currently running application. (optional)
      * @param currentVersion Current version of the application. (optional)
-     * @param GOOS           Current GOOS. (optional)
-     * @param GOARCH         Current GOARCH. (optional)
-     * @param serviceName    Not Used : specific service to getRequest updates for. (optional)
+     * @param GOOS Current GOOS. (optional)
+     * @param GOARCH Current GOARCH. (optional)
+     * @param serviceName Not Used : specific service to get updates for. (optional)
      * @return ApiResponse&lt;UpdateUpdateResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
@@ -293,13 +290,13 @@ public class UpdateServiceApi {
     /**
      * Check the remote server to see if there are available binaries (asynchronously)
      *
-     * @param channel        Channel name. (optional)
-     * @param packageName    Name of the currently running application. (optional)
+     * @param channel Channel name. (optional)
+     * @param packageName Name of the currently running application. (optional)
      * @param currentVersion Current version of the application. (optional)
-     * @param GOOS           Current GOOS. (optional)
-     * @param GOARCH         Current GOARCH. (optional)
-     * @param serviceName    Not Used : specific service to getRequest updates for. (optional)
-     * @param callback       The callback to be executed when the API call finishes
+     * @param GOOS Current GOOS. (optional)
+     * @param GOARCH Current GOARCH. (optional)
+     * @param serviceName Not Used : specific service to get updates for. (optional)
+     * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */

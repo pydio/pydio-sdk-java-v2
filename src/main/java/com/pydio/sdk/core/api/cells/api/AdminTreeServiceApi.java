@@ -65,7 +65,7 @@ public class AdminTreeServiceApi {
         Object localVarPostBody = body;
 
         // create path and map variables
-        String localVarPath = "/xmlElementTree/admin/list";
+        String localVarPath = "/tree/admin/list";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -187,7 +187,7 @@ public class AdminTreeServiceApi {
         Object localVarPostBody = body;
 
         // create path and map variables
-        String localVarPath = "/xmlElementTree/admin/stat";
+        String localVarPath = "/tree/admin/stat";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -239,7 +239,7 @@ public class AdminTreeServiceApi {
     }
 
     /**
-     * Read a node information inside the admin xmlElementTree
+     * Read a node information inside the admin tree
      * 
      * @param body  (required)
      * @return TreeReadNodeResponse
@@ -251,7 +251,7 @@ public class AdminTreeServiceApi {
     }
 
     /**
-     * Read a node information inside the admin xmlElementTree
+     * Read a node information inside the admin tree
      * 
      * @param body  (required)
      * @return ApiResponse&lt;TreeReadNodeResponse&gt;
@@ -264,7 +264,7 @@ public class AdminTreeServiceApi {
     }
 
     /**
-     * Read a node information inside the admin xmlElementTree (asynchronously)
+     * Read a node information inside the admin tree (asynchronously)
      * 
      * @param body  (required)
      * @param callback The callback to be executed when the API call finishes

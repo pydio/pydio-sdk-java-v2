@@ -994,7 +994,7 @@ public class ConfigServiceApi {
     }
 
     /**
-     * Generic config Get using a full path in the config xmlElementTree
+     * Generic config Get using a full path in the config tree
      * 
      * @param fullPath  (required)
      * @param data  (optional)
@@ -1007,7 +1007,7 @@ public class ConfigServiceApi {
     }
 
     /**
-     * Generic config Get using a full path in the config xmlElementTree
+     * Generic config Get using a full path in the config tree
      * 
      * @param fullPath  (required)
      * @param data  (optional)
@@ -1021,7 +1021,7 @@ public class ConfigServiceApi {
     }
 
     /**
-     * Generic config Get using a full path in the config xmlElementTree (asynchronously)
+     * Generic config Get using a full path in the config tree (asynchronously)
      * 
      * @param fullPath  (required)
      * @param data  (optional)
@@ -2582,7 +2582,7 @@ public class ConfigServiceApi {
     }
 
     /**
-     * Generic config Put, using a full path in the config xmlElementTree
+     * Generic config Put, using a full path in the config tree
      * 
      * @param fullPath  (required)
      * @param body  (required)
@@ -2595,7 +2595,7 @@ public class ConfigServiceApi {
     }
 
     /**
-     * Generic config Put, using a full path in the config xmlElementTree
+     * Generic config Put, using a full path in the config tree
      * 
      * @param fullPath  (required)
      * @param body  (required)
@@ -2609,7 +2609,7 @@ public class ConfigServiceApi {
     }
 
     /**
-     * Generic config Put, using a full path in the config xmlElementTree (asynchronously)
+     * Generic config Put, using a full path in the config tree (asynchronously)
      * 
      * @param fullPath  (required)
      * @param body  (required)

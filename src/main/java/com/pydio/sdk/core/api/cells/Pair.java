@@ -13,7 +13,7 @@
 
 package com.pydio.sdk.core.api.cells;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-11-30T14:51:15.861Z")
 public class Pair {
     private String name = "";
     private String value = "";
@@ -23,24 +23,24 @@ public class Pair {
         setValue(value);
     }
 
-    public String getName() {
-        return this.name;
-    }
-
     private void setName(String name) {
         if (!isValidString(name)) return;
 
         this.name = name;
     }
 
-    public String getValue() {
-        return this.value;
-    }
-
     private void setValue(String value) {
         if (!isValidString(value)) return;
 
         this.value = value;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getValue() {
+        return this.value;
     }
 
     private boolean isValidString(String arg) {

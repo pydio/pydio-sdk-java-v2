@@ -26,7 +26,7 @@ import io.swagger.annotations.ApiModelProperty;
  * LogMessage is the format used to transmit log messages to clients via the REST API.
  */
 @ApiModel(description = "LogMessage is the format used to transmit log messages to clients via the REST API.")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-11-30T14:51:15.861Z")
 public class LogLogMessage {
   @SerializedName("Ts")
   private Integer ts = null;

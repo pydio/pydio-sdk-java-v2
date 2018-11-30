@@ -29,8 +29,20 @@ public enum ObjectStorageType {
   LOCAL("LOCAL"),
   
   S3("S3"),
-  
-  SMB("SMB");
+
+    SMB("SMB"),
+
+    CELLS("CELLS"),
+
+    AZURE("AZURE"),
+
+    GCS("GCS"),
+
+    B2("B2"),
+
+    MANTA("MANTA"),
+
+    SIA("SIA");
 
   private String value;
 

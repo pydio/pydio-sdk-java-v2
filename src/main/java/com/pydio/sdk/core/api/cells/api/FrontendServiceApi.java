@@ -1109,7 +1109,7 @@ public class FrontendServiceApi {
     }
 
     /**
-     * Sends a xmlElementTree of nodes to be used a menu in the Settings panel
+     * Sends a tree of nodes to be used a menu in the Settings panel
      * 
      * @return RestSettingsMenuResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -1120,7 +1120,7 @@ public class FrontendServiceApi {
     }
 
     /**
-     * Sends a xmlElementTree of nodes to be used a menu in the Settings panel
+     * Sends a tree of nodes to be used a menu in the Settings panel
      * 
      * @return ApiResponse&lt;RestSettingsMenuResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -1132,7 +1132,7 @@ public class FrontendServiceApi {
     }
 
     /**
-     * Sends a xmlElementTree of nodes to be used a menu in the Settings panel (asynchronously)
+     * Sends a tree of nodes to be used a menu in the Settings panel (asynchronously)
      * 
      * @param callback The callback to be executed when the API call finishes
      * @return The request call

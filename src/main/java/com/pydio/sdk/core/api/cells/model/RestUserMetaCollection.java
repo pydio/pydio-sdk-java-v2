@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * RestUserMetaCollection
  */
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-09-25T16:31:30.189Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2018-11-30T14:51:15.861Z")
 public class RestUserMetaCollection {
     @SerializedName("Metadatas")
     private List<IdmUserMeta> metadatas = null;

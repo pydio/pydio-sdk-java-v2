@@ -40,7 +40,7 @@ public enum JobsTaskStatus {
   
   ANY("Any"),
 
-    ERROR("Code"),
+    ERROR("Error"),
   
   QUEUED("Queued");
 

@@ -24,6 +24,8 @@ import com.pydio.sdk.core.api.cells.ProgressRequestBody;
 import com.pydio.sdk.core.api.cells.ProgressResponseBody;
 import com.pydio.sdk.core.api.cells.model.RestBulkMetaResponse;
 import com.pydio.sdk.core.api.cells.model.RestCreateNodesRequest;
+import com.pydio.sdk.core.api.cells.model.RestCreateSelectionRequest;
+import com.pydio.sdk.core.api.cells.model.RestCreateSelectionResponse;
 import com.pydio.sdk.core.api.cells.model.RestDeleteNodesRequest;
 import com.pydio.sdk.core.api.cells.model.RestDeleteNodesResponse;
 import com.pydio.sdk.core.api.cells.model.RestGetBulkMetaRequest;
@@ -70,7 +72,7 @@ public class TreeServiceApi {
         Object localVarPostBody = body;
 
         // create path and map variables
-        String localVarPath = "/xmlElementTree/stats";
+        String localVarPath = "/tree/stats";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -192,7 +194,7 @@ public class TreeServiceApi {
         Object localVarPostBody = body;
 
         // create path and map variables
-        String localVarPath = "/xmlElementTree/create";
+        String localVarPath = "/tree/create";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -244,7 +246,7 @@ public class TreeServiceApi {
     }
 
     /**
-     * Create dirs or empty files inside the xmlElementTree
+     * Create dirs or empty files inside the tree
      * 
      * @param body  (required)
      * @return RestNodesCollection
@@ -256,7 +258,7 @@ public class TreeServiceApi {
     }
 
     /**
-     * Create dirs or empty files inside the xmlElementTree
+     * Create dirs or empty files inside the tree
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestNodesCollection&gt;
@@ -269,7 +271,7 @@ public class TreeServiceApi {
     }
 
     /**
-     * Create dirs or empty files inside the xmlElementTree (asynchronously)
+     * Create dirs or empty files inside the tree (asynchronously)
      * 
      * @param body  (required)
      * @param callback The callback to be executed when the API call finishes
@@ -302,6 +304,132 @@ public class TreeServiceApi {
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
+
+    /**
+     * Build call for createSelection
+     *
+     * @param body                    (required)
+     * @param progressListener        Progress listener
+     * @param progressRequestListener Progress request listener
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     */
+    public com.squareup.okhttp.Call createSelectionCall(RestCreateSelectionRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+        Object localVarPostBody = body;
+
+        // create path and map variables
+        String localVarPath = "/tree/selection";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+
+        final String[] localVarAccepts = {
+                "application/json"
+        };
+        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+
+        final String[] localVarContentTypes = {
+                "application/json"
+        };
+        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        if (progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
+                @Override
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                    return originalResponse.newBuilder()
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
+                }
+            });
+        }
+
+        String[] localVarAuthNames = new String[]{};
+        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private com.squareup.okhttp.Call createSelectionValidateBeforeCall(RestCreateSelectionRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+
+        // verify the required parameter 'body' is set
+        if (body == null) {
+            throw new ApiException("Missing the required parameter 'body' when calling createSelection(Async)");
+        }
+
+
+        com.squareup.okhttp.Call call = createSelectionCall(body, progressListener, progressRequestListener);
+        return call;
+
+    }
+
+    /**
+     * Create a temporary selection for further action (namely download)
+     *
+     * @param body (required)
+     * @return RestCreateSelectionResponse
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public RestCreateSelectionResponse createSelection(RestCreateSelectionRequest body) throws ApiException {
+        ApiResponse<RestCreateSelectionResponse> resp = createSelectionWithHttpInfo(body);
+        return resp.getData();
+    }
+
+    /**
+     * Create a temporary selection for further action (namely download)
+     *
+     * @param body (required)
+     * @return ApiResponse&lt;RestCreateSelectionResponse&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public ApiResponse<RestCreateSelectionResponse> createSelectionWithHttpInfo(RestCreateSelectionRequest body) throws ApiException {
+        com.squareup.okhttp.Call call = createSelectionValidateBeforeCall(body, null, null);
+        Type localVarReturnType = new TypeToken<RestCreateSelectionResponse>() {
+        }.getType();
+        return apiClient.execute(call, localVarReturnType);
+    }
+
+    /**
+     * Create a temporary selection for further action (namely download) (asynchronously)
+     *
+     * @param body     (required)
+     * @param callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     */
+    public com.squareup.okhttp.Call createSelectionAsync(RestCreateSelectionRequest body, final ApiCallback<RestCreateSelectionResponse> callback) throws ApiException {
+
+        ProgressResponseBody.ProgressListener progressListener = null;
+        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
+
+        if (callback != null) {
+            progressListener = new ProgressResponseBody.ProgressListener() {
+                @Override
+                public void update(long bytesRead, long contentLength, boolean done) {
+                    callback.onDownloadProgress(bytesRead, contentLength, done);
+                }
+            };
+
+            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
+                @Override
+                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
+                    callback.onUploadProgress(bytesWritten, contentLength, done);
+                }
+            };
+        }
+
+        com.squareup.okhttp.Call call = createSelectionValidateBeforeCall(body, progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<RestCreateSelectionResponse>() {
+        }.getType();
+        apiClient.executeAsync(call, localVarReturnType, callback);
+        return call;
+    }
     /**
      * Build call for deleteNodes
      * @param body  (required)
@@ -314,7 +442,7 @@ public class TreeServiceApi {
         Object localVarPostBody = body;
 
         // create path and map variables
-        String localVarPath = "/xmlElementTree/delete";
+        String localVarPath = "/tree/delete";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -436,7 +564,7 @@ public class TreeServiceApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/xmlElementTree/stat/{Node}"
+        String localVarPath = "/tree/stat/{Node}"
                 .replaceAll("\\{" + "Node" + "\\}", apiClient.escapeString(node));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
@@ -559,7 +687,7 @@ public class TreeServiceApi {
         Object localVarPostBody = body;
 
         // create path and map variables
-        String localVarPath = "/xmlElementTree/restore";
+        String localVarPath = "/tree/restore";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();

@@ -26,6 +26,10 @@ import okio.Source;
 
 public class ProgressResponseBody extends ResponseBody {
 
+    public interface ProgressListener {
+        void update(long bytesRead, long contentLength, boolean done);
+    }
+
     private final ResponseBody responseBody;
     private final ProgressListener progressListener;
     private BufferedSource bufferedSource;
@@ -66,10 +70,6 @@ public class ProgressResponseBody extends ResponseBody {
                 return bytesRead;
             }
         };
-    }
-
-    public interface ProgressListener {
-        void update(long bytesRead, long contentLength, boolean done);
     }
 }
 
