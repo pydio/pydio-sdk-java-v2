@@ -172,6 +172,9 @@ public class Pydio8 implements Client {
     public void downloadServerRegistry(RegistryItemHandler itemHandler) throws SDKException {
         P8RequestBuilder builder = P8RequestBuilder.serverRegistry();
         P8Response rsp = p8.execute(builder.getRequest());
+        if (rsp.code() != Code.ok) {
+            throw SDKException.fromP8Code(rsp.code());
+        }
         final int code = rsp.saxParse(new ServerGeneralRegistrySaxHandler(itemHandler));
         if (code != Code.ok) {
             throw SDKException.fromP8Code(code);
@@ -182,6 +185,9 @@ public class Pydio8 implements Client {
     public void downloadWorkspaceRegistry(String ws, RegistryItemHandler itemHandler) throws SDKException {
         P8RequestBuilder builder = P8RequestBuilder.workspaceRegistry(ws).setSecureToken(secureToken);
         P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
+        if (rsp.code() != Code.ok) {
+            throw SDKException.fromP8Code(rsp.code());
+        }
         final int code = rsp.saxParse(new RegistrySaxHandler(itemHandler));
         if (code != Code.ok) {
             throw SDKException.fromP8Code(code);
