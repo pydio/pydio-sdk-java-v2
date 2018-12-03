@@ -62,5 +62,5 @@ try {
 }
 ```
 
-### 4 - Examples
+## Examples
 Find more examples [here](https://github.com/pydio/pydio-sdk-java-v2/tree/master/src/main/java/com/pydio/sdk/examples)
