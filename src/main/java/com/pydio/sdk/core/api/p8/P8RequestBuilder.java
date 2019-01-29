@@ -245,9 +245,9 @@ public class P8RequestBuilder {
                 .setParam(Param.file, file);
 
         if (withHash) {
-            builder.setAction(Action.stats);
-        } else {
             builder.setAction(Action.stats + "_hash");
+        } else {
+            builder.setAction(Action.stats);
         }
         return builder.ignoreCookies(false);
     }

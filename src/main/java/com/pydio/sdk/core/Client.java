@@ -1,5 +1,6 @@
 package com.pydio.sdk.core;
 
+import com.pydio.sdk.core.common.callback.ChangeHandler;
 import com.pydio.sdk.core.common.callback.ChangeProcessor;
 import com.pydio.sdk.core.common.callback.NodeHandler;
 import com.pydio.sdk.core.common.callback.RegistryItemHandler;
@@ -8,6 +9,7 @@ import com.pydio.sdk.core.common.errors.SDKException;
 import com.pydio.sdk.core.model.FileNode;
 import com.pydio.sdk.core.model.Message;
 import com.pydio.sdk.core.model.ServerNode;
+import com.pydio.sdk.core.model.Stats;
 import com.pydio.sdk.core.model.Token;
 import com.pydio.sdk.core.security.Credentials;
 
@@ -26,6 +28,8 @@ public interface Client {
         }
         return new Pydio8(node);
     }
+
+    ServerNode getServerNode();
 
     void setCredentials(Credentials c);
 
@@ -85,9 +89,9 @@ public interface Client {
 
     String streamingVideoURL(String ws, String file) throws SDKException;
 
-    JSONObject stats(String ws, String file, boolean withHash) throws SDKException;
+    Stats stats(String ws, String file, boolean withHash) throws SDKException;
 
-    long changes(String ws, String folder, int seq, boolean flatten, ChangeProcessor processor) throws SDKException;
+    long changes(String ws, String folder, int seq, boolean flatten, ChangeHandler changeHandler) throws SDKException;
 
     String share(String ws, String file, String ws_label, boolean isFolder, String ws_description, String password, int expiration, int download, boolean canPreview, boolean canDownload) throws SDKException;
 

@@ -23,6 +23,7 @@ import java.net.HttpURLConnection;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -240,15 +241,25 @@ public class P8Response {
         }
     }
 
-    public void lineByLine(String charset, String delimiter, StringHandler h) {
+    public int lineByLine(String charset, String delimiter, StringHandler h) {
         InputStream in = getInputStream();
         Scanner sc = new Scanner(in, charset);
         sc.useDelimiter(delimiter);
-        for (; ; ) {
-            String line = sc.nextLine();
-            if (line == null || "".equals(line)) {
-                break;
+
+        int lineCount = 0;
+        while(true) {
+            String line;
+            try {
+                line = sc.nextLine();
+            } catch (NoSuchElementException  e){
+                return lineCount;
             }
+
+            if (line == null || "".equals(line)) {
+                return lineCount;
+            }
+
+            lineCount++;
             h.onString(line);
         }
     }

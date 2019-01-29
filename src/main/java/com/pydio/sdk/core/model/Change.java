@@ -1,45 +1,84 @@
 package com.pydio.sdk.core.model;
 
-import com.pydio.sdk.core.Pydio;
+import java.io.Serializable;
 
-/**
- * Created by jabar on 21/07/2016.
- */
-public class Change {
+public class Change implements Serializable {
 
-    public String source, target, path, ws, md5, type;
-    public long seq, mtime, task, id, size;
+    public static final String TYPE_CREATE = "create";
+    public static final String TYPE_PATH = "path";
+    public static final String TYPE_DELETE = "delete";
+    public static final String TYPE_CONTENT = "content";
 
+    private long seq;
+    private String sourceSide;
+    private String targetSide;
+    private String type;
+    private String source;
+    private String target;
+    private String nodeId;
+    private ChangeNode node;
 
-    public static Change parse(ContentValues values){
-        Change event = new Change();
-        event.source = values.getAsString(Pydio.CHANGE_SOURCE);
-        event.target = values.getAsString(Pydio.CHANGE_TARGET);
-        event.path = values.getAsString(Pydio.CHANGE_NODE_PATH);
-        event.ws = values.getAsString(Pydio.WORKSPACE_ID);
-        event.md5 = values.getAsString(Pydio.CHANGE_NODE_MD5);
-        event.type = values.getAsString(Pydio.CHANGE_TYPE);
-
-        event.seq = values.getAsLong(Pydio.CHANGE_SEQ);
-        event.task = values.getAsLong(Pydio.TASK_ID);
-        event.mtime = values.getAsLong(Pydio.CHANGE_NODE_MTIME);
-        event.id = values.getAsLong(Pydio.CHANGE_NODE_ID);
-        event.size = values.getAsLong(Pydio.CHANGE_NODE_BYTESIZE);
-        return event;
+    public String getSourceSide() {
+        return sourceSide;
     }
 
-    public ContentValues values(){
-        ContentValues values = new ContentValues();
-        values.put(Pydio.CHANGE_SOURCE, source);
-        values.put(Pydio.CHANGE_TARGET, target);
-        values.put(Pydio.WORKSPACE_ID, ws);
-        values.put(Pydio.CHANGE_NODE_PATH, path);
-        values.put(Pydio.CHANGE_NODE_MD5, md5);
-        values.put(Pydio.CHANGE_SEQ, seq);
-        values.put(Pydio.CHANGE_NODE_MTIME, mtime);
-        values.put(Pydio.TASK_ID, task);
-        values.put(Pydio.CHANGE_NODE_BYTESIZE, size);
-        values.put(Pydio.CHANGE_NODE_ID, id);
-        return values;
+    public void setSourceSide(String sourceSide) {
+        this.sourceSide = sourceSide;
+    }
+
+    public String getTargetSide() {
+        return targetSide;
+    }
+
+    public void setTargetSide(String targetSide) {
+        this.targetSide = targetSide;
+    }
+
+    public long getSeq() {
+        return seq;
+    }
+
+    public void setSeq(long seq) {
+        this.seq = seq;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public void setTarget(String target) {
+        this.target = target;
+    }
+
+    public String getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
+
+    public ChangeNode getNode() {
+        return node;
+    }
+
+    public void setNode(ChangeNode node) {
+        this.node = node;
     }
 }

@@ -197,7 +197,7 @@ public class ServerNode implements Node {
             apiURL = apiURL + apiURLTail;
         }
 
-        if (unVerifiedSSL()) {
+        if (isSSLUnverified()) {
             try {
                 sslContext = SSLContext.getInstance("TLS");
                 sslContext.init(null, new TrustManager[]{trustManager()}, null);
@@ -363,7 +363,7 @@ public class ServerNode implements Node {
         return this;
     }
 
-    public boolean unVerifiedSSL() {
+    public boolean isSSLUnverified() {
         return sslUnverified;
     }
 

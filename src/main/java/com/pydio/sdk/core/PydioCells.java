@@ -24,7 +24,7 @@ import com.pydio.sdk.core.api.cells.model.RestUserJobRequest;
 import com.pydio.sdk.core.api.cells.model.TreeNode;
 import com.pydio.sdk.core.api.cells.model.TreeNodeType;
 import com.pydio.sdk.core.api.cells.model.TreeSyncChange;
-import com.pydio.sdk.core.common.callback.ChangeProcessor;
+import com.pydio.sdk.core.common.callback.ChangeHandler;
 import com.pydio.sdk.core.common.callback.NodeHandler;
 import com.pydio.sdk.core.common.callback.RegistryItemHandler;
 import com.pydio.sdk.core.common.callback.TransferProgressListener;
@@ -33,9 +33,12 @@ import com.pydio.sdk.core.common.errors.SDKException;
 import com.pydio.sdk.core.common.parser.RegistrySaxHandler;
 import com.pydio.sdk.core.common.parser.ServerGeneralRegistrySaxHandler;
 import com.pydio.sdk.core.common.parser.WorkspaceNodeSaxHandler;
+import com.pydio.sdk.core.model.Change;
+import com.pydio.sdk.core.model.ChangeNode;
 import com.pydio.sdk.core.model.FileNode;
 import com.pydio.sdk.core.model.Message;
 import com.pydio.sdk.core.model.ServerNode;
+import com.pydio.sdk.core.model.Stats;
 import com.pydio.sdk.core.model.Token;
 import com.pydio.sdk.core.security.Credentials;
 import com.pydio.sdk.core.utils.io;
@@ -143,7 +146,7 @@ public class PydioCells implements Client {
     private ApiClient getApiClient() {
         ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(apiURL);
-        if (this.serverNode.unVerifiedSSL()) {
+        if (this.serverNode.isSSLUnverified()) {
             SSLContext context = this.serverNode.getSslContext();
             OkHttpClient c = apiClient.getHttpClient();
             c.setSslSocketFactory(context.getSocketFactory());
@@ -225,6 +228,11 @@ public class PydioCells implements Client {
         result.setProperty(Pydio.NODE_PROPERTY_ENCODED, encoded);
         result.setProperty(Pydio.NODE_PROPERTY_ENCODING, "gson");
         return result;
+    }
+
+    @Override
+    public ServerNode getServerNode() {
+        return serverNode;
     }
 
     @Override
@@ -708,7 +716,7 @@ public class PydioCells implements Client {
     }
 
     @Override
-    public JSONObject stats(String ws, String file, boolean withHash) throws SDKException {
+    public Stats stats(String ws, String file, boolean withHash) throws SDKException {
         RestGetBulkMetaRequest request = new RestGetBulkMetaRequest();
         request.addNodePathsItem(fullPath(ws, file));
         request.setAllMetaProviders(true);
@@ -725,19 +733,19 @@ public class PydioCells implements Client {
             throw new SDKException(e);
         }
 
-        JSONObject stat = null;
+        Stats stats = null;
         if (response.getNodes() != null) {
             TreeNode node = response.getNodes().get(0);
-            stat = new JSONObject();
-            stat.put("hash", node.getEtag());
-            stat.put("size", Long.parseLong(node.getSize()));
-            stat.put("mtime", Long.parseLong(node.getMtime()));
+            stats = new Stats();
+            stats.setHash(node.getEtag());
+            stats.setSize(Long.parseLong(node.getSize()));
+            stats.setmTime(Long.parseLong(node.getMtime()));
         }
-        return stat;
+        return stats;
     }
 
     @Override
-    public long changes(String ws, String folder, int seq, boolean flatten, ChangeProcessor cp) throws SDKException {
+    public long changes(String ws, String folder, int seq, boolean flatten, ChangeHandler cp) throws SDKException {
         RestChangeRequest request = new RestChangeRequest();
         request.setFlatten(flatten);
         request.setSeqID(String.valueOf(seq));
@@ -755,20 +763,25 @@ public class PydioCells implements Client {
         } catch (ApiException e) {
             throw new SDKException(e);
         }
+
         for (TreeSyncChange c : response.getChanges()) {
-            final String[] change = new String[11];
-            change[Pydio.CHANGE_INDEX_SEQ] = c.getSeq();
-            change[Pydio.CHANGE_INDEX_NODE_ID] = c.getNodeId();
-            change[Pydio.CHANGE_INDEX_TYPE] = c.getType().toString();
-            change[Pydio.CHANGE_INDEX_SOURCE] = c.getSource();
-            change[Pydio.CHANGE_INDEX_TARGET] = c.getTarget();
-            change[Pydio.CHANGE_INDEX_NODE_BYTESIZE] = c.getNode().getBytesize();
-            change[Pydio.CHANGE_INDEX_NODE_MD5] = c.getNode().getMd5();
-            change[Pydio.CHANGE_INDEX_NODE_MTIME] = c.getNode().getMtime();
-            change[Pydio.CHANGE_INDEX_NODE_PATH] = c.getNode().getNodePath().replaceFirst("/" + ws, "");
-            change[Pydio.CHANGE_INDEX_NODE_WORKSPACE] = ws;
-            change[10] = "remote";
-            cp.process(change);
+            Change change = new Change();
+            change.setSeq(Long.parseLong(c.getSeq()));
+            change.setNodeId(c.getNodeId());
+            change.setType(c.getType().toString());
+            change.setSource(c.getSource());
+            change.setTarget(c.getTarget());
+
+            ChangeNode node = new ChangeNode();
+            change.setNode(node);
+
+            node.setSize(Long.parseLong(c.getNode().getBytesize()));
+            node.setMd5(c.getNode().getMd5());
+            node.setPath(c.getNode().getNodePath().replaceFirst("/" + ws, ""));
+            node.setWorkspace(ws);
+            node.setmTime(Long.parseLong(c.getNode().getMtime()));
+
+            cp.onChange(change);
         }
         return Long.parseLong(response.getLastSeqId());
     }

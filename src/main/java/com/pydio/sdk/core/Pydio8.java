@@ -7,7 +7,7 @@ import com.pydio.sdk.core.api.p8.P8RequestBuilder;
 import com.pydio.sdk.core.api.p8.P8Response;
 import com.pydio.sdk.core.api.p8.consts.Action;
 import com.pydio.sdk.core.api.p8.consts.Param;
-import com.pydio.sdk.core.common.callback.ChangeProcessor;
+import com.pydio.sdk.core.common.callback.ChangeHandler;
 import com.pydio.sdk.core.common.callback.NodeHandler;
 import com.pydio.sdk.core.common.callback.RegistryItemHandler;
 import com.pydio.sdk.core.common.callback.TransferProgressListener;
@@ -18,11 +18,14 @@ import com.pydio.sdk.core.common.parser.RegistrySaxHandler;
 import com.pydio.sdk.core.common.parser.ServerGeneralRegistrySaxHandler;
 import com.pydio.sdk.core.common.parser.TreeNodeSaxHandler;
 import com.pydio.sdk.core.common.parser.WorkspaceNodeSaxHandler;
+import com.pydio.sdk.core.model.Change;
+import com.pydio.sdk.core.model.ChangeNode;
 import com.pydio.sdk.core.model.FileNode;
 import com.pydio.sdk.core.model.Message;
 import com.pydio.sdk.core.model.Node;
 import com.pydio.sdk.core.model.NodeDiff;
 import com.pydio.sdk.core.model.ServerNode;
+import com.pydio.sdk.core.model.Stats;
 import com.pydio.sdk.core.model.Token;
 import com.pydio.sdk.core.security.Credentials;
 import com.pydio.sdk.core.server.Prop;
@@ -60,7 +63,7 @@ public class Pydio8 implements Client {
         Configuration config = new Configuration();
         config.endpoint = serverNode.url();
         config.resolver = serverNode.getServerResolver();
-        if (config.selfSigned = serverNode.unVerifiedSSL()) {
+        if (config.selfSigned = serverNode.isSSLUnverified()) {
             config.sslContext = serverNode.getSslContext();
             config.hostnameVerifier = serverNode.getHostnameVerifier();
         }
@@ -87,6 +90,11 @@ public class Pydio8 implements Client {
         if (null == secureToken || "".equals(secureToken)) {
             login();
         }
+    }
+
+    @Override
+    public ServerNode getServerNode() {
+        return serverNode;
     }
 
     @Override
@@ -288,6 +296,7 @@ public class Pydio8 implements Client {
                         throw new IOException("");
                     }
                 }
+
                 @Override
                 public void partTransferred(int part, int total) throws IOException {
                     if (total == 0) total = 1;
@@ -544,7 +553,7 @@ public class Pydio8 implements Client {
     }
 
     @Override
-    public JSONObject stats(String ws, String file, boolean withHash) throws SDKException {
+    public Stats stats(String ws, String file, boolean withHash) throws SDKException {
         loadSecureToken();
 
         P8RequestBuilder builder = P8RequestBuilder.stats(ws, file, withHash).setSecureToken(secureToken);
@@ -558,14 +567,19 @@ public class Pydio8 implements Client {
         }
 
         try {
-            return new JSONObject(rsp.toString());
+            JSONObject json = new JSONObject(rsp.toString());
+            Stats stats = new Stats();
+            stats.setHash(json.getString("hash"));
+            stats.setmTime(json.getLong("mtime"));
+            stats.setSize(json.getLong("size"));
+            return stats;
         } catch (Exception e) {
             throw SDKException.unexpectedContent(e);
         }
     }
 
     @Override
-    public long changes(String ws, String filter, int seq, boolean flatten, ChangeProcessor processor) throws SDKException {
+    public long changes(String ws, String filter, int seq, boolean flatten, ChangeHandler handler) throws SDKException {
         P8RequestBuilder builder = P8RequestBuilder.changes(ws, filter, seq, flatten).setSecureToken(secureToken);
         P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
 
@@ -581,7 +595,7 @@ public class Pydio8 implements Client {
         final long[] lastSeq = new long[1];
         final boolean[] readLastLine = {false};
 
-        rsp.lineByLine("UTF-8", "\\n", (line) -> {
+        int lineCount = rsp.lineByLine("UTF-8", "\\n", (line) -> {
             if (readLastLine[0]) {
                 return;
             }
@@ -592,27 +606,63 @@ public class Pydio8 implements Client {
                 return;
             }
 
-            final String[] change = new String[11];
             JSONObject json;
             try {
                 json = new JSONObject(line);
             } catch (ParseException e) {
                 return;
             }
-            change[Pydio.CHANGE_INDEX_SEQ] = json.getString(Pydio.CHANGE_SEQ);
-            lastSeq[0] = Math.max(lastSeq[0], Integer.parseInt(change[Pydio.CHANGE_INDEX_SEQ]));
-            change[Pydio.CHANGE_INDEX_NODE_ID] = json.getString(Pydio.CHANGE_NODE_ID);
-            change[Pydio.CHANGE_INDEX_TYPE] = json.getString(Pydio.CHANGE_TYPE);
-            change[Pydio.CHANGE_INDEX_SOURCE] = json.getString(Pydio.CHANGE_SOURCE);
-            change[Pydio.CHANGE_INDEX_TARGET] = json.getString(Pydio.CHANGE_TARGET);
-            change[Pydio.CHANGE_INDEX_NODE_BYTESIZE] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_BYTESIZE);
-            change[Pydio.CHANGE_INDEX_NODE_MD5] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_MD5);
-            change[Pydio.CHANGE_INDEX_NODE_MTIME] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_MTIME);
-            change[Pydio.CHANGE_INDEX_NODE_PATH] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_PATH);
-            change[Pydio.CHANGE_INDEX_NODE_WORKSPACE] = json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_WORKSPACE);
-            change[10] = "remote";
-            processor.process(change);
+
+            lastSeq[0] = Math.max(lastSeq[0], json.getLong(Pydio.CHANGE_SEQ));
+            Change change = new Change();
+
+            change.setSeq(json.getLong(Pydio.CHANGE_SEQ));
+            change.setNodeId(json.getString(Pydio.CHANGE_NODE_ID));
+            change.setType(json.getString(Pydio.CHANGE_TYPE));
+            change.setSource(json.getString(Pydio.CHANGE_SOURCE));
+            change.setTarget(json.getString(Pydio.CHANGE_TARGET));
+
+            ChangeNode node = new ChangeNode();
+            change.setNode(node);
+
+            node.setSize(json.getJSONObject(Pydio.CHANGE_NODE).getLong(Pydio.CHANGE_NODE_BYTESIZE));
+            node.setMd5(json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_MD5));
+            node.setmTime(json.getJSONObject(Pydio.CHANGE_NODE).getLong(Pydio.CHANGE_NODE_MTIME));
+            node.setPath(json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_PATH));
+            node.setWorkspace(json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_WORKSPACE));
+
+            handler.onChange(change);
         });
+
+        if(lineCount == 0 && seq == 0) {
+            Change change = new Change();
+            change.setSeq(seq);
+            change.setNodeId("");
+            change.setSource("");
+
+            ChangeNode node = new ChangeNode();
+            change.setNode(node);
+            node.setWorkspace(ws);
+
+            Stats stats = stats(ws, filter, true);
+            if (stats == null) {
+                change.setType(Change.TYPE_DELETE);
+                change.setTarget("NULL");
+            } else {
+                if("directory".equals(stats.getHash())) {
+                    return seq;
+                }
+                change.setType(Change.TYPE_CONTENT);
+                change.setTarget("");
+                node.setSize(stats.getSize());
+                node.setMd5(stats.getHash());
+                node.setmTime(stats.getmTime());
+                node.setPath("");
+            }
+
+            handler.onChange(change);
+            return seq;
+        }
         return Math.max(seq, lastSeq[0]);
     }
 
