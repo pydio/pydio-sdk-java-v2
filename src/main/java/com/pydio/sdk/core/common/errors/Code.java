@@ -24,6 +24,7 @@ public class Code {
     public static final int con_write_failed = 20;
     public static final int con_closed = 21;
     public static final int not_found = 22;
+    public static final int no_internet = 23;
 
     public static int fromHttpStatus(int status) {
 
