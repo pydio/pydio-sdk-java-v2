@@ -30,9 +30,9 @@ import com.pydio.sdk.core.common.callback.RegistryItemHandler;
 import com.pydio.sdk.core.common.callback.TransferProgressListener;
 import com.pydio.sdk.core.common.errors.Code;
 import com.pydio.sdk.core.common.errors.SDKException;
-import com.pydio.sdk.core.common.parser.RegistrySaxHandler;
-import com.pydio.sdk.core.common.parser.ServerGeneralRegistrySaxHandler;
-import com.pydio.sdk.core.common.parser.WorkspaceNodeSaxHandler;
+import com.pydio.sdk.core.model.parser.RegistrySaxHandler;
+import com.pydio.sdk.core.model.parser.ServerGeneralRegistrySaxHandler;
+import com.pydio.sdk.core.model.parser.WorkspaceNodeSaxHandler;
 import com.pydio.sdk.core.model.Change;
 import com.pydio.sdk.core.model.ChangeNode;
 import com.pydio.sdk.core.model.FileNode;
@@ -214,13 +214,13 @@ public class PydioCells implements Client {
                         JSONObject item = (JSONObject) details.get(i);
                         int size = item.getInt("size");
                         String format = item.getString("format");
-                        String url = item.getString("url");
-                        String thumbPath = !"".equals(url) ? url : "/" + node.getUuid() + "-" + size + "." + format;
+                        String thumbPath = "/" + node.getUuid() + "-" + size + "." + format;
                         thumbObject.put("" + size, thumbPath);
                     }
                     result.setProperty(Pydio.NODE_PROPERTY_IMAGE_THUMB_PATHS, thumbObject.toString());
                 }
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
@@ -457,12 +457,24 @@ public class PydioCells implements Client {
     }
 
     @Override
-    public void search(String ws, String pattern, NodeHandler h) {
-
-    }
+    public void search(String ws, String pattern, NodeHandler h) {}
 
     @Override
     public Message upload(InputStream source, long length, String ws, String path, String name, boolean autoRename, TransferProgressListener progressListener) throws SDKException {
+        /*try {
+            MinioClient minioClient = new MinioClient(this.URL, this.JWT, "gatewaysecret");
+            minioClient.putObject("io", name, source, length, new HashMap<>());
+        } catch(MinioException e) {
+            System.out.println("Error occurred: " + e);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
         return null;
     }
 
@@ -473,11 +485,36 @@ public class PydioCells implements Client {
 
     @Override
     public String uploadURL(String ws, String folder, String name, boolean autoRename) throws SDKException {
+        /*try {
+            MinioClient minioClient = new MinioClient(this.URL, this.JWT, "gatewaysecret");
+            return minioClient.getPresignedObjectUrl(Method.PUT, "io", "", 0,  null);
+        } catch(Exception e) {
+            System.out.println("Error occurred: " + e);
+        }*/
         return null;
     }
 
     @Override
     public long download(String ws, String file, OutputStream target, TransferProgressListener progressListener) throws SDKException {
+        /*try {
+            MinioClient minioClient = new MinioClient(this.URL, this.JWT, "gatewaysecret");
+            InputStream in = minioClient.getObject("io", fullPath(ws, file));
+            if (progressListener != null) {
+                return io.pipeReadWithProgress(in, target, progressListener::onProgress);
+            } else {
+                return io.pipeRead(in, target);
+            }
+        } catch(MinioException e) {
+            System.out.println("Error occurred: " + e);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
         return 0;
     }
 
@@ -493,6 +530,17 @@ public class PydioCells implements Client {
         long downloaded = download(ws, file, out, progressListener);
         io.close(out);
         return downloaded;
+    }
+
+    @Override
+    public String downloadURL(String ws, String file) throws SDKException {
+        /*try {
+            MinioClient minioClient = new MinioClient(this.URL, this.JWT, "gatewaysecret");
+            return minioClient.presignedGetObject("io", "", 0, null);
+        } catch(Exception e) {
+            System.out.println("Error occurred: " + e);
+        }*/
+        return null;
     }
 
     @Override
@@ -707,11 +755,6 @@ public class PydioCells implements Client {
 
     @Override
     public String streamingVideoURL(String ws, String file) {
-        return null;
-    }
-
-    @Override
-    public String downloadURL(String ws, String file) throws SDKException {
         return null;
     }
 
