@@ -1,4 +1,4 @@
-package com.pydio.sdk.core.common.parser;
+package com.pydio.sdk.core.model.parser;
 
 import com.pydio.sdk.core.common.callback.RegistryItemHandler;
 import com.pydio.sdk.core.server.Plugin;
