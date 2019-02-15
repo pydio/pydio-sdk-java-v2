@@ -277,10 +277,14 @@ public class P8Response {
     }
 
     public long write(OutputStream out) throws IOException {
-        return 0;
+        return io.pipeRead(getContent(), out);
     }
 
     public long write(OutputStream out, TransferProgressListener progressListener) throws IOException {
-        return 0;
+        return io.pipeReadWithProgress(getContent(), out, (progress) -> {
+            if (progressListener != null) {
+                progressListener.onProgress(progress);
+            }
+        });
     }
 }
