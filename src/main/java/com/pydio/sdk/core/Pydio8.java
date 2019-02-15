@@ -407,7 +407,6 @@ public class Pydio8 implements Client {
             throw SDKException.fromP8Code(rsp.code());
         }
 
-
         try {
             return rsp.write(target, progressListener);
         } catch (IOException e) {
@@ -569,7 +568,9 @@ public class Pydio8 implements Client {
         try {
             JSONObject json = new JSONObject(rsp.toString());
             Stats stats = new Stats();
-            stats.setHash(json.getString("hash"));
+            if (withHash) {
+                stats.setHash(json.getString("hash"));
+            }
             stats.setmTime(json.getLong("mtime"));
             stats.setSize(json.getLong("size"));
             return stats;
