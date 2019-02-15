@@ -126,7 +126,9 @@ public class LocalFs implements Fs, ContentLoader {
         String fullPath = root + c.getNode().getPath();
         File file = new File(fullPath);
 
-        if(!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
+        boolean parentExists  = file.getParentFile().exists();
+        boolean parentCreated = file.getParentFile().mkdirs();
+        if(!parentExists && !parentCreated) {
             return Error.opFailed(c.getType(), id(), fullPath);
         }
 
@@ -173,7 +175,16 @@ public class LocalFs implements Fs, ContentLoader {
         String fullPath = root + nodePath;
 
         File parentFile = new File(fullPath).getParentFile();
-        if (!parentFile.exists() && !parentFile.mkdirs()) {
+        boolean parentExists  = parentFile.exists();
+        boolean parentCreated = parentFile.mkdirs();
+
+        boolean isParentDir = parentFile.isDirectory();
+
+        if(!parentExists && !parentCreated) {
+            return Error.opFailed("create", id(), parentFile.getPath());
+        }
+
+        if (!isParentDir && parentFile.delete() && parentFile.mkdirs()) {
             return Error.opFailed("create", id(), parentFile.getPath());
         }
 
@@ -248,5 +259,4 @@ public class LocalFs implements Fs, ContentLoader {
         }
         return "";
     }
-
 }
