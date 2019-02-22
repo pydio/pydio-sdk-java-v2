@@ -11,14 +11,14 @@ import java.util.HashMap;
  */
 public class ServerResolution {
 
-    private static HashMap<String, ServerResolver> resolvers = new HashMap<String, ServerResolver>();
+    private static HashMap<String, ServerResolver> resolvers = new HashMap<>();
 
-    public static void register(String name, ServerResolver resolver){
-        resolvers.put(name, resolver);
+    public static void register(String scheme, ServerResolver resolver){
+        resolvers.put(scheme, resolver);
     }
 
-    public static void unregister(String name){
-        resolvers.remove(name);
+    public static void unregister(String scheme){
+        resolvers.remove(scheme);
     }
 
     public static String resolve(String url, boolean refresh) throws IOException {
