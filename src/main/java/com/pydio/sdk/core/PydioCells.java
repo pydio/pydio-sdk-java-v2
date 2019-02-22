@@ -18,6 +18,7 @@ import com.pydio.sdk.core.api.cells.model.RestFrontSessionResponse;
 import com.pydio.sdk.core.api.cells.model.RestGetBulkMetaRequest;
 import com.pydio.sdk.core.api.cells.model.RestNodesCollection;
 import com.pydio.sdk.core.api.cells.model.RestPutShareLinkRequest;
+import com.pydio.sdk.core.api.cells.model.RestRestoreNodesRequest;
 import com.pydio.sdk.core.api.cells.model.RestShareLink;
 import com.pydio.sdk.core.api.cells.model.RestShareLinkAccessType;
 import com.pydio.sdk.core.api.cells.model.RestUserJobRequest;
@@ -571,7 +572,29 @@ public class PydioCells implements Client {
     }
 
     @Override
-    public Message restore(String ws, String[] files) {
+    public Message restore(String ws, String[] files) throws SDKException {
+        List<TreeNode> nodes = new ArrayList<>();
+        for (String file : files) {
+            TreeNode node = new TreeNode();
+            node.setPath(fullPath(ws, file));
+            nodes.add(node);
+        }
+
+        RestRestoreNodesRequest request = new RestRestoreNodesRequest();
+        request.setNodes(nodes);
+
+        this.getJWT();
+
+        ApiClient client = getApiClient();
+        client.addDefaultHeader("Authorization", "Bearer " + this.JWT);
+        TreeServiceApi api = new TreeServiceApi(client);
+
+        try {
+            api.restoreNodes(request);
+        } catch (ApiException e) {
+            e.printStackTrace();
+            throw new SDKException(e);
+        }
         return null;
     }
 
@@ -936,5 +959,10 @@ public class PydioCells implements Client {
     @Override
     public JSONObject authenticationInfo() {
         return null;
+    }
+
+    @Override
+    public Message emptyRecycleBin(String ws) throws SDKException {
+        return delete(ws, new String[]{"/recycle_bin"});
     }
 }

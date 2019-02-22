@@ -102,4 +102,6 @@ public interface Client {
     InputStream getCaptcha() throws SDKException;
 
     JSONObject authenticationInfo() throws SDKException;
+
+    Message emptyRecycleBin(String ws) throws SDKException;
 }

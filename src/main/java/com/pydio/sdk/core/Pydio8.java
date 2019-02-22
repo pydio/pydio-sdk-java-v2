@@ -82,6 +82,8 @@ public class Pydio8 implements Client {
             }
         } catch (SDKException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -608,11 +610,17 @@ public class Pydio8 implements Client {
             }
 
             JSONObject json;
+
             try {
                 json = new JSONObject(line);
             } catch (ParseException e) {
+                e.printStackTrace();
+                return;
+            } catch (Exception e) {
+                e.printStackTrace();
                 return;
             }
+
 
             lastSeq[0] = Math.max(lastSeq[0], json.getLong(Pydio.CHANGE_SEQ));
             Change change = new Change();
@@ -625,11 +633,10 @@ public class Pydio8 implements Client {
 
             ChangeNode node = new ChangeNode();
             change.setNode(node);
-
-            node.setSize(json.getJSONObject(Pydio.CHANGE_NODE).getLong(Pydio.CHANGE_NODE_BYTESIZE));
-            node.setMd5(json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_MD5));
-            node.setmTime(json.getJSONObject(Pydio.CHANGE_NODE).getLong(Pydio.CHANGE_NODE_MTIME));
-            node.setPath(json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_PATH));
+            try{node.setSize(json.getJSONObject(Pydio.CHANGE_NODE).getLong(Pydio.CHANGE_NODE_BYTESIZE));}catch(Exception ignore){}
+            try{node.setMd5(json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_MD5));}catch(Exception ignore){}
+            try{node.setmTime(json.getJSONObject(Pydio.CHANGE_NODE).getLong(Pydio.CHANGE_NODE_MTIME));}catch(Exception ignore){}
+            try{node.setPath(json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_PATH));}catch(Exception ignore){}
             node.setWorkspace(json.getJSONObject(Pydio.CHANGE_NODE).getString(Pydio.CHANGE_NODE_WORKSPACE));
 
             handler.onChange(change);
@@ -751,5 +758,16 @@ public class Pydio8 implements Client {
             o.put(Param.captchaCode, true);
         }
         return o;
+    }
+
+    @Override
+    public Message emptyRecycleBin(String ws) throws SDKException {
+        P8RequestBuilder builder = P8RequestBuilder.emptyRecycle(ws);
+        P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
+        if (rsp.code() != Code.ok) {
+            throw SDKException.fromP8Code(rsp.code());
+        }
+        Document doc = rsp.toXMLDocument();
+        return null;
     }
 }
