@@ -300,6 +300,21 @@ public class P8RequestBuilder {
         return builder;
     }
 
+    public static P8RequestBuilder restore(String ws, String file) {
+        P8RequestBuilder builder = new P8RequestBuilder()
+                .setAction(Action.restore)
+                .setParam(Param.tmpRepositoryId, ws)
+                .setParam(Param.file, file);
+        return builder;
+    }
+
+    public static P8RequestBuilder emptyRecycle(String ws) {
+        P8RequestBuilder builder = new P8RequestBuilder()
+                .setAction(Action.emptyRecycle)
+                .setParam(Param.tmpRepositoryId, ws);
+        return builder;
+    }
+
     public static P8RequestBuilder getCaptcha() {
         P8RequestBuilder builder = new P8RequestBuilder()
                 .setAction(Action.getCaptcha)
