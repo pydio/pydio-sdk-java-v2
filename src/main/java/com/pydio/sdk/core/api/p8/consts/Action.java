@@ -29,4 +29,5 @@ public class Action {
     public final static String getBinaryParam = "get_binary_param";
     public final static String readVideoData = "read_video_data";
     public final static String audioProxy = "audio_proxy";
+    public final static String emptyRecycle = "empty_recycle";
 }
