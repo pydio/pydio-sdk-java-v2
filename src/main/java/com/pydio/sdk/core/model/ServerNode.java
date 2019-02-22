@@ -6,6 +6,7 @@ import com.pydio.sdk.core.common.errors.Code;
 import com.pydio.sdk.core.common.errors.Error;
 import com.pydio.sdk.core.security.CertificateTrust;
 import com.pydio.sdk.core.security.CertificateTrustManager;
+import com.pydio.sdk.core.service.ServerResolution;
 import com.pydio.sdk.core.utils.io;
 
 import org.json.JSONObject;
@@ -54,6 +55,7 @@ public class ServerNode implements Node {
     private String welcomeMessage;
     private String label = null;
     private String url = null;
+    private String originalUrl = null;
     private boolean sslUnverified = false;
     private SSLContext sslContext;
     private Properties properties = null;
@@ -153,9 +155,21 @@ public class ServerNode implements Node {
     }
 
     private Error resolveRemote(final String address) {
+        originalUrl = address;
+        this.url = address;
+
+        if (!address.startsWith("https://") && !address.startsWith("http://")) {
+            try {
+                this.url = ServerResolution.resolve(address, true);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return new Error(Code.bad_uri);
+            }
+        }
+
         URL url;
         try {
-            url = new URL(address);
+            url = new URL(this.url);
         } catch (MalformedURLException e) {
             return new Error(Code.bad_uri);
         }
@@ -164,7 +178,6 @@ public class ServerNode implements Node {
         host = url.getHost();
         port = url.getPort();
         path = url.getPath();
-        this.url = address;
 
         int err = downloadBootConf("a/frontend/bootconf");
         if (err == 0) {
@@ -390,9 +403,21 @@ public class ServerNode implements Node {
             path += ":" + port;
         }
         path += path();
-        if (!path.endsWith("/"))
+        if (!path.endsWith("/")) {
             return path + "/";
+        }
         return url = path;
+    }
+
+    public String getOriginalURL() {
+        if( originalUrl == null) {
+            originalUrl = url();
+        }
+        return originalUrl;
+    }
+
+    public String getOriginalUrl() {
+        return originalUrl;
     }
 
     public String welcomeMessage() {
