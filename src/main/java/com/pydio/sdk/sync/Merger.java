@@ -41,34 +41,10 @@ public class Merger {
     }
 
     public int countChanges() {
-        int count = 0;
-        List<Watch> watches = state.watches(this.fsList);
-        for (Watch w : watches) {
-            Fs sourceFs = mappedFsList.get(w.getSourceFs());
-            if (sourceFs.receivesEvents()) {
-                Fs targetFs = mappedFsList.get(w.getTargetFs());
-                if (targetFs.sendsEvents()){
-
-                    GetChangeRequest getChangeRequest = new GetChangeRequest();
-                    getChangeRequest.setPath(w.getPath());
-                    getChangeRequest.setSeq(Integer.MAX_VALUE);
-                    getChangeRequest.setSide(sourceFs.id());
-
-                    GetChangesResponse getChangesResponse = targetFs.getChanges(getChangeRequest);
-                    if (getChangesResponse.isSuccess()) {
-                        count = (int) (getChangesResponse.getLastSeq() - w.getSeq());
-                    } else {
-                        Error error = getChangesResponse.getError();
-                        Log.e("Sync", "Failed to get changes from " + targetFs.id() + ":" + error.toString());
-                        return -1;
-                    }
-                }
-            }
-        }
-        return count;
+        return changeStore.count();
     }
 
-    private Error fetchChanges() {
+    public Error fetchChanges() {
         if (changeStore.count() == 0) {
             List<Watch> watches = state.watches(this.fsList);
             for (Watch w : watches) {
@@ -84,7 +60,10 @@ public class Merger {
 
                         GetChangesResponse getChangesResponse = targetFs.getChanges(getChangeRequest);
                         if (getChangesResponse.isSuccess()) {
-                            this.changeStore.putChanges(getChangesResponse.getChanges());
+                            List<Change> changes = getChangesResponse.getChanges();
+                            if (changes != null){
+                                this.changeStore.putChanges(changes);
+                            }
                             w.setSeq(getChangesResponse.getLastSeq());
                             this.state.updateSeq(w);
                         } else {
