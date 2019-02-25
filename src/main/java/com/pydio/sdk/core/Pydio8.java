@@ -449,13 +449,22 @@ public class Pydio8 implements Client {
 
     @Override
     public Message delete(String ws, String[] files) throws SDKException {
-        P8RequestBuilder builder = P8RequestBuilder.delete(ws, files).setSecureToken(secureToken);
-        P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
-        if (rsp.code() != Code.ok) {
-            throw SDKException.fromP8Code(rsp.code());
+        Message msg = new Message();
+        for (String file: files) {
+            P8RequestBuilder builder = P8RequestBuilder.delete(ws, new String[]{file}).setSecureToken(secureToken);
+            P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
+            if (rsp.code() != Code.ok) {
+                throw SDKException.fromP8Code(rsp.code());
+            }
+
+            Document xml = rsp.toXMLDocument();
+            Message onDeleteMessage = Message.create(xml);
+
+            msg.deleted.addAll(onDeleteMessage.deleted);
+            msg.updated.addAll(onDeleteMessage.updated);
+            msg.added.addAll(onDeleteMessage.added);
         }
-        Document xml = rsp.toXMLDocument();
-        return Message.create(xml);
+        return msg;
     }
 
     @Override
