@@ -15,11 +15,11 @@ public class Message implements Serializable{
 	public final static String EMPTY 	= "EMPTY";
 
 	public String message;
-	private String type;
+	private String type = EMPTY;
 
-    public List<Node> deleted = null;
-    public List<Node> added = null;
-    public List<Node> updated = null;
+    public List<Node> deleted = new ArrayList<>();
+    public List<Node> added = new ArrayList<>();
+    public List<Node> updated = new ArrayList<>();
 
 
 	public String code() {
