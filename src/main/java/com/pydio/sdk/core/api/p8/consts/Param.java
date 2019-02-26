@@ -4,6 +4,7 @@ public class Param {
 
     public final static String subAction = "sub_action";
     public final static String action = "action";
+    public final static String merged = "merged";
     public final static String shareElementType = "element_type";
     public final static String captchaCode = "captcha_code";
     public final static String dirname = "dirname";
