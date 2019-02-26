@@ -685,7 +685,10 @@ public class Pydio8 implements Client {
 
     @Override
     public String share(String ws, String file, String ws_label, boolean isFolder, String ws_description, String password, int expiration, int download, boolean canPreview, boolean canDownload) throws SDKException {
-        P8RequestBuilder builder = P8RequestBuilder.share(ws, file, ws_description);
+        if(secureToken == null) {
+            login();
+        }
+        P8RequestBuilder builder = P8RequestBuilder.share(ws, file, ws_description).setSecureToken(secureToken);
         if (password != null && !"".equals(password)) {
             builder.setParam(Param.shareGuestUserPassword, password);
         }
@@ -707,7 +710,10 @@ public class Pydio8 implements Client {
 
     @Override
     public void unshare(String ws, String file) throws SDKException {
-        P8RequestBuilder builder = P8RequestBuilder.shareInfo(ws, file);
+        if(secureToken == null) {
+            login();
+        }
+        P8RequestBuilder builder = P8RequestBuilder.unShare(ws, file).setSecureToken(secureToken);
         P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
         if (rsp.code() != Code.ok) {
             throw SDKException.fromP8Code(rsp.code());
@@ -716,13 +722,16 @@ public class Pydio8 implements Client {
 
     @Override
     public JSONObject shareInfo(String ws, String file) throws SDKException {
-        P8RequestBuilder builder = P8RequestBuilder.shareInfo(ws, file);
+        if(secureToken == null) {
+            login();
+        }
+        P8RequestBuilder builder = P8RequestBuilder.shareInfo(ws, file).setSecureToken(secureToken);
         P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
         if (rsp.code() != Code.ok) {
             throw SDKException.fromP8Code(rsp.code());
         }
         try {
-            return new JSONObject(rsp.toString());
+            return rsp.toJSON();
         } catch (Exception e) {
             throw SDKException.unexpectedContent(e);
         }
@@ -771,7 +780,7 @@ public class Pydio8 implements Client {
 
     @Override
     public Message emptyRecycleBin(String ws) throws SDKException {
-        P8RequestBuilder builder = P8RequestBuilder.emptyRecycle(ws);
+        P8RequestBuilder builder = P8RequestBuilder.emptyRecycle(ws).setSecureToken(secureToken);
         P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
         if (rsp.code() != Code.ok) {
             throw SDKException.fromP8Code(rsp.code());
