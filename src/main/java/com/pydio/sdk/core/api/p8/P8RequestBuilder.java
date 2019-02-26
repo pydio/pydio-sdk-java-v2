@@ -296,7 +296,9 @@ public class P8RequestBuilder {
         P8RequestBuilder builder = new P8RequestBuilder()
                 .setAction(Action.loadSharedElementData)
                 .setParam(Param.tmpRepositoryId, ws)
-                .setParam(Param.file, file);
+                .setParam(Param.merged, "true")
+                .setParam(Param.file, file)
+                .ignoreCookies(false);
         return builder;
     }
 
@@ -304,14 +306,16 @@ public class P8RequestBuilder {
         P8RequestBuilder builder = new P8RequestBuilder()
                 .setAction(Action.restore)
                 .setParam(Param.tmpRepositoryId, ws)
-                .setParam(Param.file, file);
+                .setParam(Param.file, file)
+                .ignoreCookies(false);
         return builder;
     }
 
     public static P8RequestBuilder emptyRecycle(String ws) {
         P8RequestBuilder builder = new P8RequestBuilder()
                 .setAction(Action.emptyRecycle)
-                .setParam(Param.tmpRepositoryId, ws);
+                .setParam(Param.tmpRepositoryId, ws)
+                .ignoreCookies(false);
         return builder;
     }
 
@@ -351,8 +355,10 @@ public class P8RequestBuilder {
     }
 
     public P8RequestBuilder setSecureToken(String token) {
-        request.secureToken = token;
-        setParam(Param.secureToken, token);
+        if(token != null) {
+            request.secureToken = token;
+            setParam(Param.secureToken, token);
+        }
         return this;
     }
 
