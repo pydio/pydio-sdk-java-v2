@@ -67,7 +67,7 @@ public class Workspaces {
 
     public static void main(String[] args) {
         Configuration config = new Configuration();
-        config.endpoint = "https://share.pydio.com";
+        config.endpoint = "https://domain/path";
         config.selfSigned = false;
         config.userAgent = "Java-SDK-Example";
 
@@ -78,7 +78,7 @@ public class Workspaces {
         final int code = rsp.code();
         if (code != Code.ok) {
             if (code == Code.authentication_required) {
-                String secureToken = login(client, new DefaultP8Credentials(config.endpoint, "jabar", (url, user) -> "security89"));
+                String secureToken = login(client, new DefaultP8Credentials(config.endpoint, "username", (url, user) -> "password"));
                 rsp = client.execute(P8RequestBuilder.workspaceList().setSecureToken(secureToken).getRequest());
             }
         }
