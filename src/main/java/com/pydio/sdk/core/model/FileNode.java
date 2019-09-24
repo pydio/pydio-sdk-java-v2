@@ -129,7 +129,7 @@ public class FileNode implements Node {
 	}
 
 	public int type() {
-		return Node.TYPE_REMOTE_FILE;
+		return Node.TYPE_REMOTE_NODE;
 	}
 	@Override
 	public String id() {
@@ -169,7 +169,6 @@ public class FileNode implements Node {
 
         String path = path();
         String label = path();
-
 
         String nPath = node.path();
         String nLabel = node.path();

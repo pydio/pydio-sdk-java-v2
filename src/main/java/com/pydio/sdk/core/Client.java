@@ -59,6 +59,8 @@ public interface Client {
 
     void search(String ws, String pattern, NodeHandler h) throws SDKException;
 
+    void bookmarks(NodeHandler h) throws SDKException;
+
     Message upload(InputStream source, long length, String ws, String path, String name, boolean autoRename, final TransferProgressListener progressListener) throws SDKException;
 
     Message upload(File source, String ws, String path, String name, boolean autoRename, final TransferProgressListener progressListener) throws SDKException;
@@ -80,6 +82,10 @@ public interface Client {
     Message rename(String ws, String srcFile, String newName) throws SDKException;
 
     Message copy(String ws, String[] files, String folder) throws SDKException;
+
+    Message bookmark(String ws, String file) throws SDKException;
+
+    Message unbookmark(String ws, String file) throws SDKException;
 
     Message mkdir(String ws, String parent, String name) throws SDKException;
 

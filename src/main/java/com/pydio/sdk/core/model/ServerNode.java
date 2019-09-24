@@ -1,6 +1,7 @@
 package com.pydio.sdk.core.model;
 
 
+import com.pydio.sdk.core.Pydio;
 import com.pydio.sdk.core.common.callback.ServerResolver;
 import com.pydio.sdk.core.common.errors.Code;
 import com.pydio.sdk.core.common.errors.Error;
@@ -461,9 +462,22 @@ public class ServerNode implements Node {
         }
     }
 
-    public WorkspaceNode getWorkspace(String id) {
-        if (workspaces != null && workspaces.containsKey(id)) {
-            return workspaces.get(id);
+    public WorkspaceNode getWorkspace(String slug) {
+        if (workspaces != null && workspaces.containsKey(slug)) {
+            return workspaces.get(slug);
+        }
+        return null;
+    }
+
+    public WorkspaceNode findWorkspaceById(String id) {
+        if (workspaces == null) {
+            return null;
+        }
+
+        for (WorkspaceNode wn: workspaces.values()) {
+            if (id.equals(wn.getProperty(Pydio.WORKSPACE_PROPERTY_ID))) {
+                return wn;
+            }
         }
         return null;
     }

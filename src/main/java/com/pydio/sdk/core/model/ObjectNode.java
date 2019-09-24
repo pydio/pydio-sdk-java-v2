@@ -35,7 +35,7 @@ public class ObjectNode implements Node {
 
     @Override
     public int type() {
-        return Node.TYPE_LOCAL_FILE;
+        return Node.TYPE_LOCAL_NODE;
     }
 
     @Override

@@ -277,6 +277,11 @@ public class Pydio8 implements Client {
     }
 
     @Override
+    public void bookmarks(NodeHandler h) throws SDKException {
+
+    }
+
+    @Override
     public Message upload(InputStream source, long length, String ws, String path, String name, boolean autoRename, TransferProgressListener progressListener) throws SDKException {
         stats(ws, path, false);
 
@@ -509,6 +514,16 @@ public class Pydio8 implements Client {
         }
         Document xml = rsp.toXMLDocument();
         return Message.create(xml);
+    }
+
+    @Override
+    public Message bookmark(String ws, String file) throws SDKException {
+        return null;
+    }
+
+    @Override
+    public Message unbookmark(String ws, String file) throws SDKException {
+        return null;
     }
 
     @Override

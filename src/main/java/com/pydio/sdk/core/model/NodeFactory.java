@@ -50,7 +50,7 @@ public class NodeFactory {
 		if("repo".equals(nodename)) {
             return createNode(Node.TYPE_WORKSPACE, xml);
         } else if ("tree".equals(nodename)) {
-            return createNode(Node.TYPE_REMOTE_FILE, xml);
+            return createNode(Node.TYPE_REMOTE_NODE, xml);
 		}
 		return null;
 	}
@@ -66,7 +66,7 @@ public class NodeFactory {
 
     private static Node newNode(int type) {
 		switch (type) {
-            case Node.TYPE_REMOTE_FILE:
+            case Node.TYPE_REMOTE_NODE:
 				return new FileNode();
 
             case Node.TYPE_WORKSPACE:
@@ -75,7 +75,7 @@ public class NodeFactory {
             case Node.TYPE_SERVER:
                 return new ServerNode();
 
-            case Node.TYPE_LOCAL_FILE:
+            case Node.TYPE_LOCAL_NODE:
 				return new ObjectNode();
 			default:
 				return null;	

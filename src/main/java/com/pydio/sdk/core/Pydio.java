@@ -13,6 +13,7 @@ public class Pydio {
     public final static String NODE_PROPERTY_ENCODED = "encoded";
     public final static String NODE_PROPERTY_ENCODING = "encoding";
     public final static String NODE_PROPERTY_ENCODED_HASH = "encoded_hash";
+    public final static String NODE_PROPERTY_BOOKMARK = "bookmark";
     public final static String NODE_PROPERTY_TYPE = "Type";
     public final static String XML_NODES_DIFF = "nodes_diff";
     public final static String NODE_PROPERTY_ID = "id";
@@ -50,6 +51,9 @@ public class Pydio {
     public final static String NODE_PROPERTY_IMAGE_TYPE = "image_type";
     public final static String NODE_PROPERTY_IMAGE_THUMB_PATHS = "image_thumb_url_prefix";
     public final static String NODE_PROPERTY_LABEL = "label";
+    public final static String NODE_PROPERTY_WORKSPACE_ID = "workspace_id";
+    public final static String NODE_PROPERTY_WORKSPACE_UUID = "workspace_id";
+    public final static String NODE_PROPERTY_WORKSPACE_SLUG = "workspace_slug";
 
     public final static String NODE_PROPERTY_DESCRIPTION = "description";
 
@@ -83,6 +87,7 @@ public class Pydio {
     public final static String NODE_DIFF_UPDATE = "update";
     public final static String NODE_DIFF_REMOVE = "remove";
     public final static String NODE_PROPERTY_PATH = "path";
+    public final static String NODE_WORKSPACE = "workspace";
 
     public final static String REMOTE_CONFIG_UPLOAD_SIZE = "UPLOAD_MAX_SIZE";
     public final static String LOCAL_CONFIG_BUFFER_SIZE = "buffer_size";

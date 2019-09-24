@@ -1,33 +1,22 @@
 package com.pydio.sdk.core.model;
 
-import com.pydio.sdk.core.Pydio;
-
 import java.util.Properties;
 
-/**
- * Created by jabar on 09/11/2015.
- */
-public class SearchNode implements Node {
+public class BookmarkNode implements Node {
 
     private String label;
-    private Properties properties;
-
-    public SearchNode(String workspace, String label){
+    public BookmarkNode(String label) {
         this.label = label;
-        properties = new Properties();
-        if(workspace != null) {
-            properties.setProperty(Pydio.NODE_PROPERTY_WORKSPACE_SLUG, workspace);
-        }
     }
 
     @Override
     public int type() {
-        return Node.TYPE_SEARCH;
+        return TYPE_BOOKMARKS;
     }
 
     @Override
     public String id() {
-        return "search://" + label;
+        return null;
     }
 
     @Override
@@ -37,27 +26,27 @@ public class SearchNode implements Node {
 
     @Override
     public String path() {
-        return label;
+        return null;
     }
 
     @Override
     public String getProperty(String key) {
-        return properties.getProperty(key);
+        return null;
     }
 
     @Override
     public void setProperty(String key, String value) {
-        properties.setProperty(key, value);
+
     }
 
     @Override
     public void deleteProperty(String key) {
-        properties.remove(key);
+
     }
 
     @Override
     public void setProperties(Properties p) {
-        properties = p;
+
     }
 
     @Override
@@ -67,10 +56,7 @@ public class SearchNode implements Node {
 
     @Override
     public int compare(Node node) {
-        if (this.label.equals(node.label())) {
-            return 0;
-        }
-        return 1;
+        return 0;
     }
 
     @Override

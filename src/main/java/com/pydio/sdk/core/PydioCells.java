@@ -6,8 +6,15 @@ import com.pydio.sdk.core.api.cells.ApiException;
 import com.pydio.sdk.core.api.cells.api.ChangeServiceApi;
 import com.pydio.sdk.core.api.cells.api.FrontendServiceApi;
 import com.pydio.sdk.core.api.cells.api.JobsServiceApi;
+import com.pydio.sdk.core.api.cells.api.SearchServiceApi;
 import com.pydio.sdk.core.api.cells.api.ShareServiceApi;
 import com.pydio.sdk.core.api.cells.api.TreeServiceApi;
+import com.pydio.sdk.core.api.cells.api.UserMetaServiceApi;
+import com.pydio.sdk.core.api.cells.model.IdmSearchUserMetaRequest;
+import com.pydio.sdk.core.api.cells.model.IdmUpdateUserMetaRequest;
+import com.pydio.sdk.core.api.cells.model.IdmUpdateUserMetaResponse;
+import com.pydio.sdk.core.api.cells.model.IdmUser;
+import com.pydio.sdk.core.api.cells.model.IdmUserMeta;
 import com.pydio.sdk.core.api.cells.model.RestBulkMetaResponse;
 import com.pydio.sdk.core.api.cells.model.RestChangeCollection;
 import com.pydio.sdk.core.api.cells.model.RestChangeRequest;
@@ -19,17 +26,28 @@ import com.pydio.sdk.core.api.cells.model.RestGetBulkMetaRequest;
 import com.pydio.sdk.core.api.cells.model.RestNodesCollection;
 import com.pydio.sdk.core.api.cells.model.RestPutShareLinkRequest;
 import com.pydio.sdk.core.api.cells.model.RestRestoreNodesRequest;
+import com.pydio.sdk.core.api.cells.model.RestSearchResults;
 import com.pydio.sdk.core.api.cells.model.RestShareLink;
 import com.pydio.sdk.core.api.cells.model.RestShareLinkAccessType;
+import com.pydio.sdk.core.api.cells.model.RestUserBookmarksRequest;
 import com.pydio.sdk.core.api.cells.model.RestUserJobRequest;
+import com.pydio.sdk.core.api.cells.model.RestUserMetaCollection;
+import com.pydio.sdk.core.api.cells.model.ServiceResourcePolicy;
+import com.pydio.sdk.core.api.cells.model.ServiceResourcePolicyAction;
+import com.pydio.sdk.core.api.cells.model.ServiceResourcePolicyPolicyEffect;
 import com.pydio.sdk.core.api.cells.model.TreeNode;
 import com.pydio.sdk.core.api.cells.model.TreeNodeType;
+import com.pydio.sdk.core.api.cells.model.TreeQuery;
+import com.pydio.sdk.core.api.cells.model.TreeSearchRequest;
 import com.pydio.sdk.core.api.cells.model.TreeSyncChange;
+import com.pydio.sdk.core.api.cells.model.TreeWorkspaceRelativePath;
+import com.pydio.sdk.core.api.cells.model.UpdateUserMetaRequestUserMetaOp;
 import com.pydio.sdk.core.common.callback.ChangeHandler;
 import com.pydio.sdk.core.common.callback.NodeHandler;
 import com.pydio.sdk.core.common.callback.RegistryItemHandler;
 import com.pydio.sdk.core.common.callback.TransferProgressListener;
 import com.pydio.sdk.core.common.errors.Code;
+import com.pydio.sdk.core.common.errors.Error;
 import com.pydio.sdk.core.common.errors.SDKException;
 import com.pydio.sdk.core.model.parser.RegistrySaxHandler;
 import com.pydio.sdk.core.model.parser.ServerGeneralRegistrySaxHandler;
@@ -61,6 +79,7 @@ import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,8 +181,17 @@ public class PydioCells implements Client {
         return (fullPath + file).replace("//", "/");
     }
 
-    private FileNode toFileNode(String ws, TreeNode node) {
+    private FileNode toFileNode(TreeNode node) {
         FileNode result = new FileNode();
+
+        String[] parts = node.getPath().split("/");
+        String workspaceSlug = parts[0];
+        String[] rest = Arrays.copyOfRange(parts, 1, parts.length);
+        StringBuilder pathBuilder = new StringBuilder();
+        for (String part: rest) {
+            pathBuilder.append("/").append(part);
+        }
+        String path = pathBuilder.toString();
 
         Map<String, String> meta = node.getMetaStore();
         result.setProperty(Pydio.NODE_PROPERTY_META_JSON_ENCODED, new JSONObject(meta).toString());
@@ -178,13 +206,20 @@ public class PydioCells implements Client {
                 JSONObject shareWs = (JSONObject) shareWorkspaces.get(0);
                 String shareUUID = shareWs.getString("UUID");
                 result.setProperty(Pydio.NODE_PROPERTY_SHARE_UUID, shareUUID);
-            } catch (ParseException ignored) {
-            }
+            } catch (ParseException ignored) {}
         }
         String uuid = node.getUuid();
         if (uuid == null) {
             return null;
         }
+
+        String bookmark = meta.get("bookmark");
+        if (bookmark != null && bookmark.length() > 0) {
+            System.out.println(bookmark);
+            result.setProperty(Pydio.NODE_PROPERTY_BOOKMARK, bookmark.replace("\"\"", "\""));
+        }
+
+        result.setProperty(Pydio.NODE_PROPERTY_WORKSPACE_SLUG, workspaceSlug);
         result.setProperty(Pydio.NODE_PROPERTY_UUID, node.getUuid());
         result.setProperty(Pydio.NODE_PROPERTY_TEXT, new File(node.getPath()).getName());
         result.setProperty(Pydio.NODE_PROPERTY_LABEL, new File(node.getPath()).getName());
@@ -196,12 +231,15 @@ public class PydioCells implements Client {
         } else {
             result.setProperty(Pydio.NODE_PROPERTY_BYTESIZE, node.getSize());
         }
-        result.setProperty(Pydio.NODE_PROPERTY_PATH, node.getPath().replaceFirst(ws, ""));
-        result.setProperty(Pydio.NODE_PROPERTY_FILENAME, node.getPath().replaceFirst(ws, ""));
+        result.setProperty(Pydio.NODE_PROPERTY_PATH, path);
+        result.setProperty(Pydio.NODE_PROPERTY_FILENAME, path);
         result.setProperty(Pydio.NODE_PROPERTY_IS_FILE, String.valueOf(isFile));
         result.setProperty(Pydio.NODE_PROPERTY_IS_IMAGE, isImage);
         result.setProperty(Pydio.NODE_PROPERTY_FILE_PERMS, String.valueOf(node.getMode()));
-        result.setProperty(Pydio.NODE_PROPERTY_AJXP_MODIFTIME, node.getMtime());
+        String mtime = node.getMtime();
+        if (mtime != null) {
+            result.setProperty(Pydio.NODE_PROPERTY_AJXP_MODIFTIME, node.getMtime());
+        }
         if (isImage.equals("true")) {
             result.setProperty(Pydio.NODE_PROPERTY_IMAGE_HEIGHT, meta.get("image_height"));
             result.setProperty(Pydio.NODE_PROPERTY_IMAGE_WIDTH, meta.get("image_height"));
@@ -407,7 +445,7 @@ public class PydioCells implements Client {
         }
 
         TreeNode node = response.getNodes().get(0);
-        return toFileNode(ws, node);
+        return toFileNode(node);
     }
 
     @Override
@@ -439,11 +477,10 @@ public class PydioCells implements Client {
             for (TreeNode node : response.getNodes()) {
                 FileNode fileNode;
                 try {
-                    fileNode = toFileNode(ws, node);
+                    fileNode = toFileNode(node);
                 } catch (NullPointerException ignored) {
                     continue;
                 }
-
                 if (fileNode != null) {
                     String nodePath = ("/" + node.getPath()).replace("//", "/");
                     if (nodePath.equals(fullPath(ws, folder))) {
@@ -458,7 +495,76 @@ public class PydioCells implements Client {
     }
 
     @Override
-    public void search(String ws, String pattern, NodeHandler h) {}
+    public void search(String ws, String pattern, NodeHandler h) throws SDKException {
+        TreeQuery query = new TreeQuery();
+        query.setFileName(pattern);
+        query.addPathPrefixItem(ws + "/");
+
+        TreeSearchRequest request = new TreeSearchRequest();
+        request.setSize(9);
+        request.setQuery(query);
+
+        this.getJWT();
+
+        ApiClient client = getApiClient();
+        client.addDefaultHeader("Authorization", "Bearer " + this.JWT);
+        SearchServiceApi api = new SearchServiceApi(client);
+
+        RestSearchResults results;
+        try {
+            results = api.nodes(request);
+        } catch (ApiException e) {
+            throw new SDKException(e);
+        }
+
+        List<TreeNode> nodes = results.getResults();
+        if (nodes != null) {
+            for (TreeNode node : nodes) {
+                FileNode fileNode;
+                try {
+                    fileNode = toFileNode(node);
+                } catch (NullPointerException ignored) {
+                    continue;
+                }
+
+                if (fileNode != null) {
+                    h.onNode(fileNode);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void bookmarks(NodeHandler h) throws SDKException {
+        this.getJWT();
+        ApiClient client = getApiClient();
+        client.addDefaultHeader("Authorization", "Bearer " + this.JWT);
+
+        RestUserBookmarksRequest request = new RestUserBookmarksRequest();
+        UserMetaServiceApi api = new UserMetaServiceApi(client);
+        try {
+            RestBulkMetaResponse response = api.userBookmarks(request);
+            for (TreeNode node : response.getNodes()) {
+                try {
+                    FileNode fileNode = toFileNode(node);
+                    if (fileNode != null) {
+                        List<TreeWorkspaceRelativePath> sources = node.getAppearsIn();
+                        if (sources != null) {
+                            TreeWorkspaceRelativePath source = sources.get(0);
+                            fileNode.setProperty(Pydio.NODE_PROPERTY_WORKSPACE_UUID, source.getWsUuid());
+                            fileNode.properties.remove(Pydio.NODE_PROPERTY_WORKSPACE_SLUG);
+                            fileNode.setProperty(Pydio.NODE_PROPERTY_FILENAME,  "/" + source.getPath());
+                            fileNode.setProperty(Pydio.NODE_PROPERTY_PATH, "/" + source.getPath());
+                            h.onNode(fileNode);
+                        }
+                    }
+                } catch (NullPointerException ignored) {}
+            }
+        } catch (ApiException e) {
+            e.printStackTrace();
+            throw new SDKException(e);
+        }
+    }
 
     @Override
     public Message upload(InputStream source, long length, String ws, String path, String name, boolean autoRename, TransferProgressListener progressListener) throws SDKException {
@@ -697,6 +803,86 @@ public class PydioCells implements Client {
     }
 
     @Override
+    public Message bookmark(String ws, String nodeId) throws SDKException {
+        this.getJWT();
+        ApiClient client = getApiClient();
+        client.addDefaultHeader("Authorization", "Bearer " + this.JWT);
+
+        UserMetaServiceApi api = new UserMetaServiceApi(client);
+
+
+        IdmUpdateUserMetaRequest request = new IdmUpdateUserMetaRequest();
+        request.setOperation(UpdateUserMetaRequestUserMetaOp.PUT);
+        List<IdmUserMeta> metas = new ArrayList<>();
+        IdmUserMeta item = new IdmUserMeta();
+        item.setNodeUuid(nodeId);
+        item.setNamespace("bookmark");
+        item.setJsonValue("true");
+
+        ServiceResourcePolicy policy = new ServiceResourcePolicy();
+        policy.setAction(ServiceResourcePolicyAction.OWNER);
+        policy.setEffect(ServiceResourcePolicyPolicyEffect.ALLOW);
+        policy.setResource(nodeId);
+        policy.setSubject("user:" + getUser());
+        item.addPoliciesItem(policy);
+        metas.add(item);
+
+        policy = new ServiceResourcePolicy();
+        policy.setAction(ServiceResourcePolicyAction.READ);
+        policy.setEffect(ServiceResourcePolicyPolicyEffect.ALLOW);
+        policy.setResource(nodeId);
+        policy.setSubject("user:" + getUser());
+        item.addPoliciesItem(policy);
+        metas.add(item);
+
+        policy = new ServiceResourcePolicy();
+        policy.setAction(ServiceResourcePolicyAction.WRITE);
+        policy.setEffect(ServiceResourcePolicyPolicyEffect.ALLOW);
+        policy.setResource(nodeId);
+        policy.setSubject("user:" + getUser());
+        item.addPoliciesItem(policy);
+        metas.add(item);
+        request.setMetaDatas(metas);
+
+
+        try {
+            IdmUpdateUserMetaResponse response = api.updateUserMeta(request);
+            return null;
+        } catch (ApiException e) {
+            e.printStackTrace();
+            throw new SDKException(e);
+        }
+    }
+
+    @Override
+    public Message unbookmark(String ws, String nodeId) throws SDKException {
+        this.getJWT();
+        ApiClient client = getApiClient();
+        client.addDefaultHeader("Authorization", "Bearer " + this.JWT);
+
+        UserMetaServiceApi api = new UserMetaServiceApi(client);
+
+        IdmSearchUserMetaRequest searchRequest = new IdmSearchUserMetaRequest();
+        searchRequest.setNamespace("bookmark");
+        searchRequest.addNodeUuidsItem(nodeId);
+
+
+        try {
+            RestUserMetaCollection result = api.searchUserMeta(searchRequest);
+
+            IdmUpdateUserMetaRequest request = new IdmUpdateUserMetaRequest();
+            request.setOperation(UpdateUserMetaRequestUserMetaOp.DELETE);
+            request.setMetaDatas(result.getMetadatas());
+
+            IdmUpdateUserMetaResponse response = api.updateUserMeta(request);
+            return null;
+        } catch (ApiException e) {
+            e.printStackTrace();
+            throw new SDKException(e);
+        }
+    }
+
+    @Override
     public Message mkdir(String ws, String parent, String name) throws SDKException {
         TreeNode node = new TreeNode();
         node.setPath((ws + parent + "/" + name).replace("//", "/"));
@@ -726,7 +912,7 @@ public class PydioCells implements Client {
         List<TreeNode> nodes = response.getChildren();
         node = nodes.get(0);
 
-        FileNode fileNode = toFileNode(ws, node);
+        FileNode fileNode = toFileNode(node);
         msg.added.add(fileNode);
         return msg;
     }
@@ -761,7 +947,7 @@ public class PydioCells implements Client {
         List<TreeNode> nodes = response.getChildren();
         node = nodes.get(0);
 
-        FileNode fileNode = toFileNode(ws, node);
+        FileNode fileNode = toFileNode(node);
         msg.added.add(fileNode);
         return msg;
     }
