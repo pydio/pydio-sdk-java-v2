@@ -470,6 +470,10 @@ public class ServerNode implements Node {
     }
 
     public WorkspaceNode findWorkspaceById(String id) {
+        if (id == null) {
+            return null;
+        }
+
         if (workspaces == null) {
             return null;
         }

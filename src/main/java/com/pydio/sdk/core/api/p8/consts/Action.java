@@ -15,8 +15,12 @@ public class Action {
     public final static String createMinisite = "create_minisite";
     public final static String share = "share";
     public final static String search = "search";
+    public final static String searchByKeyword = "search_by_keyword";
+    public final static String getBookmarks = "get_bookmarks";
+    public final static String addBookmark = "add_bookmark";
+    public final static String deleteBookmark = "delete_bookmark";
     public final static String unshare = "unshare";
-    public final static String getBottConf = "get_boot_conf";
+    public final static String getBootConf = "get_boot_conf";
     public final static String getSeed = "get_seed";
     public final static String login = "login";
     public final static String getXmlRegistry = "get_xml_registry";

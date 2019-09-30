@@ -22,7 +22,7 @@ public class Message implements Serializable{
     public List<Node> updated = new ArrayList<>();
 
 
-	public String code() {
+	public String type() {
 		return type;
 	}
 	

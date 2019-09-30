@@ -14,7 +14,7 @@ public interface Node extends Serializable {
     int TYPE_SEARCH = 5;
     int TYPE_BOOKMARKS = 6;
     int TYPE_ACTIVITY = 7;
-    int TYPE_OTHER = 8;
+    int TYPE_SELECTION = 8;
 
     int same = 0;
     int content = 1;

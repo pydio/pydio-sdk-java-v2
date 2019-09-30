@@ -14,6 +14,7 @@ import com.pydio.sdk.core.common.callback.TransferProgressListener;
 import com.pydio.sdk.core.common.errors.Code;
 import com.pydio.sdk.core.common.errors.SDKException;
 import com.pydio.sdk.core.common.http.ContentBody;
+import com.pydio.sdk.core.model.WorkspaceNode;
 import com.pydio.sdk.core.model.parser.RegistrySaxHandler;
 import com.pydio.sdk.core.model.parser.ServerGeneralRegistrySaxHandler;
 import com.pydio.sdk.core.model.parser.TreeNodeSaxHandler;
@@ -47,6 +48,9 @@ import java.rmi.UnknownHostException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 public class Pydio8 implements Client {
 
@@ -105,14 +109,10 @@ public class Pydio8 implements Client {
     }
 
     @Override
-    public void setTokenProvider(Token.Provider p) {
-
-    }
+    public void setTokenProvider(Token.Provider p) {}
 
     @Override
-    public void setTokenStore(Token.Store s) {
-
-    }
+    public void setTokenStore(Token.Store s) {}
 
     @Override
     public String getUser() {
@@ -206,12 +206,28 @@ public class Pydio8 implements Client {
 
     @Override
     public void workspaceList(NodeHandler handler) throws SDKException {
+        String[] excluded = {
+                Pydio.WORKSPACE_ACCESS_TYPE_CONF,
+                Pydio.WORKSPACE_ACCESS_TYPE_SHARED,
+                Pydio.WORKSPACE_ACCESS_TYPE_MYSQL,
+                Pydio.WORKSPACE_ACCESS_TYPE_IMAP,
+                Pydio.WORKSPACE_ACCESS_TYPE_JSAPI,
+                Pydio.WORKSPACE_ACCESS_TYPE_USER,
+                Pydio.WORKSPACE_ACCESS_TYPE_HOME,
+                Pydio.WORKSPACE_ACCESS_TYPE_HOMEPAGE,
+                Pydio.WORKSPACE_ACCESS_TYPE_SETTINGS,
+                Pydio.WORKSPACE_ACCESS_TYPE_ADMIN
+        };
         P8RequestBuilder builder = P8RequestBuilder.workspaceList().setSecureToken(secureToken);
         P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
         if (rsp.code() != Code.ok) {
             throw SDKException.fromP8Code(rsp.code());
         }
-        final int code = rsp.saxParse(new WorkspaceNodeSaxHandler(handler, 0, -1));
+        final int code = rsp.saxParse(new WorkspaceNodeSaxHandler((n)->{
+            if (!Arrays.asList(excluded).contains( ((WorkspaceNode) n).getAccessType())) {
+                handler.onNode(n);
+            }
+        }, 0, -1));
         if (code != Code.ok) {
             throw SDKException.fromP8Code(code);
         }
@@ -243,7 +259,10 @@ public class Pydio8 implements Client {
                 throw SDKException.fromP8Code(code);
             }
 
-            TreeNodeSaxHandler treeHandler = new TreeNodeSaxHandler(handler);
+            TreeNodeSaxHandler treeHandler = new TreeNodeSaxHandler((n) -> {
+                n.setProperty(Pydio.NODE_PROPERTY_WORKSPACE_SLUG, ws);
+                handler.onNode(n);
+            });
             final int resultCode = rsp.saxParse(treeHandler);
             if (resultCode != Code.ok) {
                 throw SDKException.fromP8Code(resultCode);
@@ -277,8 +296,44 @@ public class Pydio8 implements Client {
     }
 
     @Override
-    public void bookmarks(NodeHandler h) throws SDKException {
+    public void bookmarks(NodeHandler handler) throws SDKException {
+        List<WorkspaceNode> workspaceNodes  = new ArrayList<>(serverNode.workspaces.values());
+        if (workspaceNodes.isEmpty()) {
+            workspaceList((n)-> workspaceNodes.add((WorkspaceNode) n));
+        }
 
+        for (WorkspaceNode wn: workspaceNodes) {
+            P8RequestBuilder builder = P8RequestBuilder.listBookmarked(wn.id(), "/").setSecureToken(secureToken);
+            while (true) {
+                P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
+                int code = rsp.code();
+                if (code != Code.ok) {
+                    break;
+                    //throw SDKException.fromP8Code(code);
+                }
+
+                TreeNodeSaxHandler treeHandler = new TreeNodeSaxHandler((n) -> {
+                    n.setProperty(Pydio.NODE_PROPERTY_WORKSPACE_SLUG, wn.id());
+                    handler.onNode(n);
+                });
+
+                final int resultCode = rsp.saxParse(treeHandler);
+                if (resultCode != Code.ok) {
+                    //throw SDKException.fromP8Code(resultCode);
+                    break;
+                }
+
+                if (treeHandler.mPagination) {
+                    if (!(treeHandler.mPaginationTotalPage == treeHandler.mPaginationCurrentPage)) {
+                        builder.setParam(Param.dir, "/" + "%23" + (treeHandler.mPaginationCurrentPage + 1));
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
     }
 
     @Override
@@ -518,12 +573,24 @@ public class Pydio8 implements Client {
 
     @Override
     public Message bookmark(String ws, String file) throws SDKException {
-        return null;
+        P8RequestBuilder builder = P8RequestBuilder.bookmark(ws, file).setSecureToken(secureToken);
+        P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
+        if (rsp.code() != Code.ok) {
+            throw SDKException.fromP8Code(rsp.code());
+        }
+        Document xml = rsp.toXMLDocument();
+        return Message.create(xml);
     }
 
     @Override
     public Message unbookmark(String ws, String file) throws SDKException {
-        return null;
+        P8RequestBuilder builder = P8RequestBuilder.unbookmark(ws, file).setSecureToken(secureToken);
+        P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
+        if (rsp.code() != Code.ok) {
+            throw SDKException.fromP8Code(rsp.code());
+        }
+        Document xml = rsp.toXMLDocument();
+        return Message.create(xml);
     }
 
     @Override

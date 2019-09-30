@@ -4,6 +4,8 @@ public class Param {
 
     public final static String subAction = "sub_action";
     public final static String action = "action";
+    public final static String bmAction = "bm_action";
+    public final static String bmPath = "bm_path";
     public final static String merged = "merged";
     public final static String shareElementType = "element_type";
     public final static String captchaCode = "captcha_code";
@@ -12,6 +14,7 @@ public class Param {
     public final static String options = "options";
     public final static String dir = "dir";
     public final static String file = "file";
+    public final static String field = "field";
     public final static String autoRename = "auto_rename";
     public final static String appendToUrlencodedPart = "appendto_urlencoded_part";
     public final static String filenameNew = "filename_new";

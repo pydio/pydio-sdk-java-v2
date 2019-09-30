@@ -101,6 +101,37 @@ public class P8RequestBuilder {
         return builder;
     }
 
+    public static P8RequestBuilder listBookmarked(String ws, String dir) {
+        P8RequestBuilder builder = new P8RequestBuilder();
+        builder = builder.setAction(Action.searchByKeyword)
+                .setParam(Param.options, "al")
+                .setParam(Param.dir, dir)
+                .setParam(Param.tmpRepositoryId, ws)
+                .setParam(Param.field, Const.ajxpBookmarked)
+                .ignoreCookies(false);
+        return builder;
+    }
+
+    public static P8RequestBuilder unbookmark(String ws, String path) {
+        P8RequestBuilder builder = new P8RequestBuilder();
+        builder = builder.setAction(Action.getBookmarks)
+                .setParam(Param.bmAction, Action.addBookmark)
+                .setParam(Param.bmPath, path)
+                .setParam(Param.tmpRepositoryId, ws)
+                .ignoreCookies(false);
+        return builder;
+    }
+
+    public static P8RequestBuilder bookmark(String ws, String path) {
+        P8RequestBuilder builder = new P8RequestBuilder();
+        builder = builder.setAction(Action.getBookmarks)
+                .setParam(Param.bmAction, Action.addBookmark)
+                .setParam(Param.bmPath, path)
+                .setParam(Param.tmpRepositoryId, ws)
+                .ignoreCookies(false);
+        return builder;
+    }
+
     public static P8RequestBuilder search(String ws, String query) {
         P8RequestBuilder builder = new P8RequestBuilder()
                 .setAction(Action.search)
