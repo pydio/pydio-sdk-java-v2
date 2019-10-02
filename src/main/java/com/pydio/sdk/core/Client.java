@@ -57,7 +57,7 @@ public interface Client {
 
     FileNode ls(String ws, String folder, NodeHandler handler) throws SDKException;
 
-    void search(String ws, String pattern, NodeHandler h) throws SDKException;
+    void search(String ws, String dir, String searched, NodeHandler h) throws SDKException;
 
     void bookmarks(NodeHandler h) throws SDKException;
 

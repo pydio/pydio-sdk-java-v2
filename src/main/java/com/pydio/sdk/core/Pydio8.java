@@ -281,8 +281,8 @@ public class Pydio8 implements Client {
     }
 
     @Override
-    public void search(String ws, String pattern, NodeHandler h) throws SDKException {
-        P8RequestBuilder builder = P8RequestBuilder.search(ws, pattern).setSecureToken(secureToken);
+    public void search(String ws, String dir, String searchedText, NodeHandler h) throws SDKException {
+        P8RequestBuilder builder = P8RequestBuilder.search(ws, dir, searchedText).setSecureToken(secureToken);
         P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);
         int code = rsp.code();
         if (code != Code.ok) {

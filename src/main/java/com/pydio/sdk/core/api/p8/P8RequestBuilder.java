@@ -132,9 +132,10 @@ public class P8RequestBuilder {
         return builder;
     }
 
-    public static P8RequestBuilder search(String ws, String query) {
+    public static P8RequestBuilder search(String ws, String dir, String query) {
         P8RequestBuilder builder = new P8RequestBuilder()
                 .setAction(Action.search)
+                .setParam(Param.dir, dir)
                 .setParam(Param.tmpRepositoryId, ws)
                 .setParam(Param.query, query)
                 .ignoreCookies(false);

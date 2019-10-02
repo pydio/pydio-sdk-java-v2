@@ -494,10 +494,12 @@ public class PydioCells implements Client {
     }
 
     @Override
-    public void search(String ws, String pattern, NodeHandler h) throws SDKException {
+    public void search(String ws, String dir, String searchedText, NodeHandler h) throws SDKException {
         TreeQuery query = new TreeQuery();
-        query.setFileName(pattern);
-        query.addPathPrefixItem(ws + "/");
+        query.setFileName(searchedText);
+
+        String prefix = ws + dir;
+        query.addPathPrefixItem(prefix);
 
         TreeSearchRequest request = new TreeSearchRequest();
         request.setSize(9);
