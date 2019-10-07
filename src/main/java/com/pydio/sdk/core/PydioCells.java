@@ -502,9 +502,8 @@ public class PydioCells implements Client {
         query.addPathPrefixItem(prefix);
 
         TreeSearchRequest request = new TreeSearchRequest();
-        request.setSize(9);
+        request.setSize(50);
         request.setQuery(query);
-
         this.getJWT();
 
         ApiClient client = getApiClient();
@@ -995,7 +994,7 @@ public class PydioCells implements Client {
     }
 
     @Override
-    public String share(String ws, String file, String ws_label, boolean isFolder, String ws_description, String password, int expiration, int download, boolean canPreview, boolean canDownload) throws SDKException {
+    public String share(String ws, String uuid, String ws_label, boolean isFolder, String ws_description, String password, int expiration, int download, boolean canPreview, boolean canDownload) throws SDKException {
         RestPutShareLinkRequest request = new RestPutShareLinkRequest();
         request.createPassword(password);
         request.setCreatePassword(password);
@@ -1003,7 +1002,7 @@ public class PydioCells implements Client {
         RestShareLink sl = new RestShareLink();
 
         TreeNode n = new TreeNode();
-        n.setUuid(file);
+        n.setUuid(uuid);
 
         List<RestShareLinkAccessType> permissions = new ArrayList<>();
         if (canPreview) {
