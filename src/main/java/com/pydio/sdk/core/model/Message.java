@@ -38,6 +38,10 @@ public class Message implements Serializable{
 		this.type = type;
 	}
 
+	public boolean hasEvents() {
+		return this.added.size() > 0 || this.deleted.size() > 0 || this.updated.size() > 0;
+	}
+
 	private static Message empty(){
 		Message m = new Message();
 		m.type = ERROR;
