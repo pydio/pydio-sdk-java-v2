@@ -159,11 +159,7 @@ public class FileNode implements Node {
         }
 
         String encoded = getEncoded();
-        if (encoded == null) {
-            return different;
-        }
-
-        if (encoded.equals(node.getEncoded())) {
+        if (encoded != null && encoded.equals(node.getEncoded())) {
             return same;
         }
 

@@ -96,8 +96,14 @@ public class Merger {
                 ProcessChangeResponse response = targetFs.processChange(request);
                 if (response.isSuccess()){
                     changeStore.deleteChange(c);
+                    if (mergeActivityListener != null) {
+                        mergeActivityListener.onActionCompleted(c);
+                    }
                 } else {
                     Error error = response.getError();
+                    if (mergeActivityListener != null) {
+                        mergeActivityListener.onActionFailed(error, c);
+                    }
                     Log.e("Sync", "Failed to get changes from " + targetFs.id() + ":" + error.toString());
                     return error;
                 }

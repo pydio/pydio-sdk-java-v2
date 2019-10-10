@@ -19,6 +19,7 @@ public class Pydio {
     public final static String NODE_PROPERTY_ID = "id";
     public final static String NODE_PROPERTY_AJXP_MIME = "ajxp_mime";
     public final static String NODE_PROPERTY_AJXP_SHARED = "ajxp_shared";
+    public final static String NODE_PROPERTY_AJXP_BOOKMARKED = "ajxp_bookmarked";
     public final static String NODE_PROPERTY_SHARE_JSON_INFO = "share_json_info";
     public final static String NODE_PROPERTY_SHARE_UUID = "share_Uuid";
     public final static String NODE_PROPERTY_META_JSON_ENCODED = "meta_encoded";

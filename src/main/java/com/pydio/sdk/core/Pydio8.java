@@ -660,6 +660,10 @@ public class Pydio8 implements Client {
 
         try {
             JSONObject json = new JSONObject(rsp.toString());
+            if (!json.has("hash") && !json.has("mtime") && !json.has("size")) {
+                return null;
+            }
+
             Stats stats = new Stats();
             if (withHash) {
                 stats.setHash(json.getString("hash"));

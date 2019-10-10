@@ -82,6 +82,9 @@ public class LocalFs implements Fs, ContentLoader {
                 break;
             case Change.TYPE_DELETE:
                 e = delete(c);
+                if (e == null) {
+                    this.watched.remove(c.getSource());
+                }
                 break;
             default:
                 e = Error.unknownOperation(event);

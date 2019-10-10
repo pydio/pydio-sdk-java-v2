@@ -58,10 +58,14 @@ public class Pydio8Fs implements Fs, ContentLoader {
                         c.setTarget(request.getPath() + c.getTarget());
                     }
 
-
                     ChangeNode node = c.getNode();
                     if(node != null && !"NULL".equals(node.getPath())) {
-                        node.setPath(request.getPath() + node.getPath());
+                        String p = node.getPath();
+                        if (p == null) {
+                            node.setPath(request.getPath());
+                        } else {
+                            node.setPath(request.getPath() + p);
+                        }
                     }
                 }
                 response.addChange(c);

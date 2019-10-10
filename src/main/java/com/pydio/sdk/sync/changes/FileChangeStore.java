@@ -37,7 +37,8 @@ public class FileChangeStore implements ChangeStore {
         }
         try {
             save();
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
     }
 
     @Override
@@ -46,7 +47,8 @@ public class FileChangeStore implements ChangeStore {
         changes.remove(key);
         try {
             save();
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
     }
 
     @Override
@@ -63,7 +65,7 @@ public class FileChangeStore implements ChangeStore {
     public synchronized List<Change> getChanges(int count) {
         Iterator it = changes.keySet().iterator();
         ArrayList<Change> result = new ArrayList<>();
-        while(it.hasNext() && result.size() < count) {
+        while (it.hasNext() && result.size() < count) {
             String k = (String) it.next();
             Change c = changes.get(k);
             result.add(c);
@@ -87,7 +89,8 @@ public class FileChangeStore implements ChangeStore {
             byte[] bytes = io.readFile(this.filePath);
             Gson gson = new Gson();
             changes = gson.fromJson(new String(bytes), classType);
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
         if (changes == null) {
             changes = new TreeMap<>();
         }
