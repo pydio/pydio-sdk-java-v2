@@ -2,19 +2,13 @@ package com.pydio.sdk.sync.changes;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.pydio.sdk.core.model.Change;
 import com.pydio.sdk.core.utils.io;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 public class FileWatchStore {
     private String filePath;
@@ -73,7 +67,7 @@ public class FileWatchStore {
         }
 
         for (String watch: watches) {
-            if (watch.startsWith(path + "/")){
+            if (path.startsWith(watch)){
                 return true;
             }
         }
