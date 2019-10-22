@@ -1,5 +1,5 @@
 # Getting started
-The pydio java sdk provides a Java implementation of features for communicating with a Pydio server Cells and Pydio 8+ versions. Most of the functions are wrapped into the <em>com.pydio.sdk.core.Pydio8</em> class that contains methods to easily manage your files on a Pydio server.
+The pydio java sdk provides a Java implementation of features for communicating with a Pydio server Cells and Pydio 8+ versions. Most of the functions are wrapped into the <em>com.pydio.sdk.core.Client</em> class that contains methods to easily manage your files on a Pydio server.
 
 ## Configure and resolve a pydio server:
 
