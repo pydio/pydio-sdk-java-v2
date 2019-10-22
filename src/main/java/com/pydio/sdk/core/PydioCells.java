@@ -188,7 +188,7 @@ public class PydioCells implements Client {
         String workspaceSlug = parts[0];
         String[] rest = Arrays.copyOfRange(parts, 1, parts.length);
         StringBuilder pathBuilder = new StringBuilder();
-        for (String part: rest) {
+        for (String part : rest) {
             pathBuilder.append("/").append(part);
         }
         String path = pathBuilder.toString();
@@ -206,7 +206,8 @@ public class PydioCells implements Client {
                 JSONObject shareWs = (JSONObject) shareWorkspaces.get(0);
                 String shareUUID = shareWs.getString("UUID");
                 result.setProperty(Pydio.NODE_PROPERTY_SHARE_UUID, shareUUID);
-            } catch (ParseException ignored) {}
+            } catch (ParseException ignored) {
+            }
         }
         String uuid = node.getUuid();
         if (uuid == null) {
@@ -544,21 +545,24 @@ public class PydioCells implements Client {
         UserMetaServiceApi api = new UserMetaServiceApi(client);
         try {
             RestBulkMetaResponse response = api.userBookmarks(request);
-            for (TreeNode node : response.getNodes()) {
-                try {
-                    FileNode fileNode = toFileNode(node);
-                    if (fileNode != null) {
-                        List<TreeWorkspaceRelativePath> sources = node.getAppearsIn();
-                        if (sources != null) {
-                            TreeWorkspaceRelativePath source = sources.get(0);
-                            fileNode.setProperty(Pydio.NODE_PROPERTY_WORKSPACE_UUID, source.getWsUuid());
-                            fileNode.properties.remove(Pydio.NODE_PROPERTY_WORKSPACE_SLUG);
-                            fileNode.setProperty(Pydio.NODE_PROPERTY_FILENAME,  "/" + source.getPath());
-                            fileNode.setProperty(Pydio.NODE_PROPERTY_PATH, "/" + source.getPath());
-                            h.onNode(fileNode);
+            if (response.getNodes() != null) {
+                for (TreeNode node : response.getNodes()) {
+                    try {
+                        FileNode fileNode = toFileNode(node);
+                        if (fileNode != null) {
+                            List<TreeWorkspaceRelativePath> sources = node.getAppearsIn();
+                            if (sources != null) {
+                                TreeWorkspaceRelativePath source = sources.get(0);
+                                fileNode.setProperty(Pydio.NODE_PROPERTY_WORKSPACE_UUID, source.getWsUuid());
+                                fileNode.properties.remove(Pydio.NODE_PROPERTY_WORKSPACE_SLUG);
+                                fileNode.setProperty(Pydio.NODE_PROPERTY_FILENAME, "/" + source.getPath());
+                                fileNode.setProperty(Pydio.NODE_PROPERTY_PATH, "/" + source.getPath());
+                                h.onNode(fileNode);
+                            }
                         }
+                    } catch (NullPointerException ignored) {
                     }
-                } catch (NullPointerException ignored) {}
+                }
             }
         } catch (ApiException e) {
             e.printStackTrace();

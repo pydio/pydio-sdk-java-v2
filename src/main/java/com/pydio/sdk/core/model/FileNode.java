@@ -144,7 +144,7 @@ public class FileNode implements Node {
     }
     @Override
     public void deleteProperty(String key) {
-        if(properties != null && properties.contains(key)){
+        if(properties != null){
             properties.remove(key);
         }
     }

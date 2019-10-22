@@ -5,8 +5,11 @@ import java.util.Properties;
 public class BookmarkNode implements Node {
 
     private String label;
+    private Properties properties;
+
     public BookmarkNode(String label) {
         this.label = label;
+        this.properties = new Properties();
     }
 
     @Override
@@ -26,37 +29,43 @@ public class BookmarkNode implements Node {
 
     @Override
     public String path() {
-        return null;
+        return "/";
     }
 
     @Override
     public String getProperty(String key) {
-        return null;
+        return this.properties.getProperty(key);
     }
 
     @Override
     public void setProperty(String key, String value) {
-
+        this.properties.put(key, value);
     }
 
     @Override
     public void deleteProperty(String key) {
-
+        this.properties.remove(key);
     }
 
     @Override
     public void setProperties(Properties p) {
-
+        this.properties = p;
     }
 
     @Override
     public String getEncoded() {
-        return null;
+        return "";
     }
 
     @Override
     public int compare(Node node) {
-        return 0;
+        if (node == null) {
+            return Node.different;
+        }
+        if (!this.label.equals(node.label())) {
+            return Node.different;
+        }
+        return Node.same;
     }
 
     @Override
