@@ -690,7 +690,7 @@ public class ApiClient {
      * @param response HTTP response
      * @param returnType The type of the Java object
      * @return The deserialized Java object
-     * @throws ApiException If fail to deserialize response body, i.e. cannot read response body
+     * @throws ApiException If fail to decode response body, i.e. cannot read response body
      *   or the Content-Type of the response is not supported.
      */
     @SuppressWarnings("unchecked")
@@ -751,7 +751,7 @@ public class ApiClient {
      * @param obj The Java object
      * @param contentType The request Content-Type
      * @return The serialized request body
-     * @throws ApiException If fail to serialize the given object
+     * @throws ApiException If fail to encode the given object
      */
     public RequestBody serialize(Object obj, String contentType) throws ApiException {
         if (obj instanceof byte[]) {
@@ -848,9 +848,9 @@ public class ApiClient {
     }
 
     /**
-     * Execute HTTP call and deserialize the HTTP response body into the given return type.
+     * Execute HTTP call and decode the HTTP response body into the given return type.
      *
-     * @param returnType The return type used to deserialize HTTP response body
+     * @param returnType The return type used to decode HTTP response body
      * @param <T> The return type corresponding to (same with) returnType
      * @param call Call
      * @return ApiResponse object containing response status, headers and
@@ -917,7 +917,7 @@ public class ApiClient {
      * @param response Response
      * @param returnType Return type
      * @throws ApiException If the response has a unsuccessful status code or
-     *   fail to deserialize the response body
+     *   fail to decode the response body
      * @return Type
      */
     public <T> T handleResponse(Response response, Type returnType) throws ApiException {
@@ -962,7 +962,7 @@ public class ApiClient {
      * @param authNames The authentications to apply
      * @param progressRequestListener Progress request listener
      * @return The HTTP call
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public Call buildCall(String path, String method, List<Pair> queryParams, List<Pair> collectionQueryParams, Object body, Map<String, String> headerParams, Map<String, Object> formParams, String[] authNames, ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Request request = buildRequest(path, method, queryParams, collectionQueryParams, body, headerParams, formParams, authNames, progressRequestListener);
@@ -983,7 +983,7 @@ public class ApiClient {
      * @param authNames The authentications to apply
      * @param progressRequestListener Progress request listener
      * @return The HTTP request 
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public Request buildRequest(String path, String method, List<Pair> queryParams, List<Pair> collectionQueryParams, Object body, Map<String, String> headerParams, Map<String, Object> formParams, String[] authNames, ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         updateParamsForAuth(authNames, queryParams, headerParams);

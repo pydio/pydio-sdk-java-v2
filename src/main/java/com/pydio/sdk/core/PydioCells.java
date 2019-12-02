@@ -13,7 +13,6 @@ import com.pydio.sdk.core.api.cells.api.UserMetaServiceApi;
 import com.pydio.sdk.core.api.cells.model.IdmSearchUserMetaRequest;
 import com.pydio.sdk.core.api.cells.model.IdmUpdateUserMetaRequest;
 import com.pydio.sdk.core.api.cells.model.IdmUpdateUserMetaResponse;
-import com.pydio.sdk.core.api.cells.model.IdmUser;
 import com.pydio.sdk.core.api.cells.model.IdmUserMeta;
 import com.pydio.sdk.core.api.cells.model.RestBulkMetaResponse;
 import com.pydio.sdk.core.api.cells.model.RestChangeCollection;
@@ -47,8 +46,8 @@ import com.pydio.sdk.core.common.callback.NodeHandler;
 import com.pydio.sdk.core.common.callback.RegistryItemHandler;
 import com.pydio.sdk.core.common.callback.TransferProgressListener;
 import com.pydio.sdk.core.common.errors.Code;
-import com.pydio.sdk.core.common.errors.Error;
 import com.pydio.sdk.core.common.errors.SDKException;
+import com.pydio.sdk.core.model.WorkspaceNode;
 import com.pydio.sdk.core.model.parser.RegistrySaxHandler;
 import com.pydio.sdk.core.model.parser.ServerGeneralRegistrySaxHandler;
 import com.pydio.sdk.core.model.parser.WorkspaceNodeSaxHandler;
@@ -58,7 +57,7 @@ import com.pydio.sdk.core.model.FileNode;
 import com.pydio.sdk.core.model.Message;
 import com.pydio.sdk.core.model.ServerNode;
 import com.pydio.sdk.core.model.Stats;
-import com.pydio.sdk.core.model.Token;
+import com.pydio.sdk.core.auth.Token;
 import com.pydio.sdk.core.security.Credentials;
 import com.pydio.sdk.core.utils.io;
 import com.squareup.okhttp.OkHttpClient;
@@ -115,7 +114,7 @@ public class PydioCells implements Client {
             t = tokenProvider.get(subject);
         }
 
-        if (t == null || t.isNotValid()) {
+        if (!serverNode.supportsOauth() && (t == null || t.isExpired())) {
             synchronized (lock) {
                 ApiClient apiClient = getApiClient();
                 String password = credentials.getPassword();
@@ -316,6 +315,13 @@ public class PydioCells implements Client {
     }
 
     @Override
+    public JSONObject userInfo() throws SDKException {
+        RestFrontSessionRequest request = new RestFrontSessionRequest();
+        request.setLogout(true);
+        return null;
+    }
+
+    @Override
     public X509Certificate[] remoteCertificateChain() {
         return new X509Certificate[0];
     }
@@ -394,9 +400,13 @@ public class PydioCells implements Client {
 
     @Override
     public void workspaceList(NodeHandler handler) throws SDKException {
-        URL url = null;
+        URL url;
         try {
-            url = new URL(this.URL + "/a/frontend/state");
+            if (this.URL.endsWith("/")) {
+                url = new URL(this.URL + "a/frontend/state");
+            } else {
+                url = new URL(this.URL + "/a/frontend/state");
+            }
         } catch (MalformedURLException e) {
             throw SDKException.malFormURI(e);
         }
@@ -418,9 +428,27 @@ public class PydioCells implements Client {
             e.printStackTrace();
             throw SDKException.conFailed(e);
         }
+        String[] excluded = {
+                Pydio.WORKSPACE_ACCESS_TYPE_CONF,
+                Pydio.WORKSPACE_ACCESS_TYPE_SHARED,
+                Pydio.WORKSPACE_ACCESS_TYPE_MYSQL,
+                Pydio.WORKSPACE_ACCESS_TYPE_IMAP,
+                Pydio.WORKSPACE_ACCESS_TYPE_JSAPI,
+                Pydio.WORKSPACE_ACCESS_TYPE_USER,
+                Pydio.WORKSPACE_ACCESS_TYPE_HOME,
+                Pydio.WORKSPACE_ACCESS_TYPE_HOMEPAGE,
+                Pydio.WORKSPACE_ACCESS_TYPE_SETTINGS,
+                Pydio.WORKSPACE_ACCESS_TYPE_ADMIN,
+                Pydio.WORKSPACE_ACCESS_TYPE_INBOX,
+        };
 
         try {
-            DefaultHandler saxHandler = new WorkspaceNodeSaxHandler(handler, 0, -1);
+            NodeHandler nh = (n) ->  {
+                if (!Arrays.asList(excluded).contains( ((WorkspaceNode) n).getAccessType())) {
+                    handler.onNode(n);
+                }
+            };
+            DefaultHandler saxHandler = new WorkspaceNodeSaxHandler(nh, 0, -1);
             SAXParserFactory.newInstance().newSAXParser().parse(in, saxHandler);
         } catch (Exception e) {
             throw SDKException.unexpectedContent(e);

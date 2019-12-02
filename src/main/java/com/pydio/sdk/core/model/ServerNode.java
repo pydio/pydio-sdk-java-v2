@@ -60,7 +60,7 @@ public class ServerNode implements Node {
     private boolean sslUnverified = false;
     private SSLContext sslContext;
     private Properties properties = null;
-    private JSONObject bootConf;
+    private JSONObject bootConf, oidc;
     private byte[][] certificateChain;
     private CertificateTrust.Helper trustHelper;
     private ServerResolver serverResolver;
@@ -79,15 +79,13 @@ public class ServerNode implements Node {
         return node;
     }
 
-    //********************************************************************************************
-    //                  Super class: NODE METHODS
-    //********************************************************************************************
+    // Node methods
+
     @Override
     public String getProperty(String key) {
         if (properties == null) return null;
         return properties.getProperty(key);
     }
-
     @Override
     public void setProperty(String key, String value) {
         if (properties == null) {
@@ -95,29 +93,24 @@ public class ServerNode implements Node {
         }
         properties.setProperty(key, value);
     }
-
     @Override
     public void deleteProperty(String key) {
         if (properties != null && properties.contains(key)) {
             properties.remove(key);
         }
     }
-
     @Override
     public String path() {
         return path;
     }
-
     @Override
     public String label() {
         return label;
     }
-
     @Override
     public int type() {
         return Node.TYPE_SERVER;
     }
-
     @Override
     public String id() {
         String id = scheme + "://" + host;
@@ -127,30 +120,25 @@ public class ServerNode implements Node {
         id = id + path;
         return id;
     }
-
     @Override
     public void setProperties(Properties p) {
         properties = p;
     }
-
     @Override
     public String getEncoded() {
         return null;
     }
-
     @Override
     public String getEncodedHash() {
         return null;
     }
-
     @Override
     public int compare(Node node) {
         return 0;
     }
 
-    //*****************************************************************************
-    //						RESOLVE
-    //*****************************************************************************
+    // Resolve
+
     public Error resolve(String address) {
         return resolveRemote(address);
     }
@@ -182,6 +170,7 @@ public class ServerNode implements Node {
 
         int err = downloadBootConf("a/frontend/bootconf");
         if (err == 0) {
+            downloadOIDCConfiguration();
             return null;
         }
 
@@ -306,10 +295,90 @@ public class ServerNode implements Node {
         return 0;
     }
 
+    private void downloadOIDCConfiguration() {
+        InputStream in;
+        HttpURLConnection con;
 
-    //*****************************************************************************
-    //						PROPERTIES
-    //*****************************************************************************
+        String apiURL = url();
+        if (!apiURL.endsWith("/")) {
+            apiURL = apiURL + "/";
+        }
+        apiURL = apiURL + "oidc/.well-known/openid-configuration";
+
+        if (isSSLUnverified()) {
+            try {
+                sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, new TrustManager[]{trustManager()}, null);
+            } catch (Exception e) {
+                return;
+            }
+            HttpsURLConnection scon;
+            try {
+                scon = (HttpsURLConnection) new URL(apiURL).openConnection();
+            } catch (IOException e) {
+                return;
+            }
+            scon.setSSLSocketFactory(sslContext.getSocketFactory());
+            scon.setHostnameVerifier(getHostnameVerifier());
+            con = scon;
+        } else {
+            try {
+                con = (HttpURLConnection) new URL(apiURL).openConnection();
+            } catch (IOException e) {
+                return;
+            }
+        }
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            in = con.getInputStream();
+            io.pipeRead(in, out);
+        } catch (IOException e) {
+            if (e instanceof SSLHandshakeException) {
+                Throwable cause = e.getCause();
+                if (cause != null) {
+                    cause = cause.getCause();
+                    if (cause instanceof CertPathValidatorException) {
+                        CertPathValidatorException ex = (CertPathValidatorException) cause;
+                        List<? extends Certificate> certs = ex.getCertPath().getCertificates();
+
+                        int size = certs.size();
+                        this.certificateChain = new byte[size][];
+                        int i = 0;
+                        for (Certificate c : certs) {
+                            try {
+                                this.certificateChain[i] = c.getEncoded();
+                                i++;
+                            } catch (CertificateEncodingException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
+                }
+                return;
+            }
+
+            if (e instanceof SSLException) {
+                e.printStackTrace();
+                return;
+            }
+            return;
+
+        } catch (Exception e) {
+            if (e instanceof IllegalArgumentException && e.getMessage().toLowerCase().contains("unreachable")) {
+                return;
+            }
+            return;
+        }
+
+        try {
+            oidc = new JSONObject(new String(out.toByteArray(), "UTF-8"));
+        } catch (Exception ignored) {
+        }
+    }
+
+    // Getters
+
     private TrustManager trustManager() {
         return new CertificateTrustManager(getTrustHelper());
     }
@@ -486,6 +555,29 @@ public class ServerNode implements Node {
         return null;
     }
 
+    public byte[][] getCertificateChain() {
+        return certificateChain;
+    }
+
+    public boolean supportsOauth() {
+        return oidc != null;
+    }
+
+    public JSONObject getOIDCInfo() {
+        return oidc;
+    }
+
+    public HostnameVerifier getHostnameVerifier() {
+        return (s, sslSession) -> true;
+    }
+
+    public ServerResolver getServerResolver() {
+        return this.serverResolver;
+    }
+
+
+    // Setters
+
     public ServerNode setUnverifiedSSL(boolean unverified) {
         sslUnverified = unverified;
         return this;
@@ -507,17 +599,5 @@ public class ServerNode implements Node {
             this.workspaces.put(wn.getId(), wn);
         }
         return this;
-    }
-
-    public byte[][] getCertificateChain() {
-        return certificateChain;
-    }
-
-    public HostnameVerifier getHostnameVerifier() {
-        return (s, sslSession) -> true;
-    }
-
-    public ServerResolver getServerResolver() {
-        return this.serverResolver;
     }
 }

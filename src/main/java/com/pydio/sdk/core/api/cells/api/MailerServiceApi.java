@@ -57,7 +57,7 @@ public class MailerServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call sendCall(MailerMail body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -119,7 +119,7 @@ public class MailerServiceApi {
      * 
      * @param body  (required)
      * @return MailerSendMailResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public MailerSendMailResponse send(MailerMail body) throws ApiException {
         ApiResponse<MailerSendMailResponse> resp = sendWithHttpInfo(body);
@@ -131,7 +131,7 @@ public class MailerServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;MailerSendMailResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<MailerSendMailResponse> sendWithHttpInfo(MailerMail body) throws ApiException {
         com.squareup.okhttp.Call call = sendValidateBeforeCall(body, null, null);

@@ -60,7 +60,7 @@ public class TokenServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call resetPasswordCall(RestResetPasswordRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -122,7 +122,7 @@ public class TokenServiceApi {
      * 
      * @param body  (required)
      * @return RestResetPasswordResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestResetPasswordResponse resetPassword(RestResetPasswordRequest body) throws ApiException {
         ApiResponse<RestResetPasswordResponse> resp = resetPasswordWithHttpInfo(body);
@@ -134,7 +134,7 @@ public class TokenServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestResetPasswordResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestResetPasswordResponse> resetPasswordWithHttpInfo(RestResetPasswordRequest body) throws ApiException {
         com.squareup.okhttp.Call call = resetPasswordValidateBeforeCall(body, null, null);
@@ -182,7 +182,7 @@ public class TokenServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call resetPasswordTokenCall(String userLogin, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -245,7 +245,7 @@ public class TokenServiceApi {
      * 
      * @param userLogin  (required)
      * @return RestResetPasswordTokenResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestResetPasswordTokenResponse resetPasswordToken(String userLogin) throws ApiException {
         ApiResponse<RestResetPasswordTokenResponse> resp = resetPasswordTokenWithHttpInfo(userLogin);
@@ -257,7 +257,7 @@ public class TokenServiceApi {
      * 
      * @param userLogin  (required)
      * @return ApiResponse&lt;RestResetPasswordTokenResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestResetPasswordTokenResponse> resetPasswordTokenWithHttpInfo(String userLogin) throws ApiException {
         com.squareup.okhttp.Call call = resetPasswordTokenValidateBeforeCall(userLogin, null, null);
@@ -305,7 +305,7 @@ public class TokenServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call revokeCall(RestRevokeRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -367,7 +367,7 @@ public class TokenServiceApi {
      * 
      * @param body  (required)
      * @return RestRevokeResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestRevokeResponse revoke(RestRevokeRequest body) throws ApiException {
         ApiResponse<RestRevokeResponse> resp = revokeWithHttpInfo(body);
@@ -379,7 +379,7 @@ public class TokenServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestRevokeResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestRevokeResponse> revokeWithHttpInfo(RestRevokeRequest body) throws ApiException {
         com.squareup.okhttp.Call call = revokeValidateBeforeCall(body, null, null);

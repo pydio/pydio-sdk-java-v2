@@ -79,7 +79,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call configFormsDiscoveryCall(String serviceName, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -142,7 +142,7 @@ public class ConfigServiceApi {
      * 
      * @param serviceName  (required)
      * @return RestDiscoveryResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestDiscoveryResponse configFormsDiscovery(String serviceName) throws ApiException {
         ApiResponse<RestDiscoveryResponse> resp = configFormsDiscoveryWithHttpInfo(serviceName);
@@ -154,7 +154,7 @@ public class ConfigServiceApi {
      * 
      * @param serviceName  (required)
      * @return ApiResponse&lt;RestDiscoveryResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestDiscoveryResponse> configFormsDiscoveryWithHttpInfo(String serviceName) throws ApiException {
         com.squareup.okhttp.Call call = configFormsDiscoveryValidateBeforeCall(serviceName, null, null);
@@ -202,7 +202,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call controlServiceCall(RestControlServiceRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -264,7 +264,7 @@ public class ConfigServiceApi {
      * 
      * @param body  (required)
      * @return CtlService
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public CtlService controlService(RestControlServiceRequest body) throws ApiException {
         ApiResponse<CtlService> resp = controlServiceWithHttpInfo(body);
@@ -276,7 +276,7 @@ public class ConfigServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;CtlService&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<CtlService> controlServiceWithHttpInfo(RestControlServiceRequest body) throws ApiException {
         com.squareup.okhttp.Call call = controlServiceValidateBeforeCall(body, null, null);
@@ -324,7 +324,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call createEncryptionKeyCall(EncryptionAdminCreateKeyRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -386,7 +386,7 @@ public class ConfigServiceApi {
      * 
      * @param body  (required)
      * @return EncryptionAdminCreateKeyResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public EncryptionAdminCreateKeyResponse createEncryptionKey(EncryptionAdminCreateKeyRequest body) throws ApiException {
         ApiResponse<EncryptionAdminCreateKeyResponse> resp = createEncryptionKeyWithHttpInfo(body);
@@ -398,7 +398,7 @@ public class ConfigServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;EncryptionAdminCreateKeyResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<EncryptionAdminCreateKeyResponse> createEncryptionKeyWithHttpInfo(EncryptionAdminCreateKeyRequest body) throws ApiException {
         com.squareup.okhttp.Call call = createEncryptionKeyValidateBeforeCall(body, null, null);
@@ -446,7 +446,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call deleteDataSourceCall(String name, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -509,7 +509,7 @@ public class ConfigServiceApi {
      * 
      * @param name  (required)
      * @return RestDeleteDataSourceResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestDeleteDataSourceResponse deleteDataSource(String name) throws ApiException {
         ApiResponse<RestDeleteDataSourceResponse> resp = deleteDataSourceWithHttpInfo(name);
@@ -521,7 +521,7 @@ public class ConfigServiceApi {
      * 
      * @param name  (required)
      * @return ApiResponse&lt;RestDeleteDataSourceResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestDeleteDataSourceResponse> deleteDataSourceWithHttpInfo(String name) throws ApiException {
         com.squareup.okhttp.Call call = deleteDataSourceValidateBeforeCall(name, null, null);
@@ -569,7 +569,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call deleteEncryptionKeyCall(EncryptionAdminDeleteKeyRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -631,7 +631,7 @@ public class ConfigServiceApi {
      * 
      * @param body  (required)
      * @return EncryptionAdminDeleteKeyResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public EncryptionAdminDeleteKeyResponse deleteEncryptionKey(EncryptionAdminDeleteKeyRequest body) throws ApiException {
         ApiResponse<EncryptionAdminDeleteKeyResponse> resp = deleteEncryptionKeyWithHttpInfo(body);
@@ -643,7 +643,7 @@ public class ConfigServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;EncryptionAdminDeleteKeyResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<EncryptionAdminDeleteKeyResponse> deleteEncryptionKeyWithHttpInfo(EncryptionAdminDeleteKeyRequest body) throws ApiException {
         com.squareup.okhttp.Call call = deleteEncryptionKeyValidateBeforeCall(body, null, null);
@@ -691,7 +691,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call endpointsDiscoveryCall(String endpointType, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -750,7 +750,7 @@ public class ConfigServiceApi {
      * 
      * @param endpointType  (optional)
      * @return RestDiscoveryResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestDiscoveryResponse endpointsDiscovery(String endpointType) throws ApiException {
         ApiResponse<RestDiscoveryResponse> resp = endpointsDiscoveryWithHttpInfo(endpointType);
@@ -762,7 +762,7 @@ public class ConfigServiceApi {
      * 
      * @param endpointType  (optional)
      * @return ApiResponse&lt;RestDiscoveryResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestDiscoveryResponse> endpointsDiscoveryWithHttpInfo(String endpointType) throws ApiException {
         com.squareup.okhttp.Call call = endpointsDiscoveryValidateBeforeCall(endpointType, null, null);
@@ -810,7 +810,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call exportEncryptionKeyCall(EncryptionAdminExportKeyRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -872,7 +872,7 @@ public class ConfigServiceApi {
      * 
      * @param body  (required)
      * @return EncryptionAdminExportKeyResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public EncryptionAdminExportKeyResponse exportEncryptionKey(EncryptionAdminExportKeyRequest body) throws ApiException {
         ApiResponse<EncryptionAdminExportKeyResponse> resp = exportEncryptionKeyWithHttpInfo(body);
@@ -884,7 +884,7 @@ public class ConfigServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;EncryptionAdminExportKeyResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<EncryptionAdminExportKeyResponse> exportEncryptionKeyWithHttpInfo(EncryptionAdminExportKeyRequest body) throws ApiException {
         com.squareup.okhttp.Call call = exportEncryptionKeyValidateBeforeCall(body, null, null);
@@ -933,7 +933,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call getConfigCall(String fullPath, String data, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -999,7 +999,7 @@ public class ConfigServiceApi {
      * @param fullPath  (required)
      * @param data  (optional)
      * @return RestConfiguration
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestConfiguration getConfig(String fullPath, String data) throws ApiException {
         ApiResponse<RestConfiguration> resp = getConfigWithHttpInfo(fullPath, data);
@@ -1012,7 +1012,7 @@ public class ConfigServiceApi {
      * @param fullPath  (required)
      * @param data  (optional)
      * @return ApiResponse&lt;RestConfiguration&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestConfiguration> getConfigWithHttpInfo(String fullPath, String data) throws ApiException {
         com.squareup.okhttp.Call call = getConfigValidateBeforeCall(fullPath, data, null, null);
@@ -1078,7 +1078,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call getDataSourceCall(String name, Boolean disabled, String storageType, String objectsServiceName, String objectsHost, Integer objectsPort, Boolean objectsSecure, String objectsBucket, String objectsBaseFolder, String apiKey, String apiSecret, String peerAddress, Boolean watch, String encryptionMode, String encryptionKey, String versioningPolicyName, Integer creationDate, Integer lastSynchronizationDate, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -1192,7 +1192,7 @@ public class ConfigServiceApi {
      * @param creationDate  (optional)
      * @param lastSynchronizationDate  (optional)
      * @return ObjectDataSource
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ObjectDataSource getDataSource(String name, Boolean disabled, String storageType, String objectsServiceName, String objectsHost, Integer objectsPort, Boolean objectsSecure, String objectsBucket, String objectsBaseFolder, String apiKey, String apiSecret, String peerAddress, Boolean watch, String encryptionMode, String encryptionKey, String versioningPolicyName, Integer creationDate, Integer lastSynchronizationDate) throws ApiException {
         ApiResponse<ObjectDataSource> resp = getDataSourceWithHttpInfo(name, disabled, storageType, objectsServiceName, objectsHost, objectsPort, objectsSecure, objectsBucket, objectsBaseFolder, apiKey, apiSecret, peerAddress, watch, encryptionMode, encryptionKey, versioningPolicyName, creationDate, lastSynchronizationDate);
@@ -1221,7 +1221,7 @@ public class ConfigServiceApi {
      * @param creationDate  (optional)
      * @param lastSynchronizationDate  (optional)
      * @return ApiResponse&lt;ObjectDataSource&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<ObjectDataSource> getDataSourceWithHttpInfo(String name, Boolean disabled, String storageType, String objectsServiceName, String objectsHost, Integer objectsPort, Boolean objectsSecure, String objectsBucket, String objectsBaseFolder, String apiKey, String apiSecret, String peerAddress, Boolean watch, String encryptionMode, String encryptionKey, String versioningPolicyName, Integer creationDate, Integer lastSynchronizationDate) throws ApiException {
         com.squareup.okhttp.Call call = getDataSourceValidateBeforeCall(name, disabled, storageType, objectsServiceName, objectsHost, objectsPort, objectsSecure, objectsBucket, objectsBaseFolder, apiKey, apiSecret, peerAddress, watch, encryptionMode, encryptionKey, versioningPolicyName, creationDate, lastSynchronizationDate, null, null);
@@ -1293,7 +1293,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call getVersioningPolicyCall(String uuid, String name, String description, String versionsDataSourceName, String versionsDataSourceBucket, String maxTotalSize, String maxSizePerFile, String ignoreFilesGreaterThan, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -1377,7 +1377,7 @@ public class ConfigServiceApi {
      * @param maxSizePerFile  (optional)
      * @param ignoreFilesGreaterThan  (optional)
      * @return TreeVersioningPolicy
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public TreeVersioningPolicy getVersioningPolicy(String uuid, String name, String description, String versionsDataSourceName, String versionsDataSourceBucket, String maxTotalSize, String maxSizePerFile, String ignoreFilesGreaterThan) throws ApiException {
         ApiResponse<TreeVersioningPolicy> resp = getVersioningPolicyWithHttpInfo(uuid, name, description, versionsDataSourceName, versionsDataSourceBucket, maxTotalSize, maxSizePerFile, ignoreFilesGreaterThan);
@@ -1396,7 +1396,7 @@ public class ConfigServiceApi {
      * @param maxSizePerFile  (optional)
      * @param ignoreFilesGreaterThan  (optional)
      * @return ApiResponse&lt;TreeVersioningPolicy&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<TreeVersioningPolicy> getVersioningPolicyWithHttpInfo(String uuid, String name, String description, String versionsDataSourceName, String versionsDataSourceBucket, String maxTotalSize, String maxSizePerFile, String ignoreFilesGreaterThan) throws ApiException {
         com.squareup.okhttp.Call call = getVersioningPolicyValidateBeforeCall(uuid, name, description, versionsDataSourceName, versionsDataSourceBucket, maxTotalSize, maxSizePerFile, ignoreFilesGreaterThan, null, null);
@@ -1451,7 +1451,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call importEncryptionKeyCall(EncryptionAdminImportKeyRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -1513,7 +1513,7 @@ public class ConfigServiceApi {
      * 
      * @param body  (required)
      * @return EncryptionAdminImportKeyResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public EncryptionAdminImportKeyResponse importEncryptionKey(EncryptionAdminImportKeyRequest body) throws ApiException {
         ApiResponse<EncryptionAdminImportKeyResponse> resp = importEncryptionKeyWithHttpInfo(body);
@@ -1525,7 +1525,7 @@ public class ConfigServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;EncryptionAdminImportKeyResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<EncryptionAdminImportKeyResponse> importEncryptionKeyWithHttpInfo(EncryptionAdminImportKeyRequest body) throws ApiException {
         com.squareup.okhttp.Call call = importEncryptionKeyValidateBeforeCall(body, null, null);
@@ -1572,7 +1572,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call listDataSourcesCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -1628,7 +1628,7 @@ public class ConfigServiceApi {
      * List all defined datasources
      * 
      * @return RestDataSourceCollection
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestDataSourceCollection listDataSources() throws ApiException {
         ApiResponse<RestDataSourceCollection> resp = listDataSourcesWithHttpInfo();
@@ -1639,7 +1639,7 @@ public class ConfigServiceApi {
      * List all defined datasources
      * 
      * @return ApiResponse&lt;RestDataSourceCollection&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestDataSourceCollection> listDataSourcesWithHttpInfo() throws ApiException {
         com.squareup.okhttp.Call call = listDataSourcesValidateBeforeCall(null, null);
@@ -1686,7 +1686,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call listEncryptionKeysCall(EncryptionAdminListKeysRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -1748,7 +1748,7 @@ public class ConfigServiceApi {
      * 
      * @param body  (required)
      * @return EncryptionAdminListKeysResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public EncryptionAdminListKeysResponse listEncryptionKeys(EncryptionAdminListKeysRequest body) throws ApiException {
         ApiResponse<EncryptionAdminListKeysResponse> resp = listEncryptionKeysWithHttpInfo(body);
@@ -1760,7 +1760,7 @@ public class ConfigServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;EncryptionAdminListKeysResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<EncryptionAdminListKeysResponse> listEncryptionKeysWithHttpInfo(EncryptionAdminListKeysRequest body) throws ApiException {
         com.squareup.okhttp.Call call = listEncryptionKeysValidateBeforeCall(body, null, null);
@@ -1809,7 +1809,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call listPeerFoldersCall(String peerAddress, RestListPeerFoldersRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -1878,7 +1878,7 @@ public class ConfigServiceApi {
      * @param peerAddress  (required)
      * @param body  (required)
      * @return RestNodesCollection
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestNodesCollection listPeerFolders(String peerAddress, RestListPeerFoldersRequest body) throws ApiException {
         ApiResponse<RestNodesCollection> resp = listPeerFoldersWithHttpInfo(peerAddress, body);
@@ -1891,7 +1891,7 @@ public class ConfigServiceApi {
      * @param peerAddress  (required)
      * @param body  (required)
      * @return ApiResponse&lt;RestNodesCollection&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestNodesCollection> listPeerFoldersWithHttpInfo(String peerAddress, RestListPeerFoldersRequest body) throws ApiException {
         com.squareup.okhttp.Call call = listPeerFoldersValidateBeforeCall(peerAddress, body, null, null);
@@ -1939,7 +1939,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call listPeersAddressesCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -1995,7 +1995,7 @@ public class ConfigServiceApi {
      * List all detected peers (servers on which the app is running)
      * 
      * @return RestListPeersAddressesResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestListPeersAddressesResponse listPeersAddresses() throws ApiException {
         ApiResponse<RestListPeersAddressesResponse> resp = listPeersAddressesWithHttpInfo();
@@ -2006,7 +2006,7 @@ public class ConfigServiceApi {
      * List all detected peers (servers on which the app is running)
      * 
      * @return ApiResponse&lt;RestListPeersAddressesResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestListPeersAddressesResponse> listPeersAddressesWithHttpInfo() throws ApiException {
         com.squareup.okhttp.Call call = listPeersAddressesValidateBeforeCall(null, null);
@@ -2053,7 +2053,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call listServicesCall(String statusFilter, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -2112,7 +2112,7 @@ public class ConfigServiceApi {
      * 
      * @param statusFilter  (optional, default to ANY)
      * @return RestServiceCollection
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestServiceCollection listServices(String statusFilter) throws ApiException {
         ApiResponse<RestServiceCollection> resp = listServicesWithHttpInfo(statusFilter);
@@ -2124,7 +2124,7 @@ public class ConfigServiceApi {
      * 
      * @param statusFilter  (optional, default to ANY)
      * @return ApiResponse&lt;RestServiceCollection&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestServiceCollection> listServicesWithHttpInfo(String statusFilter) throws ApiException {
         com.squareup.okhttp.Call call = listServicesValidateBeforeCall(statusFilter, null, null);
@@ -2171,7 +2171,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call listVersioningPoliciesCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -2227,7 +2227,7 @@ public class ConfigServiceApi {
      * List all defined versioning policies
      * 
      * @return RestVersioningPolicyCollection
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestVersioningPolicyCollection listVersioningPolicies() throws ApiException {
         ApiResponse<RestVersioningPolicyCollection> resp = listVersioningPoliciesWithHttpInfo();
@@ -2238,7 +2238,7 @@ public class ConfigServiceApi {
      * List all defined versioning policies
      * 
      * @return ApiResponse&lt;RestVersioningPolicyCollection&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestVersioningPolicyCollection> listVersioningPoliciesWithHttpInfo() throws ApiException {
         com.squareup.okhttp.Call call = listVersioningPoliciesValidateBeforeCall(null, null);
@@ -2284,7 +2284,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call listVirtualNodesCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -2340,7 +2340,7 @@ public class ConfigServiceApi {
      * List all defined virtual nodes
      * 
      * @return RestNodesCollection
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestNodesCollection listVirtualNodes() throws ApiException {
         ApiResponse<RestNodesCollection> resp = listVirtualNodesWithHttpInfo();
@@ -2351,7 +2351,7 @@ public class ConfigServiceApi {
      * List all defined virtual nodes
      * 
      * @return ApiResponse&lt;RestNodesCollection&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestNodesCollection> listVirtualNodesWithHttpInfo() throws ApiException {
         com.squareup.okhttp.Call call = listVirtualNodesValidateBeforeCall(null, null);
@@ -2398,7 +2398,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call openApiDiscoveryCall(String endpointType, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -2457,7 +2457,7 @@ public class ConfigServiceApi {
      * 
      * @param endpointType  (optional)
      * @return RestOpenApiResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestOpenApiResponse openApiDiscovery(String endpointType) throws ApiException {
         ApiResponse<RestOpenApiResponse> resp = openApiDiscoveryWithHttpInfo(endpointType);
@@ -2469,7 +2469,7 @@ public class ConfigServiceApi {
      * 
      * @param endpointType  (optional)
      * @return ApiResponse&lt;RestOpenApiResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestOpenApiResponse> openApiDiscoveryWithHttpInfo(String endpointType) throws ApiException {
         com.squareup.okhttp.Call call = openApiDiscoveryValidateBeforeCall(endpointType, null, null);
@@ -2518,7 +2518,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call putConfigCall(String fullPath, RestConfiguration body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -2587,7 +2587,7 @@ public class ConfigServiceApi {
      * @param fullPath  (required)
      * @param body  (required)
      * @return RestConfiguration
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestConfiguration putConfig(String fullPath, RestConfiguration body) throws ApiException {
         ApiResponse<RestConfiguration> resp = putConfigWithHttpInfo(fullPath, body);
@@ -2600,7 +2600,7 @@ public class ConfigServiceApi {
      * @param fullPath  (required)
      * @param body  (required)
      * @return ApiResponse&lt;RestConfiguration&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestConfiguration> putConfigWithHttpInfo(String fullPath, RestConfiguration body) throws ApiException {
         com.squareup.okhttp.Call call = putConfigValidateBeforeCall(fullPath, body, null, null);
@@ -2650,7 +2650,7 @@ public class ConfigServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call putDataSourceCall(String name, ObjectDataSource body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -2719,7 +2719,7 @@ public class ConfigServiceApi {
      * @param name  (required)
      * @param body  (required)
      * @return ObjectDataSource
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ObjectDataSource putDataSource(String name, ObjectDataSource body) throws ApiException {
         ApiResponse<ObjectDataSource> resp = putDataSourceWithHttpInfo(name, body);
@@ -2732,7 +2732,7 @@ public class ConfigServiceApi {
      * @param name  (required)
      * @param body  (required)
      * @return ApiResponse&lt;ObjectDataSource&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<ObjectDataSource> putDataSourceWithHttpInfo(String name, ObjectDataSource body) throws ApiException {
         com.squareup.okhttp.Call call = putDataSourceValidateBeforeCall(name, body, null, null);

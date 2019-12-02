@@ -56,7 +56,7 @@ public class TemplatesServiceApi {
      * @param progressListener        Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call listTemplatesCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -112,7 +112,7 @@ public class TemplatesServiceApi {
      * List available templates
      *
      * @return RestListTemplatesResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestListTemplatesResponse listTemplates() throws ApiException {
         ApiResponse<RestListTemplatesResponse> resp = listTemplatesWithHttpInfo();
@@ -123,7 +123,7 @@ public class TemplatesServiceApi {
      * List available templates
      *
      * @return ApiResponse&lt;RestListTemplatesResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestListTemplatesResponse> listTemplatesWithHttpInfo() throws ApiException {
         com.squareup.okhttp.Call call = listTemplatesValidateBeforeCall(null, null);

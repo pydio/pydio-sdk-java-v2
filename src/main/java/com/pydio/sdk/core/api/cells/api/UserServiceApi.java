@@ -59,7 +59,7 @@ public class UserServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call deleteUserCall(String login, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -122,7 +122,7 @@ public class UserServiceApi {
      * 
      * @param login  (required)
      * @return RestDeleteResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestDeleteResponse deleteUser(String login) throws ApiException {
         ApiResponse<RestDeleteResponse> resp = deleteUserWithHttpInfo(login);
@@ -134,7 +134,7 @@ public class UserServiceApi {
      * 
      * @param login  (required)
      * @return ApiResponse&lt;RestDeleteResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestDeleteResponse> deleteUserWithHttpInfo(String login) throws ApiException {
         com.squareup.okhttp.Call call = deleteUserValidateBeforeCall(login, null, null);
@@ -189,7 +189,7 @@ public class UserServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call getUserCall(String login, String uuid, String groupPath, String password, String oldPassword, Boolean isGroup, String groupLabel, Boolean policiesContextEditable, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -273,7 +273,7 @@ public class UserServiceApi {
      * @param groupLabel  (optional)
      * @param policiesContextEditable  (optional)
      * @return IdmUser
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public IdmUser getUser(String login, String uuid, String groupPath, String password, String oldPassword, Boolean isGroup, String groupLabel, Boolean policiesContextEditable) throws ApiException {
         ApiResponse<IdmUser> resp = getUserWithHttpInfo(login, uuid, groupPath, password, oldPassword, isGroup, groupLabel, policiesContextEditable);
@@ -292,7 +292,7 @@ public class UserServiceApi {
      * @param groupLabel  (optional)
      * @param policiesContextEditable  (optional)
      * @return ApiResponse&lt;IdmUser&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<IdmUser> getUserWithHttpInfo(String login, String uuid, String groupPath, String password, String oldPassword, Boolean isGroup, String groupLabel, Boolean policiesContextEditable) throws ApiException {
         com.squareup.okhttp.Call call = getUserValidateBeforeCall(login, uuid, groupPath, password, oldPassword, isGroup, groupLabel, policiesContextEditable, null, null);
@@ -348,7 +348,7 @@ public class UserServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call putRolesCall(String login, IdmUser body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -417,7 +417,7 @@ public class UserServiceApi {
      * @param login  (required)
      * @param body  (required)
      * @return IdmUser
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public IdmUser putRoles(String login, IdmUser body) throws ApiException {
         ApiResponse<IdmUser> resp = putRolesWithHttpInfo(login, body);
@@ -430,7 +430,7 @@ public class UserServiceApi {
      * @param login  (required)
      * @param body  (required)
      * @return ApiResponse&lt;IdmUser&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<IdmUser> putRolesWithHttpInfo(String login, IdmUser body) throws ApiException {
         com.squareup.okhttp.Call call = putRolesValidateBeforeCall(login, body, null, null);
@@ -480,7 +480,7 @@ public class UserServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call putUserCall(String login, IdmUser body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -549,7 +549,7 @@ public class UserServiceApi {
      * @param login  (required)
      * @param body  (required)
      * @return IdmUser
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public IdmUser putUser(String login, IdmUser body) throws ApiException {
         ApiResponse<IdmUser> resp = putUserWithHttpInfo(login, body);
@@ -562,7 +562,7 @@ public class UserServiceApi {
      * @param login  (required)
      * @param body  (required)
      * @return ApiResponse&lt;IdmUser&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<IdmUser> putUserWithHttpInfo(String login, IdmUser body) throws ApiException {
         com.squareup.okhttp.Call call = putUserValidateBeforeCall(login, body, null, null);
@@ -611,7 +611,7 @@ public class UserServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call searchUsersCall(RestSearchUserRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -673,7 +673,7 @@ public class UserServiceApi {
      * 
      * @param body  (required)
      * @return RestUsersCollection
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestUsersCollection searchUsers(RestSearchUserRequest body) throws ApiException {
         ApiResponse<RestUsersCollection> resp = searchUsersWithHttpInfo(body);
@@ -685,7 +685,7 @@ public class UserServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestUsersCollection&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestUsersCollection> searchUsersWithHttpInfo(RestSearchUserRequest body) throws ApiException {
         com.squareup.okhttp.Call call = searchUsersValidateBeforeCall(body, null, null);

@@ -58,7 +58,7 @@ public class RoleServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call deleteRoleCall(String uuid, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -121,7 +121,7 @@ public class RoleServiceApi {
      * 
      * @param uuid  (required)
      * @return IdmRole
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public IdmRole deleteRole(String uuid) throws ApiException {
         ApiResponse<IdmRole> resp = deleteRoleWithHttpInfo(uuid);
@@ -133,7 +133,7 @@ public class RoleServiceApi {
      * 
      * @param uuid  (required)
      * @return ApiResponse&lt;IdmRole&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<IdmRole> deleteRoleWithHttpInfo(String uuid) throws ApiException {
         com.squareup.okhttp.Call call = deleteRoleValidateBeforeCall(uuid, null, null);
@@ -188,7 +188,7 @@ public class RoleServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call getRoleCall(String uuid, String label, Boolean isTeam, Boolean groupRole, Boolean userRole, Integer lastUpdated, List<String> autoApplies, Boolean policiesContextEditable, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -272,7 +272,7 @@ public class RoleServiceApi {
      * @param autoApplies  (optional)
      * @param policiesContextEditable  (optional)
      * @return IdmRole
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public IdmRole getRole(String uuid, String label, Boolean isTeam, Boolean groupRole, Boolean userRole, Integer lastUpdated, List<String> autoApplies, Boolean policiesContextEditable) throws ApiException {
         ApiResponse<IdmRole> resp = getRoleWithHttpInfo(uuid, label, isTeam, groupRole, userRole, lastUpdated, autoApplies, policiesContextEditable);
@@ -291,7 +291,7 @@ public class RoleServiceApi {
      * @param autoApplies  (optional)
      * @param policiesContextEditable  (optional)
      * @return ApiResponse&lt;IdmRole&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<IdmRole> getRoleWithHttpInfo(String uuid, String label, Boolean isTeam, Boolean groupRole, Boolean userRole, Integer lastUpdated, List<String> autoApplies, Boolean policiesContextEditable) throws ApiException {
         com.squareup.okhttp.Call call = getRoleValidateBeforeCall(uuid, label, isTeam, groupRole, userRole, lastUpdated, autoApplies, policiesContextEditable, null, null);
@@ -346,7 +346,7 @@ public class RoleServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call searchRolesCall(RestSearchRoleRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -408,7 +408,7 @@ public class RoleServiceApi {
      * 
      * @param body  (required)
      * @return RestRolesCollection
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestRolesCollection searchRoles(RestSearchRoleRequest body) throws ApiException {
         ApiResponse<RestRolesCollection> resp = searchRolesWithHttpInfo(body);
@@ -420,7 +420,7 @@ public class RoleServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestRolesCollection&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestRolesCollection> searchRolesWithHttpInfo(RestSearchRoleRequest body) throws ApiException {
         com.squareup.okhttp.Call call = searchRolesValidateBeforeCall(body, null, null);
@@ -469,7 +469,7 @@ public class RoleServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call setRoleCall(String uuid, IdmRole body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -538,7 +538,7 @@ public class RoleServiceApi {
      * @param uuid  (required)
      * @param body  (required)
      * @return IdmRole
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public IdmRole setRole(String uuid, IdmRole body) throws ApiException {
         ApiResponse<IdmRole> resp = setRoleWithHttpInfo(uuid, body);
@@ -551,7 +551,7 @@ public class RoleServiceApi {
      * @param uuid  (required)
      * @param body  (required)
      * @return ApiResponse&lt;IdmRole&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<IdmRole> setRoleWithHttpInfo(String uuid, IdmRole body) throws ApiException {
         com.squareup.okhttp.Call call = setRoleValidateBeforeCall(uuid, body, null, null);

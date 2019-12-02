@@ -63,7 +63,7 @@ public class ShareServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call deleteCellCall(String uuid, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -126,7 +126,7 @@ public class ShareServiceApi {
      * 
      * @param uuid  (required)
      * @return RestDeleteCellResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestDeleteCellResponse deleteCell(String uuid) throws ApiException {
         ApiResponse<RestDeleteCellResponse> resp = deleteCellWithHttpInfo(uuid);
@@ -138,7 +138,7 @@ public class ShareServiceApi {
      * 
      * @param uuid  (required)
      * @return ApiResponse&lt;RestDeleteCellResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestDeleteCellResponse> deleteCellWithHttpInfo(String uuid) throws ApiException {
         com.squareup.okhttp.Call call = deleteCellValidateBeforeCall(uuid, null, null);
@@ -186,7 +186,7 @@ public class ShareServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call deleteShareLinkCall(String uuid, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -249,7 +249,7 @@ public class ShareServiceApi {
      * 
      * @param uuid  (required)
      * @return RestDeleteShareLinkResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestDeleteShareLinkResponse deleteShareLink(String uuid) throws ApiException {
         ApiResponse<RestDeleteShareLinkResponse> resp = deleteShareLinkWithHttpInfo(uuid);
@@ -261,7 +261,7 @@ public class ShareServiceApi {
      * 
      * @param uuid  (required)
      * @return ApiResponse&lt;RestDeleteShareLinkResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestDeleteShareLinkResponse> deleteShareLinkWithHttpInfo(String uuid) throws ApiException {
         com.squareup.okhttp.Call call = deleteShareLinkValidateBeforeCall(uuid, null, null);
@@ -309,7 +309,7 @@ public class ShareServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call getCellCall(String uuid, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -372,7 +372,7 @@ public class ShareServiceApi {
      * 
      * @param uuid  (required)
      * @return RestCell
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestCell getCell(String uuid) throws ApiException {
         ApiResponse<RestCell> resp = getCellWithHttpInfo(uuid);
@@ -384,7 +384,7 @@ public class ShareServiceApi {
      * 
      * @param uuid  (required)
      * @return ApiResponse&lt;RestCell&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestCell> getCellWithHttpInfo(String uuid) throws ApiException {
         com.squareup.okhttp.Call call = getCellValidateBeforeCall(uuid, null, null);
@@ -432,7 +432,7 @@ public class ShareServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call getShareLinkCall(String uuid, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -495,7 +495,7 @@ public class ShareServiceApi {
      * 
      * @param uuid  (required)
      * @return RestShareLink
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestShareLink getShareLink(String uuid) throws ApiException {
         ApiResponse<RestShareLink> resp = getShareLinkWithHttpInfo(uuid);
@@ -507,7 +507,7 @@ public class ShareServiceApi {
      * 
      * @param uuid  (required)
      * @return ApiResponse&lt;RestShareLink&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestShareLink> getShareLinkWithHttpInfo(String uuid) throws ApiException {
         com.squareup.okhttp.Call call = getShareLinkValidateBeforeCall(uuid, null, null);
@@ -555,7 +555,7 @@ public class ShareServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call listSharedResourcesCall(RestListSharedResourcesRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -617,7 +617,7 @@ public class ShareServiceApi {
      * 
      * @param body  (required)
      * @return RestListSharedResourcesResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestListSharedResourcesResponse listSharedResources(RestListSharedResourcesRequest body) throws ApiException {
         ApiResponse<RestListSharedResourcesResponse> resp = listSharedResourcesWithHttpInfo(body);
@@ -629,7 +629,7 @@ public class ShareServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestListSharedResourcesResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestListSharedResourcesResponse> listSharedResourcesWithHttpInfo(RestListSharedResourcesRequest body) throws ApiException {
         com.squareup.okhttp.Call call = listSharedResourcesValidateBeforeCall(body, null, null);
@@ -677,7 +677,7 @@ public class ShareServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call putCellCall(RestPutCellRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -739,7 +739,7 @@ public class ShareServiceApi {
      * 
      * @param body  (required)
      * @return RestCell
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestCell putCell(RestPutCellRequest body) throws ApiException {
         ApiResponse<RestCell> resp = putCellWithHttpInfo(body);
@@ -751,7 +751,7 @@ public class ShareServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestCell&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestCell> putCellWithHttpInfo(RestPutCellRequest body) throws ApiException {
         com.squareup.okhttp.Call call = putCellValidateBeforeCall(body, null, null);
@@ -799,7 +799,7 @@ public class ShareServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call putShareLinkCall(RestPutShareLinkRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -861,7 +861,7 @@ public class ShareServiceApi {
      * 
      * @param body  (required)
      * @return RestShareLink
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestShareLink putShareLink(RestPutShareLinkRequest body) throws ApiException {
         ApiResponse<RestShareLink> resp = putShareLinkWithHttpInfo(body);
@@ -873,7 +873,7 @@ public class ShareServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestShareLink&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestShareLink> putShareLinkWithHttpInfo(RestPutShareLinkRequest body) throws ApiException {
         com.squareup.okhttp.Call call = putShareLinkValidateBeforeCall(body, null, null);

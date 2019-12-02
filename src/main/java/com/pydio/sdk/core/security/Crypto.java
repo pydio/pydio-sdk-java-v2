@@ -1,5 +1,7 @@
 package com.pydio.sdk.core.security;
 
+import com.pydio.sdk.core.common.codec.Hex;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -24,7 +26,7 @@ public class Crypto {
         return md.digest();
     }
     public static String hexHash(final String algo, byte[] bytes) throws NoSuchAlgorithmException {
-        return hexify(hash(algo, bytes));
+        return Hex.toString(hash(algo, bytes));
     }
 
     /*public static String aesDerivedKeyDecrypt(String keyPassword, String salt, byte[] data){
@@ -63,14 +65,4 @@ public class Crypto {
         return null;
     }*/
 
-    public static String hexify(byte bytes[]) {
-        char[] hexDigits = {'0', '1', '2', '3', '4', '5', '6', '7',
-                '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-        StringBuffer buf = new StringBuffer(bytes.length * 2);
-        for (int i = 0; i < bytes.length; ++i) {
-            buf.append(hexDigits[(bytes[i] & 0xf0) >> 4]);
-            buf.append(hexDigits[bytes[i] & 0x0f]);
-        }
-        return buf.toString();
-    }
 }

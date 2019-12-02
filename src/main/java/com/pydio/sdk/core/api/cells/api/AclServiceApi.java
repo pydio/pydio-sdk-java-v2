@@ -59,7 +59,7 @@ public class AclServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call deleteAclCall(IdmACL body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -121,7 +121,7 @@ public class AclServiceApi {
      * 
      * @param body  (required)
      * @return RestDeleteResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestDeleteResponse deleteAcl(IdmACL body) throws ApiException {
         ApiResponse<RestDeleteResponse> resp = deleteAclWithHttpInfo(body);
@@ -133,7 +133,7 @@ public class AclServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestDeleteResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestDeleteResponse> deleteAclWithHttpInfo(IdmACL body) throws ApiException {
         com.squareup.okhttp.Call call = deleteAclValidateBeforeCall(body, null, null);
@@ -181,7 +181,7 @@ public class AclServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call putAclCall(IdmACL body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -243,7 +243,7 @@ public class AclServiceApi {
      * 
      * @param body  (required)
      * @return IdmACL
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public IdmACL putAcl(IdmACL body) throws ApiException {
         ApiResponse<IdmACL> resp = putAclWithHttpInfo(body);
@@ -255,7 +255,7 @@ public class AclServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;IdmACL&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<IdmACL> putAclWithHttpInfo(IdmACL body) throws ApiException {
         com.squareup.okhttp.Call call = putAclValidateBeforeCall(body, null, null);
@@ -303,7 +303,7 @@ public class AclServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call searchAclsCall(RestSearchACLRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -365,7 +365,7 @@ public class AclServiceApi {
      * 
      * @param body  (required)
      * @return RestACLCollection
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestACLCollection searchAcls(RestSearchACLRequest body) throws ApiException {
         ApiResponse<RestACLCollection> resp = searchAclsWithHttpInfo(body);
@@ -377,7 +377,7 @@ public class AclServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestACLCollection&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestACLCollection> searchAclsWithHttpInfo(RestSearchACLRequest body) throws ApiException {
         com.squareup.okhttp.Call call = searchAclsValidateBeforeCall(body, null, null);

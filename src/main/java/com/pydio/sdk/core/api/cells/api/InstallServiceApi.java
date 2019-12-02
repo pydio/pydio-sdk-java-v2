@@ -60,7 +60,7 @@ public class InstallServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call getAgreementCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -116,7 +116,7 @@ public class InstallServiceApi {
      * Perform a check during install (like DB connection, php-fpm detection, etc)
      * 
      * @return InstallGetAgreementResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public InstallGetAgreementResponse getAgreement() throws ApiException {
         ApiResponse<InstallGetAgreementResponse> resp = getAgreementWithHttpInfo();
@@ -127,7 +127,7 @@ public class InstallServiceApi {
      * Perform a check during install (like DB connection, php-fpm detection, etc)
      * 
      * @return ApiResponse&lt;InstallGetAgreementResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<InstallGetAgreementResponse> getAgreementWithHttpInfo() throws ApiException {
         com.squareup.okhttp.Call call = getAgreementValidateBeforeCall(null, null);
@@ -173,7 +173,7 @@ public class InstallServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call getInstallCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -229,7 +229,7 @@ public class InstallServiceApi {
      * Loads default values for install form
      * 
      * @return InstallGetDefaultsResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public InstallGetDefaultsResponse getInstall() throws ApiException {
         ApiResponse<InstallGetDefaultsResponse> resp = getInstallWithHttpInfo();
@@ -240,7 +240,7 @@ public class InstallServiceApi {
      * Loads default values for install form
      * 
      * @return ApiResponse&lt;InstallGetDefaultsResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<InstallGetDefaultsResponse> getInstallWithHttpInfo() throws ApiException {
         com.squareup.okhttp.Call call = getInstallValidateBeforeCall(null, null);
@@ -287,7 +287,7 @@ public class InstallServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call performInstallCheckCall(InstallPerformCheckRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -349,7 +349,7 @@ public class InstallServiceApi {
      * 
      * @param body  (required)
      * @return InstallPerformCheckResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public InstallPerformCheckResponse performInstallCheck(InstallPerformCheckRequest body) throws ApiException {
         ApiResponse<InstallPerformCheckResponse> resp = performInstallCheckWithHttpInfo(body);
@@ -361,7 +361,7 @@ public class InstallServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;InstallPerformCheckResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<InstallPerformCheckResponse> performInstallCheckWithHttpInfo(InstallPerformCheckRequest body) throws ApiException {
         com.squareup.okhttp.Call call = performInstallCheckValidateBeforeCall(body, null, null);
@@ -409,7 +409,7 @@ public class InstallServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call postInstallCall(InstallInstallRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -471,7 +471,7 @@ public class InstallServiceApi {
      * 
      * @param body  (required)
      * @return InstallInstallResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public InstallInstallResponse postInstall(InstallInstallRequest body) throws ApiException {
         ApiResponse<InstallInstallResponse> resp = postInstallWithHttpInfo(body);
@@ -483,7 +483,7 @@ public class InstallServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;InstallInstallResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<InstallInstallResponse> postInstallWithHttpInfo(InstallInstallRequest body) throws ApiException {
         com.squareup.okhttp.Call call = postInstallValidateBeforeCall(body, null, null);

@@ -1,6 +1,7 @@
 package com.pydio.sdk.core.common.http;
 
 import com.pydio.sdk.core.ApplicationData;
+import com.pydio.sdk.core.utils.Params;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -72,6 +73,10 @@ public class HttpClient {
             con.setRequestProperty("User-Agent", requestData.getUserAgent());
         }
 
+        for (Map.Entry<String, String> stringStringEntry : requestData.getHeaders().get().entrySet()) {
+            con.setRequestProperty(stringStringEntry.getKey(), stringStringEntry.getValue());
+        }
+
         return con;
     }
 
@@ -104,8 +109,6 @@ public class HttpClient {
 
     private static HttpResponse get(HttpRequest requestData) throws IOException {
         HttpURLConnection con = getConnection(requestData);
-        con.getInputStream();
-
         Map<String, List<String>> headerFields = con.getHeaderFields();
         List<String> cookiesHeader = headerFields.get("Set-Cookie");
         if (cookiesHeader != null) {
@@ -120,6 +123,8 @@ public class HttpClient {
                 }
             }
         }
+
+        con.connect();
         return new HttpResponse(con);
     }
 

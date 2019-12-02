@@ -27,7 +27,7 @@ import com.pydio.sdk.core.model.Node;
 import com.pydio.sdk.core.model.NodeDiff;
 import com.pydio.sdk.core.model.ServerNode;
 import com.pydio.sdk.core.model.Stats;
-import com.pydio.sdk.core.model.Token;
+import com.pydio.sdk.core.auth.Token;
 import com.pydio.sdk.core.security.Credentials;
 import com.pydio.sdk.core.server.Prop;
 import com.pydio.sdk.core.utils.io;
@@ -49,7 +49,6 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 public class Pydio8 implements Client {
@@ -174,6 +173,11 @@ public class Pydio8 implements Client {
     }
 
     @Override
+    public JSONObject userInfo() throws SDKException {
+        return null;
+    }
+
+    @Override
     public X509Certificate[] remoteCertificateChain() {
         return new X509Certificate[0];
     }
@@ -216,7 +220,8 @@ public class Pydio8 implements Client {
                 Pydio.WORKSPACE_ACCESS_TYPE_HOME,
                 Pydio.WORKSPACE_ACCESS_TYPE_HOMEPAGE,
                 Pydio.WORKSPACE_ACCESS_TYPE_SETTINGS,
-                Pydio.WORKSPACE_ACCESS_TYPE_ADMIN
+                Pydio.WORKSPACE_ACCESS_TYPE_ADMIN,
+                Pydio.WORKSPACE_ACCESS_TYPE_INBOX,
         };
         P8RequestBuilder builder = P8RequestBuilder.workspaceList().setSecureToken(secureToken);
         P8Response rsp = p8.execute(builder.getRequest(), this::refreshSecureToken, Code.authentication_required);

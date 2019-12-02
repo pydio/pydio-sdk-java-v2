@@ -58,7 +58,7 @@ public class ChangeServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call getChangesCall(String seqID, RestChangeRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -127,7 +127,7 @@ public class ChangeServiceApi {
      * @param seqID  (required)
      * @param body  (required)
      * @return RestChangeCollection
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestChangeCollection getChanges(String seqID, RestChangeRequest body) throws ApiException {
         ApiResponse<RestChangeCollection> resp = getChangesWithHttpInfo(seqID, body);
@@ -140,7 +140,7 @@ public class ChangeServiceApi {
      * @param seqID  (required)
      * @param body  (required)
      * @return ApiResponse&lt;RestChangeCollection&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestChangeCollection> getChangesWithHttpInfo(String seqID, RestChangeRequest body) throws ApiException {
         com.squareup.okhttp.Call call = getChangesValidateBeforeCall(seqID, body, null, null);

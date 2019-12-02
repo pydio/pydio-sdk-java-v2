@@ -65,7 +65,7 @@ public class FrontendServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call frontBootConfCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -121,7 +121,7 @@ public class FrontendServiceApi {
      * Add some data to the initial set of parameters loaded by the frontend
      * 
      * @return RestFrontBootConfResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestFrontBootConfResponse frontBootConf() throws ApiException {
         ApiResponse<RestFrontBootConfResponse> resp = frontBootConfWithHttpInfo();
@@ -132,7 +132,7 @@ public class FrontendServiceApi {
      * Add some data to the initial set of parameters loaded by the frontend
      * 
      * @return ApiResponse&lt;RestFrontBootConfResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestFrontBootConfResponse> frontBootConfWithHttpInfo() throws ApiException {
         com.squareup.okhttp.Call call = frontBootConfValidateBeforeCall(null, null);
@@ -179,7 +179,7 @@ public class FrontendServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call frontEnrollAuthCall(RestFrontEnrollAuthRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -241,7 +241,7 @@ public class FrontendServiceApi {
      * 
      * @param body  (required)
      * @return RestFrontEnrollAuthResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestFrontEnrollAuthResponse frontEnrollAuth(RestFrontEnrollAuthRequest body) throws ApiException {
         ApiResponse<RestFrontEnrollAuthResponse> resp = frontEnrollAuthWithHttpInfo(body);
@@ -253,7 +253,7 @@ public class FrontendServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestFrontEnrollAuthResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestFrontEnrollAuthResponse> frontEnrollAuthWithHttpInfo(RestFrontEnrollAuthRequest body) throws ApiException {
         com.squareup.okhttp.Call call = frontEnrollAuthValidateBeforeCall(body, null, null);
@@ -301,7 +301,7 @@ public class FrontendServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call frontMessagesCall(String lang, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -364,7 +364,7 @@ public class FrontendServiceApi {
      * 
      * @param lang  (required)
      * @return RestFrontMessagesResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestFrontMessagesResponse frontMessages(String lang) throws ApiException {
         ApiResponse<RestFrontMessagesResponse> resp = frontMessagesWithHttpInfo(lang);
@@ -376,7 +376,7 @@ public class FrontendServiceApi {
      * 
      * @param lang  (required)
      * @return ApiResponse&lt;RestFrontMessagesResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestFrontMessagesResponse> frontMessagesWithHttpInfo(String lang) throws ApiException {
         com.squareup.okhttp.Call call = frontMessagesValidateBeforeCall(lang, null, null);
@@ -424,7 +424,7 @@ public class FrontendServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call frontPluginsCall(String lang, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -487,7 +487,7 @@ public class FrontendServiceApi {
      * 
      * @param lang  (required)
      * @return RestFrontPluginsResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestFrontPluginsResponse frontPlugins(String lang) throws ApiException {
         ApiResponse<RestFrontPluginsResponse> resp = frontPluginsWithHttpInfo(lang);
@@ -499,7 +499,7 @@ public class FrontendServiceApi {
      * 
      * @param lang  (required)
      * @return ApiResponse&lt;RestFrontPluginsResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestFrontPluginsResponse> frontPluginsWithHttpInfo(String lang) throws ApiException {
         com.squareup.okhttp.Call call = frontPluginsValidateBeforeCall(lang, null, null);
@@ -549,7 +549,7 @@ public class FrontendServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call frontPutBinaryCall(String binaryType, String uuid, RestFrontBinaryRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -625,7 +625,7 @@ public class FrontendServiceApi {
      * @param uuid  (required)
      * @param body  (required)
      * @return RestFrontBinaryResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestFrontBinaryResponse frontPutBinary(String binaryType, String uuid, RestFrontBinaryRequest body) throws ApiException {
         ApiResponse<RestFrontBinaryResponse> resp = frontPutBinaryWithHttpInfo(binaryType, uuid, body);
@@ -639,7 +639,7 @@ public class FrontendServiceApi {
      * @param uuid  (required)
      * @param body  (required)
      * @return ApiResponse&lt;RestFrontBinaryResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestFrontBinaryResponse> frontPutBinaryWithHttpInfo(String binaryType, String uuid, RestFrontBinaryRequest body) throws ApiException {
         com.squareup.okhttp.Call call = frontPutBinaryValidateBeforeCall(binaryType, uuid, body, null, null);
@@ -690,7 +690,7 @@ public class FrontendServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call frontServeBinaryCall(String binaryType, String uuid, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -760,7 +760,7 @@ public class FrontendServiceApi {
      * @param binaryType  (required)
      * @param uuid  (required)
      * @return RestFrontBinaryResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestFrontBinaryResponse frontServeBinary(String binaryType, String uuid) throws ApiException {
         ApiResponse<RestFrontBinaryResponse> resp = frontServeBinaryWithHttpInfo(binaryType, uuid);
@@ -773,7 +773,7 @@ public class FrontendServiceApi {
      * @param binaryType  (required)
      * @param uuid  (required)
      * @return ApiResponse&lt;RestFrontBinaryResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestFrontBinaryResponse> frontServeBinaryWithHttpInfo(String binaryType, String uuid) throws ApiException {
         com.squareup.okhttp.Call call = frontServeBinaryValidateBeforeCall(binaryType, uuid, null, null);
@@ -822,7 +822,7 @@ public class FrontendServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call frontSessionCall(RestFrontSessionRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -884,7 +884,7 @@ public class FrontendServiceApi {
      * 
      * @param body  (required)
      * @return RestFrontSessionResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestFrontSessionResponse frontSession(RestFrontSessionRequest body) throws ApiException {
         ApiResponse<RestFrontSessionResponse> resp = frontSessionWithHttpInfo(body);
@@ -896,7 +896,7 @@ public class FrontendServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestFrontSessionResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestFrontSessionResponse> frontSessionWithHttpInfo(RestFrontSessionRequest body) throws ApiException {
         com.squareup.okhttp.Call call = frontSessionValidateBeforeCall(body, null, null);
@@ -943,7 +943,7 @@ public class FrontendServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call frontStateCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -999,7 +999,7 @@ public class FrontendServiceApi {
      * Send XML state registry
      * 
      * @return RestFrontStateResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestFrontStateResponse frontState() throws ApiException {
         ApiResponse<RestFrontStateResponse> resp = frontStateWithHttpInfo();
@@ -1010,7 +1010,7 @@ public class FrontendServiceApi {
      * Send XML state registry
      * 
      * @return ApiResponse&lt;RestFrontStateResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestFrontStateResponse> frontStateWithHttpInfo() throws ApiException {
         com.squareup.okhttp.Call call = frontStateValidateBeforeCall(null, null);
@@ -1056,7 +1056,7 @@ public class FrontendServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call settingsMenuCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -1112,7 +1112,7 @@ public class FrontendServiceApi {
      * Sends a tree of nodes to be used a menu in the Settings panel
      * 
      * @return RestSettingsMenuResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestSettingsMenuResponse settingsMenu() throws ApiException {
         ApiResponse<RestSettingsMenuResponse> resp = settingsMenuWithHttpInfo();
@@ -1123,7 +1123,7 @@ public class FrontendServiceApi {
      * Sends a tree of nodes to be used a menu in the Settings panel
      * 
      * @return ApiResponse&lt;RestSettingsMenuResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestSettingsMenuResponse> settingsMenuWithHttpInfo() throws ApiException {
         com.squareup.okhttp.Call call = settingsMenuValidateBeforeCall(null, null);

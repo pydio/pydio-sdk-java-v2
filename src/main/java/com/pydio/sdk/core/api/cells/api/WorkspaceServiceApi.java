@@ -59,7 +59,7 @@ public class WorkspaceServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call deleteWorkspaceCall(String slug, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -122,7 +122,7 @@ public class WorkspaceServiceApi {
      * 
      * @param slug  (required)
      * @return RestDeleteResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestDeleteResponse deleteWorkspace(String slug) throws ApiException {
         ApiResponse<RestDeleteResponse> resp = deleteWorkspaceWithHttpInfo(slug);
@@ -134,7 +134,7 @@ public class WorkspaceServiceApi {
      * 
      * @param slug  (required)
      * @return ApiResponse&lt;RestDeleteResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestDeleteResponse> deleteWorkspaceWithHttpInfo(String slug) throws ApiException {
         com.squareup.okhttp.Call call = deleteWorkspaceValidateBeforeCall(slug, null, null);
@@ -183,7 +183,7 @@ public class WorkspaceServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call putWorkspaceCall(String slug, IdmWorkspace body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -252,7 +252,7 @@ public class WorkspaceServiceApi {
      * @param slug  (required)
      * @param body  (required)
      * @return IdmWorkspace
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public IdmWorkspace putWorkspace(String slug, IdmWorkspace body) throws ApiException {
         ApiResponse<IdmWorkspace> resp = putWorkspaceWithHttpInfo(slug, body);
@@ -265,7 +265,7 @@ public class WorkspaceServiceApi {
      * @param slug  (required)
      * @param body  (required)
      * @return ApiResponse&lt;IdmWorkspace&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<IdmWorkspace> putWorkspaceWithHttpInfo(String slug, IdmWorkspace body) throws ApiException {
         com.squareup.okhttp.Call call = putWorkspaceValidateBeforeCall(slug, body, null, null);
@@ -314,7 +314,7 @@ public class WorkspaceServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call searchWorkspacesCall(RestSearchWorkspaceRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -376,7 +376,7 @@ public class WorkspaceServiceApi {
      * 
      * @param body  (required)
      * @return RestWorkspaceCollection
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestWorkspaceCollection searchWorkspaces(RestSearchWorkspaceRequest body) throws ApiException {
         ApiResponse<RestWorkspaceCollection> resp = searchWorkspacesWithHttpInfo(body);
@@ -388,7 +388,7 @@ public class WorkspaceServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestWorkspaceCollection&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestWorkspaceCollection> searchWorkspacesWithHttpInfo(RestSearchWorkspaceRequest body) throws ApiException {
         com.squareup.okhttp.Call call = searchWorkspacesValidateBeforeCall(body, null, null);

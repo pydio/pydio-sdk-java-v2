@@ -1,7 +1,6 @@
 package com.pydio.sdk.core;
 
 import com.pydio.sdk.core.common.callback.ChangeHandler;
-import com.pydio.sdk.core.common.callback.ChangeProcessor;
 import com.pydio.sdk.core.common.callback.NodeHandler;
 import com.pydio.sdk.core.common.callback.RegistryItemHandler;
 import com.pydio.sdk.core.common.callback.TransferProgressListener;
@@ -10,7 +9,7 @@ import com.pydio.sdk.core.model.FileNode;
 import com.pydio.sdk.core.model.Message;
 import com.pydio.sdk.core.model.ServerNode;
 import com.pydio.sdk.core.model.Stats;
-import com.pydio.sdk.core.model.Token;
+import com.pydio.sdk.core.auth.Token;
 import com.pydio.sdk.core.security.Credentials;
 
 import org.json.JSONObject;
@@ -44,6 +43,8 @@ public interface Client {
     void login() throws SDKException;
 
     void logout() throws SDKException;
+
+    JSONObject userInfo() throws SDKException;
 
     X509Certificate[] remoteCertificateChain();
 

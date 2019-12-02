@@ -66,7 +66,7 @@ public class TreeServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call bulkStatNodesCall(RestGetBulkMetaRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -128,7 +128,7 @@ public class TreeServiceApi {
      * 
      * @param body  (required)
      * @return RestBulkMetaResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestBulkMetaResponse bulkStatNodes(RestGetBulkMetaRequest body) throws ApiException {
         ApiResponse<RestBulkMetaResponse> resp = bulkStatNodesWithHttpInfo(body);
@@ -140,7 +140,7 @@ public class TreeServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestBulkMetaResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestBulkMetaResponse> bulkStatNodesWithHttpInfo(RestGetBulkMetaRequest body) throws ApiException {
         com.squareup.okhttp.Call call = bulkStatNodesValidateBeforeCall(body, null, null);
@@ -188,7 +188,7 @@ public class TreeServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call createNodesCall(RestCreateNodesRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -250,7 +250,7 @@ public class TreeServiceApi {
      * 
      * @param body  (required)
      * @return RestNodesCollection
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestNodesCollection createNodes(RestCreateNodesRequest body) throws ApiException {
         ApiResponse<RestNodesCollection> resp = createNodesWithHttpInfo(body);
@@ -262,7 +262,7 @@ public class TreeServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestNodesCollection&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestNodesCollection> createNodesWithHttpInfo(RestCreateNodesRequest body) throws ApiException {
         com.squareup.okhttp.Call call = createNodesValidateBeforeCall(body, null, null);
@@ -312,7 +312,7 @@ public class TreeServiceApi {
      * @param progressListener        Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call createSelectionCall(RestCreateSelectionRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -374,7 +374,7 @@ public class TreeServiceApi {
      *
      * @param body (required)
      * @return RestCreateSelectionResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestCreateSelectionResponse createSelection(RestCreateSelectionRequest body) throws ApiException {
         ApiResponse<RestCreateSelectionResponse> resp = createSelectionWithHttpInfo(body);
@@ -386,7 +386,7 @@ public class TreeServiceApi {
      *
      * @param body (required)
      * @return ApiResponse&lt;RestCreateSelectionResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestCreateSelectionResponse> createSelectionWithHttpInfo(RestCreateSelectionRequest body) throws ApiException {
         com.squareup.okhttp.Call call = createSelectionValidateBeforeCall(body, null, null);
@@ -436,7 +436,7 @@ public class TreeServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call deleteNodesCall(RestDeleteNodesRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -498,7 +498,7 @@ public class TreeServiceApi {
      * 
      * @param body  (required)
      * @return RestDeleteNodesResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestDeleteNodesResponse deleteNodes(RestDeleteNodesRequest body) throws ApiException {
         ApiResponse<RestDeleteNodesResponse> resp = deleteNodesWithHttpInfo(body);
@@ -510,7 +510,7 @@ public class TreeServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestDeleteNodesResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestDeleteNodesResponse> deleteNodesWithHttpInfo(RestDeleteNodesRequest body) throws ApiException {
         com.squareup.okhttp.Call call = deleteNodesValidateBeforeCall(body, null, null);
@@ -558,7 +558,7 @@ public class TreeServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call headNodeCall(String node, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -621,7 +621,7 @@ public class TreeServiceApi {
      * 
      * @param node  (required)
      * @return RestHeadNodeResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestHeadNodeResponse headNode(String node) throws ApiException {
         ApiResponse<RestHeadNodeResponse> resp = headNodeWithHttpInfo(node);
@@ -633,7 +633,7 @@ public class TreeServiceApi {
      * 
      * @param node  (required)
      * @return ApiResponse&lt;RestHeadNodeResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestHeadNodeResponse> headNodeWithHttpInfo(String node) throws ApiException {
         com.squareup.okhttp.Call call = headNodeValidateBeforeCall(node, null, null);
@@ -681,7 +681,7 @@ public class TreeServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call restoreNodesCall(RestRestoreNodesRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -743,7 +743,7 @@ public class TreeServiceApi {
      * 
      * @param body  (required)
      * @return RestRestoreNodesResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestRestoreNodesResponse restoreNodes(RestRestoreNodesRequest body) throws ApiException {
         ApiResponse<RestRestoreNodesResponse> resp = restoreNodesWithHttpInfo(body);
@@ -755,7 +755,7 @@ public class TreeServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestRestoreNodesResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestRestoreNodesResponse> restoreNodesWithHttpInfo(RestRestoreNodesRequest body) throws ApiException {
         com.squareup.okhttp.Call call = restoreNodesValidateBeforeCall(body, null, null);

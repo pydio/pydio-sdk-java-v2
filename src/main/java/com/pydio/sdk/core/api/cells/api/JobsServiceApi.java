@@ -63,7 +63,7 @@ public class JobsServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call userControlJobCall(JobsCtrlCommand body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -125,7 +125,7 @@ public class JobsServiceApi {
      * 
      * @param body  (required)
      * @return JobsCtrlCommandResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public JobsCtrlCommandResponse userControlJob(JobsCtrlCommand body) throws ApiException {
         ApiResponse<JobsCtrlCommandResponse> resp = userControlJobWithHttpInfo(body);
@@ -137,7 +137,7 @@ public class JobsServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;JobsCtrlCommandResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<JobsCtrlCommandResponse> userControlJobWithHttpInfo(JobsCtrlCommand body) throws ApiException {
         com.squareup.okhttp.Call call = userControlJobValidateBeforeCall(body, null, null);
@@ -186,7 +186,7 @@ public class JobsServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call userCreateJobCall(String jobName, RestUserJobRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -255,7 +255,7 @@ public class JobsServiceApi {
      * @param jobName  (required)
      * @param body  (required)
      * @return RestUserJobResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestUserJobResponse userCreateJob(String jobName, RestUserJobRequest body) throws ApiException {
         ApiResponse<RestUserJobResponse> resp = userCreateJobWithHttpInfo(jobName, body);
@@ -268,7 +268,7 @@ public class JobsServiceApi {
      * @param jobName  (required)
      * @param body  (required)
      * @return ApiResponse&lt;RestUserJobResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestUserJobResponse> userCreateJobWithHttpInfo(String jobName, RestUserJobRequest body) throws ApiException {
         com.squareup.okhttp.Call call = userCreateJobValidateBeforeCall(jobName, body, null, null);
@@ -317,7 +317,7 @@ public class JobsServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call userDeleteTasksCall(JobsDeleteTasksRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -379,7 +379,7 @@ public class JobsServiceApi {
      * 
      * @param body  (required)
      * @return JobsDeleteTasksResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public JobsDeleteTasksResponse userDeleteTasks(JobsDeleteTasksRequest body) throws ApiException {
         ApiResponse<JobsDeleteTasksResponse> resp = userDeleteTasksWithHttpInfo(body);
@@ -391,7 +391,7 @@ public class JobsServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;JobsDeleteTasksResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<JobsDeleteTasksResponse> userDeleteTasksWithHttpInfo(JobsDeleteTasksRequest body) throws ApiException {
         com.squareup.okhttp.Call call = userDeleteTasksValidateBeforeCall(body, null, null);
@@ -439,7 +439,7 @@ public class JobsServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call userListJobsCall(JobsListJobsRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -501,7 +501,7 @@ public class JobsServiceApi {
      * 
      * @param body  (required)
      * @return RestUserJobsCollection
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestUserJobsCollection userListJobs(JobsListJobsRequest body) throws ApiException {
         ApiResponse<RestUserJobsCollection> resp = userListJobsWithHttpInfo(body);
@@ -513,7 +513,7 @@ public class JobsServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;RestUserJobsCollection&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestUserJobsCollection> userListJobsWithHttpInfo(JobsListJobsRequest body) throws ApiException {
         com.squareup.okhttp.Call call = userListJobsValidateBeforeCall(body, null, null);

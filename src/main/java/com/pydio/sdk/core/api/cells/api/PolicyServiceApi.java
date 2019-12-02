@@ -57,7 +57,7 @@ public class PolicyServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call listPoliciesCall(IdmListPolicyGroupsRequest body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
@@ -119,7 +119,7 @@ public class PolicyServiceApi {
      * 
      * @param body  (required)
      * @return IdmListPolicyGroupsResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public IdmListPolicyGroupsResponse listPolicies(IdmListPolicyGroupsRequest body) throws ApiException {
         ApiResponse<IdmListPolicyGroupsResponse> resp = listPoliciesWithHttpInfo(body);
@@ -131,7 +131,7 @@ public class PolicyServiceApi {
      * 
      * @param body  (required)
      * @return ApiResponse&lt;IdmListPolicyGroupsResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<IdmListPolicyGroupsResponse> listPoliciesWithHttpInfo(IdmListPolicyGroupsRequest body) throws ApiException {
         com.squareup.okhttp.Call call = listPoliciesValidateBeforeCall(body, null, null);

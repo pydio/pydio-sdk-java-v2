@@ -57,7 +57,7 @@ public class GraphServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call relationCall(String userId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -120,7 +120,7 @@ public class GraphServiceApi {
      * 
      * @param userId  (required)
      * @return RestRelationResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestRelationResponse relation(String userId) throws ApiException {
         ApiResponse<RestRelationResponse> resp = relationWithHttpInfo(userId);
@@ -132,7 +132,7 @@ public class GraphServiceApi {
      * 
      * @param userId  (required)
      * @return ApiResponse&lt;RestRelationResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestRelationResponse> relationWithHttpInfo(String userId) throws ApiException {
         com.squareup.okhttp.Call call = relationValidateBeforeCall(userId, null, null);
@@ -180,7 +180,7 @@ public class GraphServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call userStateCall(String segment, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -243,7 +243,7 @@ public class GraphServiceApi {
      * 
      * @param segment  (required)
      * @return RestUserStateResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public RestUserStateResponse userState(String segment) throws ApiException {
         ApiResponse<RestUserStateResponse> resp = userStateWithHttpInfo(segment);
@@ -255,7 +255,7 @@ public class GraphServiceApi {
      * 
      * @param segment  (required)
      * @return ApiResponse&lt;RestUserStateResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<RestUserStateResponse> userStateWithHttpInfo(String segment) throws ApiException {
         com.squareup.okhttp.Call call = userStateValidateBeforeCall(segment, null, null);

@@ -57,7 +57,7 @@ public class UpdateServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call applyUpdateCall(String targetVersion, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -120,7 +120,7 @@ public class UpdateServiceApi {
      *
      * @param targetVersion  (required)
      * @return UpdateApplyUpdateResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public UpdateApplyUpdateResponse applyUpdate(String targetVersion) throws ApiException {
         ApiResponse<UpdateApplyUpdateResponse> resp = applyUpdateWithHttpInfo(targetVersion);
@@ -132,7 +132,7 @@ public class UpdateServiceApi {
      *
      * @param targetVersion  (required)
      * @return ApiResponse&lt;UpdateApplyUpdateResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<UpdateApplyUpdateResponse> applyUpdateWithHttpInfo(String targetVersion) throws ApiException {
         com.squareup.okhttp.Call call = applyUpdateValidateBeforeCall(targetVersion, null, null);
@@ -187,7 +187,7 @@ public class UpdateServiceApi {
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @throws ApiException If fail to encode the request body object
      */
     public com.squareup.okhttp.Call updateRequiredCall(String channel, String packageName, String currentVersion, String GOOS, String GOARCH, String serviceName, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
@@ -261,7 +261,7 @@ public class UpdateServiceApi {
      * @param GOARCH Current GOARCH. (optional)
      * @param serviceName Not Used : specific service to get updates for. (optional)
      * @return UpdateUpdateResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public UpdateUpdateResponse updateRequired(String channel, String packageName, String currentVersion, String GOOS, String GOARCH, String serviceName) throws ApiException {
         ApiResponse<UpdateUpdateResponse> resp = updateRequiredWithHttpInfo(channel, packageName, currentVersion, GOOS, GOARCH, serviceName);
@@ -278,7 +278,7 @@ public class UpdateServiceApi {
      * @param GOARCH Current GOARCH. (optional)
      * @param serviceName Not Used : specific service to get updates for. (optional)
      * @return ApiResponse&lt;UpdateUpdateResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException If fail to call the API, e.g. server error or cannot decode the response body
      */
     public ApiResponse<UpdateUpdateResponse> updateRequiredWithHttpInfo(String channel, String packageName, String currentVersion, String GOOS, String GOARCH, String serviceName) throws ApiException {
         com.squareup.okhttp.Call call = updateRequiredValidateBeforeCall(channel, packageName, currentVersion, GOOS, GOARCH, serviceName, null, null);
