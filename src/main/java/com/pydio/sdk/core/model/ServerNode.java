@@ -80,7 +80,6 @@ public class ServerNode implements Node {
     }
 
     // Node methods
-
     @Override
     public String getProperty(String key) {
         if (properties == null) return null;
@@ -560,6 +559,7 @@ public class ServerNode implements Node {
     }
 
     public boolean supportsOauth() {
+        // return false;
         return oidc != null;
     }
 
@@ -574,7 +574,6 @@ public class ServerNode implements Node {
     public ServerResolver getServerResolver() {
         return this.serverResolver;
     }
-
 
     // Setters
 

@@ -114,44 +114,54 @@ public class PydioCells implements Client {
             t = tokenProvider.get(subject);
         }
 
-        if (!serverNode.supportsOauth() && (t == null || t.isExpired())) {
-            synchronized (lock) {
-                ApiClient apiClient = getApiClient();
-                String password = credentials.getPassword();
+        if (t != null) {
+            if (t.isExpired()) {
+                if (this.serverNode.supportsOauth()) {
+                    //tokenProvider.
+                } else {
+                    synchronized (lock) {
+                        ApiClient apiClient = getApiClient();
+                        String password = credentials.getPassword();
 
-                if (password == null) {
-                    throw new SDKException(Code.authentication_required, new IOException("no password provided"));
-                }
+                        if (password == null) {
+                            throw new SDKException(Code.authentication_required, new IOException("no password provided"));
+                        }
 
-                RestFrontSessionRequest request = new RestFrontSessionRequest();
-                request.setClientTime((int) System.currentTimeMillis());
+                        RestFrontSessionRequest request = new RestFrontSessionRequest();
+                        request.setClientTime((int) System.currentTimeMillis());
 
-                Map<String, String> authInfo = new HashMap<>();
-                authInfo.put("login", credentials.getLogin());
-                authInfo.put("password", password);
-                authInfo.put("type", "credentials");
-                request.authInfo(authInfo);
+                        Map<String, String> authInfo = new HashMap<>();
+                        authInfo.put("login", credentials.getLogin());
+                        authInfo.put("password", password);
+                        authInfo.put("type", "credentials");
+                        request.authInfo(authInfo);
 
-                FrontendServiceApi api = new FrontendServiceApi(apiClient);
-                RestFrontSessionResponse response;
-                try {
-                    response = api.frontSession(request);
-                } catch (ApiException e) {
-                    throw new SDKException(e);
-                }
+                        FrontendServiceApi api = new FrontendServiceApi(apiClient);
+                        RestFrontSessionResponse response;
+                        try {
+                            response = api.frontSession(request);
+                        } catch (ApiException e) {
+                            throw new SDKException(e);
+                        }
 
-                t = new Token();
-                t.subject = subject;
-                t.value = response.getJWT();
-                long expireIn = (long) response.getExpireTime();
-                t.expiry = System.currentTimeMillis() + expireIn * 1000;
+                        t = new Token();
+                        t.subject = subject;
+                        t.value = response.getJWT();
+                        long expireIn = (long) response.getExpireTime();
+                        t.expiry = System.currentTimeMillis() + expireIn * 1000;
 
-                if (this.tokenStore != null) {
-                    this.tokenStore.set(t);
+                        if (this.tokenStore != null) {
+                            this.tokenStore.set(t);
+                        }
+                    }
                 }
             }
         }
-        this.JWT = t.value;
+
+        if (t != null) {
+            this.JWT = t.value;
+        }
+
     }
 
     protected String getS3Endpoint() {
