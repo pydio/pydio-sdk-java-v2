@@ -41,12 +41,17 @@ import com.pydio.sdk.core.api.cells.model.TreeSearchRequest;
 import com.pydio.sdk.core.api.cells.model.TreeSyncChange;
 import com.pydio.sdk.core.api.cells.model.TreeWorkspaceRelativePath;
 import com.pydio.sdk.core.api.cells.model.UpdateUserMetaRequestUserMetaOp;
+import com.pydio.sdk.core.auth.OauthConfig;
 import com.pydio.sdk.core.common.callback.ChangeHandler;
 import com.pydio.sdk.core.common.callback.NodeHandler;
 import com.pydio.sdk.core.common.callback.RegistryItemHandler;
 import com.pydio.sdk.core.common.callback.TransferProgressListener;
 import com.pydio.sdk.core.common.errors.Code;
 import com.pydio.sdk.core.common.errors.SDKException;
+import com.pydio.sdk.core.common.http.HttpClient;
+import com.pydio.sdk.core.common.http.HttpRequest;
+import com.pydio.sdk.core.common.http.HttpResponse;
+import com.pydio.sdk.core.common.http.Method;
 import com.pydio.sdk.core.model.WorkspaceNode;
 import com.pydio.sdk.core.model.parser.RegistrySaxHandler;
 import com.pydio.sdk.core.model.parser.ServerGeneralRegistrySaxHandler;
@@ -59,9 +64,11 @@ import com.pydio.sdk.core.model.ServerNode;
 import com.pydio.sdk.core.model.Stats;
 import com.pydio.sdk.core.auth.Token;
 import com.pydio.sdk.core.security.Credentials;
+import com.pydio.sdk.core.utils.Params;
 import com.pydio.sdk.core.utils.io;
 import com.squareup.okhttp.OkHttpClient;
 
+import org.apache.commons.codec.binary.Base64;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.xml.sax.helpers.DefaultHandler;
@@ -108,18 +115,41 @@ public class PydioCells implements Client {
 
     protected void getJWT() throws SDKException {
 
-        Token t = null;
-        String subject = String.format("%s@%s", credentials.getLogin(), serverNode.url());
-        if (tokenProvider != null) {
-            t = tokenProvider.get(subject);
-        }
+        synchronized (lock) {
+            this.JWT = null;
+            Token t = null;
 
-        if (t != null) {
-            if (t.isExpired()) {
-                if (this.serverNode.supportsOauth()) {
-                    //tokenProvider.
-                } else {
-                    synchronized (lock) {
+            String subject = String.format("%s@%s", credentials.getLogin(), serverNode.url());
+            if (tokenProvider != null) {
+                t = tokenProvider.get(subject);
+            }
+
+            if (t != null) {
+                if (t.isExpired()) {
+                    if (this.serverNode.supportsOauth()) {
+                        OauthConfig cfg = OauthConfig.fromJSON(serverNode.getOIDCInfo(), "");
+
+                        HttpRequest request = new HttpRequest();
+                        Params params = Params.create("grant_type", "refresh_token").set("refresh_token", t.refreshToken);
+                        request.setParams(params);
+
+                        Base64 base64 = new Base64();
+                        String auth = new String(base64.encode((cfg.clientID + ":" + cfg.clientSecret).getBytes()));
+
+
+                        request.setHeaders(Params.create("Authorization", "Basic " + auth));
+                        request.setEndpoint(cfg.tokenEndpoint);
+                        request.setMethod(Method.POST);
+
+                        HttpResponse response = null;
+                        try {
+                            response = HttpClient.request(request);
+                            String jwt = response.getString();
+                            t = Token.decode(jwt);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
                         ApiClient apiClient = getApiClient();
                         String password = credentials.getPassword();
 
@@ -156,10 +186,11 @@ public class PydioCells implements Client {
                     }
                 }
             }
-        }
 
-        if (t != null) {
-            this.JWT = t.value;
+
+            if (t != null) {
+                this.JWT = t.value;
+            }
         }
 
     }
@@ -1095,6 +1126,7 @@ public class PydioCells implements Client {
     @Override
     public JSONObject shareInfo(String ws, String shareID) throws SDKException {
         ApiClient client = getApiClient();
+        this.getJWT();
         client.addDefaultHeader("Authorization", "Bearer " + this.JWT);
         ShareServiceApi api = new ShareServiceApi(client);
         try {

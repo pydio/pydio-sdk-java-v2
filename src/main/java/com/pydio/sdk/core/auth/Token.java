@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import java.text.ParseException;
 
 public class Token {
+
     public String subject;
     public String value;
     public long expiry;
@@ -25,7 +26,7 @@ public class Token {
             return true;
         }
 
-        long currentTimeInSeconds = System.currentTimeMillis();
+        long currentTimeInSeconds = System.currentTimeMillis() / 1000 ;
         long elapsedTimeSinceExpiry = currentTimeInSeconds - this.expiry;
 
         boolean expired = elapsedTimeSinceExpiry > 0;
