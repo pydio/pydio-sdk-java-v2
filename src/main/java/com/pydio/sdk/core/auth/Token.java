@@ -17,23 +17,22 @@ public class Token {
     public String scope;
     public String tokenType;
 
+    private long currentTimeInSeconds() {
+        return System.currentTimeMillis() / 1000 ;
+    }
+
     public boolean isExpired() {
         if (value == null) {
             return true;
         }
-
         if ("".equals(value)) {
             return true;
         }
-
-        long currentTimeInSeconds = System.currentTimeMillis() / 1000 ;
-        long elapsedTimeSinceExpiry = currentTimeInSeconds - this.expiry;
-
+        long elapsedTimeSinceExpiry = this.currentTimeInSeconds() - this.expiry;
         boolean expired = elapsedTimeSinceExpiry > 0;
         if(expired) {
             Log.i("JWT", String.format("Expired since %s seconds", elapsedTimeSinceExpiry));
         }
-
         return expired;
     }
 
@@ -42,7 +41,7 @@ public class Token {
         return gson.toJson(t);
     }
 
-    public static Token decode(String json){
+    public static Token decode(String json) {
         return new Gson().fromJson(json, Token.class);
     }
 

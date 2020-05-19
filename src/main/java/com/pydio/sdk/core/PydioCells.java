@@ -42,6 +42,7 @@ import com.pydio.sdk.core.api.cells.model.TreeSyncChange;
 import com.pydio.sdk.core.api.cells.model.TreeWorkspaceRelativePath;
 import com.pydio.sdk.core.api.cells.model.UpdateUserMetaRequestUserMetaOp;
 import com.pydio.sdk.core.auth.OauthConfig;
+import com.pydio.sdk.core.auth.jwt.JWT;
 import com.pydio.sdk.core.common.callback.ChangeHandler;
 import com.pydio.sdk.core.common.callback.NodeHandler;
 import com.pydio.sdk.core.common.callback.RegistryItemHandler;
@@ -114,7 +115,6 @@ public class PydioCells implements Client {
     }
 
     protected void getJWT() throws SDKException {
-
         synchronized (lock) {
             this.JWT = null;
             Token t = null;
@@ -145,7 +145,20 @@ public class PydioCells implements Client {
                         try {
                             response = HttpClient.request(request);
                             String jwt = response.getString();
+                            System.out.println(jwt);
                             t = Token.decode(jwt);
+
+                            com.pydio.sdk.core.auth.jwt.JWT parsedIDToken = com.pydio.sdk.core.auth.jwt.JWT.parse(t.idToken);
+                            if (parsedIDToken == null) {
+                                return;
+                            }
+
+                            t.subject = String.format("%s@%s", parsedIDToken.claims.name, this.serverNode.url());
+                            t.expiry = System.currentTimeMillis() / 1000 + t.expiry;
+
+                            if (this.tokenStore != null) {
+                                this.tokenStore.set(t);
+                            }
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -178,7 +191,7 @@ public class PydioCells implements Client {
                         t.subject = subject;
                         t.value = response.getJWT();
                         long expireIn = (long) response.getExpireTime();
-                        t.expiry = System.currentTimeMillis() + expireIn * 1000;
+                        t.expiry = System.currentTimeMillis()/1000 + expireIn;
 
                         if (this.tokenStore != null) {
                             this.tokenStore.set(t);
@@ -192,7 +205,6 @@ public class PydioCells implements Client {
                 this.JWT = t.value;
             }
         }
-
     }
 
     protected String getS3Endpoint() {
@@ -425,7 +437,6 @@ public class PydioCells implements Client {
         } catch (IOException e) {
             throw SDKException.conFailed(e);
         }
-
 
         SAXParserFactory factory = SAXParserFactory.newInstance();
         try {

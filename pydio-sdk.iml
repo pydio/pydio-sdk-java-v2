@@ -30,12 +30,13 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="Gradle: json-rpc-1.0" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: swagger-annotations-1.6.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: swagger-annotations-1.6.1" level="project" />
     <orderEntry type="library" exported="" name="Gradle: logging-interceptor-2.7.5" level="project" />
     <orderEntry type="library" exported="" name="Gradle: okhttp-2.7.5" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: gson-fire-1.8.3" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: gson-fire-1.8.4" level="project" />
     <orderEntry type="library" exported="" name="Gradle: gson-2.8.6" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: threetenbp-1.4.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: threetenbp-1.4.4" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: commons-codec-1.10" level="project" />
     <orderEntry type="library" exported="" name="Gradle: okio-1.6.0" level="project" />
   </component>
 </module>

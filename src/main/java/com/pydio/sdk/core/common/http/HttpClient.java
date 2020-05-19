@@ -73,8 +73,11 @@ public class HttpClient {
             con.setRequestProperty("User-Agent", requestData.getUserAgent());
         }
 
-        for (Map.Entry<String, String> stringStringEntry : requestData.getHeaders().get().entrySet()) {
-            con.setRequestProperty(stringStringEntry.getKey(), stringStringEntry.getValue());
+        Params params = requestData.getHeaders();
+        if (params != null) {
+            for (Map.Entry<String, String> stringStringEntry : requestData.getHeaders().get().entrySet()) {
+                con.setRequestProperty(stringStringEntry.getKey(), stringStringEntry.getValue());
+            }
         }
 
         return con;
