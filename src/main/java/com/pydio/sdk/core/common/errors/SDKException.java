@@ -27,20 +27,20 @@ public class SDKException extends Throwable {
         }
     }
 
-    public SDKException(ApiException e){
-        this.code = e.getCode();
+    public SDKException(ApiException e) {
         this.cause = e;
+        this.code = Code.fromHttpStatus(e.getCode());
     }
 
     public static SDKException fromP8Code(int p8Code) {
         SDKException e = new SDKException();
-        e.code = p8Code;
+        e.code = Code.fromHttpStatus(p8Code);
         return e;
     }
 
     public static SDKException fromHttpCode(int httpCode) {
         SDKException e = new SDKException();
-        e.code = httpCode;
+        e.code = Code.fromHttpStatus(httpCode);
         return e;
     }
 
@@ -68,15 +68,15 @@ public class SDKException extends Throwable {
         return new SDKException(Code.con_closed, e);
     }
 
-    public static SDKException unexpectedContent(Exception e){
+    public static SDKException unexpectedContent(Exception e) {
         return new SDKException(Code.unexpected_content, e);
     }
 
-    public static SDKException badConfig(Exception e){
+    public static SDKException badConfig(Exception e) {
         return new SDKException(Code.bad_config, e);
     }
 
-    public static SDKException notFound(Exception e){
+    public static SDKException notFound(Exception e) {
         return new SDKException(Code.not_found, e);
     }
 }

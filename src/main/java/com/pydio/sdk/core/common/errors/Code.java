@@ -25,19 +25,23 @@ public class Code {
     public static final int con_closed = 21;
     public static final int not_found = 22;
     public static final int no_internet = 23;
+    public static final int server_error = 24;
 
     public static int fromHttpStatus(int status) {
-
         if (status == 200) {
             return ok;
         }
 
-        if (status == 404) {
-            return not_found;
-        }
+        switch (status) {
+            case 401:
+            case 403:
+                return Code.authentication_required;
 
-        if (status == 401 || status == 403) {
-            return authentication_required;
+            case 504:
+                return Code.unreachable_host;
+
+            case 500:
+                return Code.server_error;
         }
 
         return unexpected_response;
