@@ -4,7 +4,6 @@ import com.pydio.sdk.core.common.codec.Hex;
 
 import org.json.JSONObject;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 public class OauthConfig {

@@ -137,7 +137,6 @@ public class ServerNode implements Node {
     }
 
     // Resolve
-
     public Error resolve(String address) {
         return resolveRemote(address);
     }
@@ -482,10 +481,6 @@ public class ServerNode implements Node {
         if( originalUrl == null) {
             originalUrl = url();
         }
-        return originalUrl;
-    }
-
-    public String getOriginalUrl() {
         return originalUrl;
     }
 
