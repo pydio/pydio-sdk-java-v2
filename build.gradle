@@ -14,5 +14,6 @@ dependencies {
     implementation 'org.threeten:threetenbp:1.4.4'
 
     // updating this cause JWT decoding failure
-    implementation 'commons-codec:commons-codec:1.10'
+    implementation 'commons-codec:commons-codec:20041127.091804'
+
 }

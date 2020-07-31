@@ -1,7 +1,9 @@
 package com.pydio.sdk.core.auth.jwt;
 
 import com.google.gson.Gson;
-import org.apache.commons.codec.binary.Base64;
+import com.pydio.sdk.core.encoding.B64;
+
+import java.io.UnsupportedEncodingException;
 
 public class JWT {
     public Header header;
@@ -9,22 +11,23 @@ public class JWT {
     public String signature;
 
     public static JWT parse(String strJwt) {
+        System.out.println(strJwt);
+
         String[] parts = strJwt.split("\\.");
         if (parts.length != 3) {
             return null;
         }
-
-        Base64 base64 = new Base64();
-        byte[] headerBytes = base64.decode(parts[0].getBytes());
-        byte[] claimsBytes = base64.decode(parts[1].getBytes());
 
         JWT jwt = new JWT();
         jwt.claims = new Claims();
         jwt.header = new Header();
         jwt.signature = parts[2];
 
-        jwt.header = new Gson().fromJson(new String(headerBytes), Header.class);
-        jwt.claims = new Gson().fromJson(new String(claimsBytes), Claims.class);
+        String headerStr = B64.get().decode(parts[0]);
+        String claimsStr = B64.get().decode(parts[1]);
+
+        jwt.header = new Gson().fromJson(headerStr, Header.class);
+        jwt.claims = new Gson().fromJson(claimsStr, Claims.class);
 
         return jwt;
     }

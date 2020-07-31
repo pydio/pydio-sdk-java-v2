@@ -80,6 +80,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -165,7 +166,10 @@ public class PydioCells implements Client {
                             return;
                         }
 
-                        com.pydio.sdk.core.auth.jwt.JWT parsedIDToken = com.pydio.sdk.core.auth.jwt.JWT.parse(t.idToken);
+                        com.pydio.sdk.core.auth.jwt.JWT parsedIDToken = null;
+
+                        parsedIDToken = com.pydio.sdk.core.auth.jwt.JWT.parse(t.idToken);
+
                         if (parsedIDToken == null) {
                             return;
                         }

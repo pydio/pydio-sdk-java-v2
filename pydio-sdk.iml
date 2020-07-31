@@ -36,7 +36,7 @@
     <orderEntry type="library" exported="" name="Gradle: gson-fire-1.8.4" level="project" />
     <orderEntry type="library" exported="" name="Gradle: gson-2.8.6" level="project" />
     <orderEntry type="library" exported="" name="Gradle: threetenbp-1.4.4" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: commons-codec-1.10" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: commons-codec-20041127.091804" level="project" />
     <orderEntry type="library" exported="" name="Gradle: okio-1.6.0" level="project" />
   </component>
 </module>
