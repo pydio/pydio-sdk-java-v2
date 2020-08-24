@@ -2,6 +2,7 @@ package com.pydio.sdk.sync.fs;
 
 import com.pydio.sdk.core.PydioCells;
 import com.pydio.sdk.core.common.errors.SDKException;
+import com.pydio.sdk.core.model.Change;
 import com.pydio.sdk.sync.Error;
 import com.pydio.sdk.sync.changes.GetChangeRequest;
 import com.pydio.sdk.sync.changes.GetChangesResponse;
@@ -81,5 +82,29 @@ public class CellsFs implements Fs, ContentLoader {
     @Override
     public Content getContent(String nodeId) {
         return new PydioRemoteFileContent(cells, workspace, nodeId);
+    }
+
+    private Error mkdir(Change c) {
+        return null;
+    }
+
+    private Error mkfile(Change c) {
+        return null;
+    }
+
+    private Error delete(Change c) {
+        return null;
+    }
+
+    private Error move(Change c) {
+        return null;
+    }
+
+    private Error download(Change c, ContentLoader loader) {
+        return null;
+    }
+
+    private String md5(String path){
+        return "";
     }
 }
